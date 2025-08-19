@@ -1,14 +1,13 @@
 package com.itjima_server.mapper;
 
-import com.itjima_server.domain.Users;
+import com.itjima_server.domain.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.security.core.userdetails.User;
 
 @Mapper
 public interface UserMapper {
 
-    Users findByEmail(@Param("email") String email);
+    User findByEmail(@Param("email") String email);
 
     int insert(User user);
 }

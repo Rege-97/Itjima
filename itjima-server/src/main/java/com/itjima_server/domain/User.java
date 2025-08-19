@@ -1,11 +1,14 @@
 package com.itjima_server.domain;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-public class Users {
+@Builder
+public class User {
+
     private long id;
     private String name;
     private String email;
