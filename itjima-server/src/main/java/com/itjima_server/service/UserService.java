@@ -96,10 +96,18 @@ public class UserService {
             refreshTokenMapper.insert(refreshToken);
         }
 
-        return new UserLoginResponseDTO(accessToken, refreshTokenString, "Bearer",
-                jwtTokenProvider.getAccessExpirationMs());
+        return UserLoginResponseDTO.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .accessToken(accessToken)
+                .refreshToken(refreshTokenString)
+                .tokenType("Bearer")
+                .expiresIn(jwtTokenProvider.getAccessExpirationMs())
+                .build();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public TokenResponseDTO refreshAccessToken(TokenRefreshRequestDTO req) {
         String refreshTokenString = req.getRefreshToken();
 
@@ -120,7 +128,11 @@ public class UserService {
 
         String newAccessToken = jwtTokenProvider.generateAccessToken(user);
 
-        return new TokenResponseDTO(newAccessToken, refreshTokenString, "Bearer",
-                jwtTokenProvider.getAccessExpirationMs());
+        return TokenResponseDTO.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(refreshTokenString)
+                .tokenType("Bearer")
+                .expiresIn(jwtTokenProvider.getAccessExpirationMs())
+                .build();
     }
 }
