@@ -46,6 +46,12 @@ public class GlobalExceptionHandler {
                 .body(ApiResponseDTO.error(HttpStatus.UNAUTHORIZED.value(), e.getMessage()));
     }
 
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<?> handleInvalidRefreshTokenException(InvalidRefreshTokenException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponseDTO.error(HttpStatus.UNAUTHORIZED.value(), e.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleException(Exception e) {
         log.error(e.getMessage(), e);

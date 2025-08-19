@@ -3,11 +3,14 @@ package com.itjima_server.service;
 import com.itjima_server.domain.Provider;
 import com.itjima_server.domain.RefreshToken;
 import com.itjima_server.domain.User;
+import com.itjima_server.dto.request.TokenRefreshRequestDTO;
 import com.itjima_server.dto.request.UserLoginRequestDTO;
 import com.itjima_server.dto.request.UserRegisterRequestDTO;
+import com.itjima_server.dto.response.TokenResponseDTO;
 import com.itjima_server.dto.response.UserLoginResponseDTO;
 import com.itjima_server.dto.response.UserResponseDTO;
 import com.itjima_server.exception.DuplicateUserFieldException;
+import com.itjima_server.exception.InvalidRefreshTokenException;
 import com.itjima_server.exception.LoginFailedException;
 import com.itjima_server.exception.NotInsertUserException;
 import com.itjima_server.mapper.RefreshTokenMapper;
@@ -15,6 +18,7 @@ import com.itjima_server.mapper.UserMapper;
 import com.itjima_server.security.JwtTokenProvider;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -93,6 +97,30 @@ public class UserService {
         }
 
         return new UserLoginResponseDTO(accessToken, refreshTokenString, "Bearer",
+                jwtTokenProvider.getAccessExpirationMs());
+    }
+
+    public TokenResponseDTO refreshAccessToken(TokenRefreshRequestDTO req) {
+        String refreshTokenString = req.getRefreshToken();
+
+        RefreshToken refreshToken = refreshTokenMapper.findByToken(refreshTokenString);
+        if (refreshToken == null) {
+            throw new InvalidRefreshTokenException("유효하지 않은 리프레쉬 토큰입니다.");
+        }
+
+        if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            refreshTokenMapper.deleteByUserId(refreshToken.getUserId());
+            throw new InvalidRefreshTokenException("만료된 리프레쉬 토큰입니다. 다시 로그인해주세요.");
+        }
+
+        User user = userMapper.findById(refreshToken.getUserId());
+        if (user == null) {
+            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다.");
+        }
+
+        String newAccessToken = jwtTokenProvider.generateAccessToken(user);
+
+        return new TokenResponseDTO(newAccessToken, refreshTokenString, "Bearer",
                 jwtTokenProvider.getAccessExpirationMs());
     }
 }
