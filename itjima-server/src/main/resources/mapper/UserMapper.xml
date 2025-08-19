@@ -18,4 +18,18 @@
     INSERT INTO USERS (name, email, password, phone, provider)
     VALUES (#{name}, #{email}, #{password}, #{phone}, #{provider})
   </insert>
+
+  <select id="findById" resultType="com.itjima_server.domain.User">
+    SELECT id,
+           name,
+           email,
+           password,
+           phone,
+           created_at,
+           updated_at,
+           provider,
+           provider_id
+    FROM USERS
+    WHERE id = #{id}
+  </select>
 </mapper>

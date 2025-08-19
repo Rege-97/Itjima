@@ -15,4 +15,6 @@ public interface UserMapper {
 
     // 회원가입
     int insert(User user);
+
+    User findById(@Param("id") Long id);
 }
