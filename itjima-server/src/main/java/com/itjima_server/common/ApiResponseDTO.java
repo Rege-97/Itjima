@@ -23,6 +23,11 @@ public class ApiResponseDTO<T> {
         return new ApiResponseDTO<>(status, message, data);
     }
 
+    // 성공 응답(데이터 없음)
+    public static <T> ApiResponseDTO<T> success(int status, String message) {
+        return new ApiResponseDTO<>(status, message, null);
+    }
+
     // 실패 응답
     public static <T> ApiResponseDTO<T> error(int status, String message) {
         return new ApiResponseDTO<>(status, message, null);

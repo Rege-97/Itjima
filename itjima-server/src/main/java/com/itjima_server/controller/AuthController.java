@@ -7,6 +7,7 @@ import com.itjima_server.dto.request.UserRegisterRequestDTO;
 import com.itjima_server.dto.response.TokenResponseDTO;
 import com.itjima_server.dto.response.UserLoginResponseDTO;
 import com.itjima_server.dto.response.UserResponseDTO;
+import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,6 +19,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -66,9 +68,16 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshAccessToken(@Valid @RequestBody TokenRefreshRequestDTO req){
+    public ResponseEntity<?> refreshAccessToken(@Valid @RequestBody TokenRefreshRequestDTO req) {
         TokenResponseDTO res = userService.refreshAccessToken(req);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "토큰 재발급 성공", res));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails user) {
+        userService.logout(user.getId());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "로그아웃 성공"));
     }
 }

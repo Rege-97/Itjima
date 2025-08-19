@@ -135,4 +135,13 @@ public class UserService {
                 .expiresIn(jwtTokenProvider.getAccessExpirationMs())
                 .build();
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void logout(long id) {
+        User user = userMapper.findById(id);
+        if (user == null) {
+            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다.");
+        }
+        refreshTokenMapper.deleteByUserId(user.getId());
+    }
 }
