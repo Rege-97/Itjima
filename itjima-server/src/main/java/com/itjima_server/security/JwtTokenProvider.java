@@ -8,6 +8,7 @@ import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import javax.crypto.SecretKey;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,9 +18,11 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secret;
 
+    @Getter
     @Value("${jwt.access-expiration-ms}")
     private long accessExpirationMs;
 
+    @Getter
     @Value("${jwt.refresh-expiration-ms}")
     private long refreshExpirationMs;
 
@@ -77,4 +80,5 @@ public class JwtTokenProvider {
                 .getPayload();
         return claims.get("id", Long.class);
     }
+
 }

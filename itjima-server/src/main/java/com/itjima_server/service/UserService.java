@@ -2,12 +2,17 @@ package com.itjima_server.service;
 
 import com.itjima_server.domain.Provider;
 import com.itjima_server.domain.User;
+import com.itjima_server.dto.request.UserLoginRequestDTO;
 import com.itjima_server.dto.request.UserRegisterRequestDTO;
+import com.itjima_server.dto.response.UserLoginResponseDTO;
 import com.itjima_server.dto.response.UserResponseDTO;
 import com.itjima_server.exception.DuplicateUserFieldException;
+import com.itjima_server.exception.LoginFailedException;
 import com.itjima_server.exception.NotInsertUserException;
 import com.itjima_server.mapper.UserMapper;
 import com.itjima_server.security.CustomUserDetails;
+import com.itjima_server.security.JwtTokenProvider;
+import io.jsonwebtoken.Jwts;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +36,7 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 신규 사용자 회원가입 처리
@@ -62,5 +68,17 @@ public class UserService {
             throw new NotInsertUserException("회원가입이 정상적으로 되지 않았습니다.");
         }
         return UserResponseDTO.from(user);
+    }
+
+    public UserLoginResponseDTO login(UserLoginRequestDTO req) {
+        User user = userMapper.findByEmail(req.getEmail());
+        if (user == null || !passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+            throw new LoginFailedException("아이디 또는 비밀번호가 틀렸습니다.");
+        }
+
+        String accessToken = jwtTokenProvider.generateAccessToken(user);
+
+        return new UserLoginResponseDTO(accessToken, null, "Bearer",
+                jwtTokenProvider.getAccessExpirationMs());
     }
 }

@@ -40,6 +40,12 @@ public class GlobalExceptionHandler {
                         e.getMessage()));
     }
 
+    @ExceptionHandler(LoginFailedException.class)
+    public ResponseEntity<?> handleLoginFailedException(LoginFailedException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponseDTO.error(HttpStatus.UNAUTHORIZED.value(), e.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleException(Exception e) {
         log.error(e.getMessage(), e);
