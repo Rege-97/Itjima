@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 사용자 관련 비즈니스 로직을 담당하는 서비스 클래스
  *
  * @author Rege-97
- * @since 2025-08-19
+ * @since 2025-08-20
  */
 @Service
 @RequiredArgsConstructor
@@ -40,6 +40,8 @@ public class UserService {
 
     /**
      * 신규 사용자 회원가입 처리
+     * <p>
+     * 이메일과 휴대전화 검증 및 비밀번호 암호화
      *
      * @param req 회원가입 요청 DTO
      * @return 등록된 사용자 응답 DTO
@@ -70,6 +72,14 @@ public class UserService {
         return UserResponseDTO.from(user);
     }
 
+    /**
+     * 로그인 로직
+     * <p>
+     * 액세스 토큰과 리프레쉬 토큰 발급(또는 업데이트)
+     *
+     * @param req 로그인 요청 DTO
+     * @return 로그인된 유저와 토큰 정보
+     */
     @Transactional(rollbackFor = Exception.class)
     public UserLoginResponseDTO login(UserLoginRequestDTO req) {
         User user = userMapper.findByEmail(req.getEmail());
@@ -107,6 +117,14 @@ public class UserService {
                 .build();
     }
 
+    /**
+     * 액세스 토큰 재발급 로직
+     * <p>
+     * 리프레쉬 토큰의 유효성 검사 후 액세스 토큰 재발급
+     *
+     * @param req 요청 받은 리프레쉬 토큰
+     * @return 새로운 액세스 토큰 정보
+     */
     @Transactional(rollbackFor = Exception.class)
     public TokenResponseDTO refreshAccessToken(TokenRefreshRequestDTO req) {
         String refreshTokenString = req.getRefreshToken();
@@ -136,6 +154,13 @@ public class UserService {
                 .build();
     }
 
+    /**
+     * 로그아웃 로직
+     * <p>
+     * 로그아웃 수행 시 리프레쉬 토큰 삭제
+     *
+     * @param id 인증된 유저의 PK
+     */
     @Transactional(rollbackFor = Exception.class)
     public void logout(long id) {
         User user = userMapper.findById(id);
