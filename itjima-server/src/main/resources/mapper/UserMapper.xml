@@ -3,12 +3,12 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.itjima_server.mapper.UserMapper">
-  <select id="findByEmail" resultType="boolean">
+  <select id="existsByEmail" resultType="boolean">
     SELECT COUNT(*) > 0
     FROM USERS
     WHERE email = #{email}
   </select>
-  <select id="findByPhone" resultType="boolean">
+  <select id="existsByPhone" resultType="boolean">
     SELECT COUNT(*) > 0
     FROM USERS
     WHERE phone = #{phone}
@@ -18,4 +18,31 @@
     INSERT INTO USERS (name, email, password, phone, provider)
     VALUES (#{name}, #{email}, #{password}, #{phone}, #{provider})
   </insert>
+
+  <select id="findById" resultType="com.itjima_server.domain.User">
+    SELECT id,
+           name,
+           email,
+           password,
+           phone,
+           created_at,
+           updated_at,
+           provider,
+           provider_id
+    FROM USERS
+    WHERE id = #{id}
+  </select>
+  <select id="findByEmail" resultType="com.itjima_server.domain.User">
+    SELECT id,
+           name,
+           email,
+           password,
+           phone,
+           created_at,
+           updated_at,
+           provider,
+           provider_id
+    FROM USERS
+    WHERE email = #{email}
+  </select>
 </mapper>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itjima_server.mapper.RefreshTokenMapper">
+  <select id="findByToken" resultType="com.itjima_server.domain.RefreshToken">
+    SELECT id, user_id, token, expiry_date
+    FROM REFRESH_TOKENS
+    WHERE token = #{token}
+  </select>
+  <select id="existsByUserId" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM REFRESH_TOKENS
+    WHERE user_id = #{userId}
+  </select>
+  <insert id="insert" parameterType="com.itjima_server.domain.RefreshToken" useGeneratedKeys="true"
+    keyProperty="id">
+    INSERT INTO REFRESH_TOKENS (user_id, token, expiry_date)
+    VALUES (#{userId}, #{token}, #{expiryDate})
+  </insert>
+  <update id="update" parameterType="com.itjima_server.domain.RefreshToken">
+    UPDATE REFRESH_TOKENS
+    SET token       = #{token},
+        expiry_date = #{expiryDate}
+    WHERE user_id = #{userId}
+  </update>
+  <delete id="deleteByUserId">
+    DELETE
+    FROM REFRESH_TOKENS
+    WHERE user_id = #{userId}
+  </delete>
+</mapper>
