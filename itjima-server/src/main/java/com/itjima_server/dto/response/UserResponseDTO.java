@@ -1,5 +1,6 @@
 package com.itjima_server.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.itjima_server.domain.Provider;
 import com.itjima_server.domain.User;
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ public class UserResponseDTO {
     private String name;
     private String email;
     private String phone;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
     private Provider provider;
     private String providerId;
