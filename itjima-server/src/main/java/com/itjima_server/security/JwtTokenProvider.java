@@ -3,7 +3,6 @@ package com.itjima_server.security;
 import com.itjima_server.domain.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
@@ -18,7 +17,7 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.access-expiration-ms")
+    @Value("${jwt.access-expiration-ms}")
     private long accessExpirationMs;
 
     @Value("${jwt.refresh-expiration-ms}")

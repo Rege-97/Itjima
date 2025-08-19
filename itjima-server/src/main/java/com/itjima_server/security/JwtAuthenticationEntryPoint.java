@@ -2,7 +2,6 @@ package com.itjima_server.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itjima_server.common.ApiResponseDTO;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

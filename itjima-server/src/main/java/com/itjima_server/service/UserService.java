@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,10 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @RequiredArgsConstructor
-public class UserService implements UserDetailsService {
+public class UserService {
 
     private final UserMapper userMapper;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 신규 사용자 회원가입 처리
@@ -61,16 +62,5 @@ public class UserService implements UserDetailsService {
             throw new NotInsertUserException("회원가입이 정상적으로 되지 않았습니다.");
         }
         return UserResponseDTO.from(user);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userMapper.findByEmail(email);
-        if (user == null) {
-            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다." + email);
-        }
-        return new CustomUserDetails(user.getId(), user.getEmail(), user.getPassword(),
-                Collections.emptyList());
     }
 }
