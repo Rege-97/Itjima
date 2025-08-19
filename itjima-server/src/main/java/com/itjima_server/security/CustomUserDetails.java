@@ -4,7 +4,6 @@ import java.util.Collection;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Getter
 public class CustomUserDetails extends User {

@@ -1,6 +1,5 @@
 package com.itjima_server.dto.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
