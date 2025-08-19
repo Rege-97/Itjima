@@ -19,13 +19,11 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(CsrfConfigurer::disable)
+        http.csrf(CsrfConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
-                );
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         return http.build();
     }
 
@@ -33,10 +31,11 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration conf = new CorsConfiguration();
 
-        conf.setAllowedOrigins(List.of(
-                "http://localhost:5173", // 예: Vite 프론트엔드
-                "http://localhost:19006" // 예: Expo React Native
-        ));
+        conf.setAllowedOrigins(
+                List.of(
+                        "http://localhost:5173", // 예: Vite 프론트엔드
+                        "http://localhost:19006" // 예: Expo React Native
+                ));
         conf.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         conf.setAllowedHeaders(List.of("*"));
         conf.setAllowCredentials(true);
