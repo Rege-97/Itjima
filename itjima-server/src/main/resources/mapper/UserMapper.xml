@@ -3,7 +3,7 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.itjima_server.mapper.UserMapper">
-  <select id="findByEmail" resultType="string">
+  <select id="findByEmail" resultType="com.itjima_server.domain.Users">
     SELECT id,
            name,
            email,
