@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(DuplicateEmailException.class)
-    public ResponseEntity<?> handleDuplicateEmailException(DuplicateEmailException e) {
+    @ExceptionHandler(DuplicateUserFieldException.class)
+    public ResponseEntity<?> handleDuplicateEmailException(DuplicateUserFieldException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ApiResponseDTO.error(HttpStatus.CONFLICT.value(), e.getMessage()));
     }
