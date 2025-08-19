@@ -1,0 +1,72 @@
+# --- OS 공통 ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# --- 환경/비밀 ---
+.env
+.env.*
+!.env.example
+
+# --- 로그/캐시 ---
+logs/
+*.log
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.eslintcache
+.metro-cache/
+metro-cache/
+.watchman/
+coverage/
+dist/
+build/
+
+# --- Node/React Native ---
+node_modules/
+*.tgz
+
+# Expo
+.expo/
+.expo-shared/
+
+# --- VS Code ---
+.vscode/
+
+# --- IntelliJ / IDEA ---
+.idea/
+*.iml
+out/
+
+# --- Gradle(공통/안드로이드) ---
+.gradle/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# --- Android ---
+android/.gradle/
+android/.idea/
+android/.cxx/
+android/captures/
+android/local.properties
+android/**/build/
+android/app/*.apk
+android/app/*.aab
+android/app/debug.keystore
+
+# --- iOS ---
+ios/build/
+ios/DerivedData/
+ios/*.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+# Pods 선택 옵션(팀/CI에 따라 둘 중 하나만)
+# 1) Pods 커밋 안 함(매 빌드 pod install): 아래 두 줄 주석 해제
+# ios/Pods/
+# ios/Podfile.lock
+# 2) Pods 커밋(재현성↑): 위 두 줄은 주석 유지
+
+# --- 기타 툴 ---
+.tmp/
+.temp/
