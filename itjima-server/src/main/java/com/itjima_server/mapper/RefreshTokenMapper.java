@@ -9,11 +9,11 @@ public interface RefreshTokenMapper {
 
     RefreshToken findByToken(@Param("token") String token);
 
-    RefreshToken findByUserId(@Param("userId") int userId);
+    boolean existsByUserId(@Param("userId") long userId);
 
     void insert(RefreshToken refreshToken);
 
     void update(RefreshToken refreshToken);
 
-    void deleteByUserId(@Param("userId") int userId);
+    void deleteByUserId(@Param("userId") long userId);
 }

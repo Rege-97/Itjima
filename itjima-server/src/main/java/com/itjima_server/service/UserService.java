@@ -1,6 +1,7 @@
 package com.itjima_server.service;
 
 import com.itjima_server.domain.Provider;
+import com.itjima_server.domain.RefreshToken;
 import com.itjima_server.domain.User;
 import com.itjima_server.dto.request.UserLoginRequestDTO;
 import com.itjima_server.dto.request.UserRegisterRequestDTO;
@@ -9,6 +10,7 @@ import com.itjima_server.dto.response.UserResponseDTO;
 import com.itjima_server.exception.DuplicateUserFieldException;
 import com.itjima_server.exception.LoginFailedException;
 import com.itjima_server.exception.NotInsertUserException;
+import com.itjima_server.mapper.RefreshTokenMapper;
 import com.itjima_server.mapper.UserMapper;
 import com.itjima_server.security.JwtTokenProvider;
 import java.time.LocalDateTime;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserMapper userMapper;
+    private final RefreshTokenMapper refreshTokenMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -63,6 +66,7 @@ public class UserService {
         return UserResponseDTO.from(user);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public UserLoginResponseDTO login(UserLoginRequestDTO req) {
         User user = userMapper.findByEmail(req.getEmail());
         if (user == null || !passwordEncoder.matches(req.getPassword(), user.getPassword())) {
@@ -71,7 +75,24 @@ public class UserService {
 
         String accessToken = jwtTokenProvider.generateAccessToken(user);
 
-        return new UserLoginResponseDTO(accessToken, null, "Bearer",
+        String refreshTokenString = jwtTokenProvider.generateRefreshToken(user);
+
+        LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(
+                jwtTokenProvider.getRefreshExpirationMs() / 1000);
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .token(refreshTokenString)
+                .userId(user.getId())
+                .expiryDate(expiryDate)
+                .build();
+
+        if (refreshTokenMapper.existsByUserId(user.getId())) {
+            refreshTokenMapper.update(refreshToken);
+        } else {
+            refreshTokenMapper.insert(refreshToken);
+        }
+
+        return new UserLoginResponseDTO(accessToken, refreshTokenString, "Bearer",
                 jwtTokenProvider.getAccessExpirationMs());
     }
 }

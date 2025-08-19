@@ -8,20 +8,19 @@
     FROM REFRESH_TOKENS
     WHERE token = #{token}
   </select>
-  <select id="findByUserId" resultType="com.itjima_server.domain.RefreshToken">
-    SELECT id, user_id, token, expiry_date
+  <select id="existsByUserId" resultType="boolean">
+    SELECT COUNT(*) > 0
     FROM REFRESH_TOKENS
     WHERE user_id = #{userId}
   </select>
   <insert id="insert" parameterType="com.itjima_server.domain.RefreshToken" useGeneratedKeys="true"
     keyProperty="id">
-    INSERT INTO REFRESH_TOKENS (id, user_id, token, expiry_date)
-    VALUES (#{id}, #{userId}, #{token}, #{expiryDate})
+    INSERT INTO REFRESH_TOKENS (user_id, token, expiry_date)
+    VALUES (#{userId}, #{token}, #{expiryDate})
   </insert>
   <update id="update" parameterType="com.itjima_server.domain.RefreshToken">
     UPDATE REFRESH_TOKENS
-    SET id          = #{id},
-        token       = #{token},
+    SET token       = #{token},
         expiry_date = #{expiryDate}
     WHERE user_id = #{userId}
   </update>
