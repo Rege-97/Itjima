@@ -1,6 +1,6 @@
-package com.itjima_server.service;
+package com.itjima_server.security;
 
-import com.itjima_server.security.JwtTokenProvider;
+import com.itjima_server.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.error(e.getMessage());
             SecurityContextHolder.clearContext();
         }
-        
+
         filterChain.doFilter(request, response);
     }
 
