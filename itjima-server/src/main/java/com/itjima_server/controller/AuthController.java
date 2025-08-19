@@ -1,7 +1,9 @@
 package com.itjima_server.controller;
 
 import com.itjima_server.common.ApiResponseDTO;
+import com.itjima_server.dto.request.UserLoginRequestDTO;
 import com.itjima_server.dto.request.UserRegisterRequestDTO;
+import com.itjima_server.dto.response.UserLoginResponseDTO;
 import com.itjima_server.dto.response.UserResponseDTO;
 import com.itjima_server.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,5 +54,12 @@ public class AuthController {
         UserResponseDTO res = userService.register(req);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponseDTO.success(HttpStatus.CREATED.value(), "회원 가입 성공", res));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@Valid @RequestBody UserLoginRequestDTO req) {
+        UserLoginResponseDTO res = userService.login(req);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "로그인 성공", res));
     }
 }

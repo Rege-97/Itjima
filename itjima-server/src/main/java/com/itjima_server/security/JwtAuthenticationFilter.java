@@ -1,6 +1,5 @@
 package com.itjima_server.security;
 
-import com.itjima_server.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
