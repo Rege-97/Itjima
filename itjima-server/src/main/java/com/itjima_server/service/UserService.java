@@ -4,6 +4,8 @@ import com.itjima_server.domain.Provider;
 import com.itjima_server.domain.User;
 import com.itjima_server.dto.request.UserRegisterRequestDTO;
 import com.itjima_server.dto.response.UserResponseDTO;
+import com.itjima_server.exception.DuplicateEmailException;
+import com.itjima_server.exception.NotInsertUserException;
 import com.itjima_server.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,7 +21,7 @@ public class UserService {
     public UserResponseDTO register(UserRegisterRequestDTO req) {
         User checkUser = userMapper.findByEmail(req.getEmail());
         if (checkUser != null) {
-
+            throw new DuplicateEmailException("이미 사용 중인 이메일입니다.");
         }
         User user = User.builder()
                 .email(req.getEmail())
@@ -31,7 +33,7 @@ public class UserService {
 
         int result = userMapper.insert(user);
         if (result < 1) {
-
+            throw new NotInsertUserException("회원가입이 정상적으로 되지 않았습니다.");
         }
         return UserResponseDTO.from(user);
     }
