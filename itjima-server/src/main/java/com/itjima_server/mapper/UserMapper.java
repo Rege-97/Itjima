@@ -7,14 +7,16 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface UserMapper {
 
-    // 이메일로 사용자 조회
-    boolean findByEmail(@Param("email") String email);
+    // 이메일 중복 검증
+    boolean existsByEmail(@Param("email") String email);
 
-    // 전화번호로 사용자 조회
-    boolean findByPhone(@Param("phone") String phone);
+    // 전화번호 중복 검증
+    boolean existsByPhone(@Param("phone") String phone);
 
     // 회원가입
     int insert(User user);
 
     User findById(@Param("id") Long id);
+
+    User findByEmail(@Param("email") String email);
 }

@@ -7,10 +7,16 @@ import com.itjima_server.dto.response.UserResponseDTO;
 import com.itjima_server.exception.DuplicateUserFieldException;
 import com.itjima_server.exception.NotInsertUserException;
 import com.itjima_server.mapper.UserMapper;
+import com.itjima_server.security.CustomUserDetails;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 사용자 관련 비즈니스 로직을 담당하는 서비스 클래스
@@ -20,7 +26,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -31,12 +37,13 @@ public class UserService {
      * @param req 회원가입 요청 DTO
      * @return 등록된 사용자 응답 DTO
      */
+    @Transactional(rollbackFor = Exception.class)
     public UserResponseDTO register(UserRegisterRequestDTO req) {
-        if (userMapper.findByEmail(req.getEmail())) {
+        if (userMapper.existsByEmail(req.getEmail())) {
             throw new DuplicateUserFieldException("이미 사용 중인 이메일 입니다.");
         }
 
-        if (userMapper.findByPhone(req.getPhone())) {
+        if (userMapper.existsByPhone(req.getPhone())) {
             throw new DuplicateUserFieldException("이미 사용 중인 전화번호 입니다.");
         }
 
@@ -54,5 +61,16 @@ public class UserService {
             throw new NotInsertUserException("회원가입이 정상적으로 되지 않았습니다.");
         }
         return UserResponseDTO.from(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userMapper.findByEmail(email);
+        if (user == null) {
+            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다." + email);
+        }
+        return new CustomUserDetails(user.getId(), user.getEmail(), user.getPassword(),
+                Collections.emptyList());
     }
 }

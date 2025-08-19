@@ -57,8 +57,8 @@ public class UserServiceTest {
         @DisplayName("성공")
         void register_success() {
             // given
-            when(userMapper.findByEmail(req.getEmail())).thenReturn(false);
-            when(userMapper.findByPhone(req.getPhone())).thenReturn(false);
+            when(userMapper.existsByEmail(req.getEmail())).thenReturn(false);
+            when(userMapper.existsByPhone(req.getPhone())).thenReturn(false);
             when(userMapper.insert(any(User.class))).thenReturn(1);
 
             // when
@@ -77,12 +77,12 @@ public class UserServiceTest {
         @DisplayName("실패 - 중복된 이메일")
         void register_fail_when_email_is_duplicate() {
             // given
-            when(userMapper.findByEmail(req.getEmail())).thenReturn(true);
+            when(userMapper.existsByEmail(req.getEmail())).thenReturn(true);
 
             // when & then
             assertThrows(DuplicateUserFieldException.class, () -> userService.register(req));
 
-            verify(userMapper, never()).findByPhone(anyString());
+            verify(userMapper, never()).existsByPhone(anyString());
             verify(userMapper, never()).insert(any(User.class));
         }
 
@@ -90,8 +90,8 @@ public class UserServiceTest {
         @DisplayName("실패 - 중복된 전화번호")
         void register_fail_when_phone_is_duplicate() {
             // given
-            when(userMapper.findByEmail(req.getEmail())).thenReturn(false);
-            when(userMapper.findByPhone(req.getPhone())).thenReturn(true);
+            when(userMapper.existsByEmail(req.getEmail())).thenReturn(false);
+            when(userMapper.existsByPhone(req.getPhone())).thenReturn(true);
 
             // when & then
             assertThrows(DuplicateUserFieldException.class, () -> userService.register(req));
@@ -103,8 +103,8 @@ public class UserServiceTest {
         @DisplayName("실패 - DB 저장 오류")
         void register_fail_when_insert_returns_zero() {
             // given
-            when(userMapper.findByEmail(req.getEmail())).thenReturn(false);
-            when(userMapper.findByPhone(req.getPhone())).thenReturn(false);
+            when(userMapper.existsByEmail(req.getEmail())).thenReturn(false);
+            when(userMapper.existsByPhone(req.getPhone())).thenReturn(false);
             when(userMapper.insert(any(User.class))).thenReturn(0);
 
             // when & then
