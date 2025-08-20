@@ -34,8 +34,8 @@ public class GlobalExceptionHandler {
                 .body(ApiResponseDTO.error(HttpStatus.CONFLICT.value(), e.getMessage()));
     }
 
-    @ExceptionHandler(NotInsertUserException.class)
-    public ResponseEntity<?> handleNotInsertUserException(NotInsertUserException e) {
+    @ExceptionHandler(NotInsertException.class)
+    public ResponseEntity<?> handleNotInsertException(NotInsertException e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponseDTO.error(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                         e.getMessage()));

@@ -11,7 +11,7 @@ public class Item {
     private long id;
     private long userId;
     private ItemType type;
-    private String name;
+    private String title;
     private String description;
     private LocalDateTime createdAt;
 }
