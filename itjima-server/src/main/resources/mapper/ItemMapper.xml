@@ -8,8 +8,8 @@
     INSERT INTO ITEMS (user_id, type, title, description)
     VALUES (#{userId}, #{type}, #{title}, #{description})
   </insert>
-  <select id="findById" resultType="boolean">
-    SELECT id, user_id, type, title, description, created_at
+  <select id="findById" resultType="com.itjima_server.domain.Item">
+    SELECT id, user_id, type, title, description, file_url, file_type, created_at
     FROM ITEMS
     WHERE id = #{id}
   </select>

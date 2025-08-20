@@ -51,8 +51,8 @@ CREATE TABLE IF NOT EXISTS `ITEMS`
     `type`        varchar(8)   NOT NULL COMMENT '구분 (MONEY, OBJECT)',
     `title`       varchar(100) NOT NULL COMMENT '품목명',
     `description` text         NULL COMMENT '설명',
-    `file_url`     varchar(2048) NOT NULL COMMENT '파일 경로',
-    `file_type`    varchar(100)  NOT NULL COMMENT '파일 타입',
+    `file_url`    varchar(2048) COMMENT '파일 경로',
+    `file_type`   varchar(100) COMMENT '파일 타입',
     `created_at`  datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '등록일',
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_items_user` FOREIGN KEY (`user_id`) REFERENCES `USERS` (`id`)
