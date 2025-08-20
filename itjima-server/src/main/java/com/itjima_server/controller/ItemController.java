@@ -6,6 +6,7 @@ import com.itjima_server.dto.request.ItemUpdateRequestDTO;
 import com.itjima_server.dto.response.ItemResponseDTO;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.ItemService;
+import com.itjima_server.util.FileResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/items")
@@ -35,10 +38,17 @@ public class ItemController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@AuthenticationPrincipal CustomUserDetails user,
-            @Valid @RequestBody ItemUpdateRequestDTO req, @PathVariable Long id) {
+            @Valid @RequestBody ItemUpdateRequestDTO req, @PathVariable long id) {
         ItemResponseDTO res = itemService.update(req, user.getId(), id);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 수정 성공", res));
+    }
+
+    @PostMapping("/{id}/file")
+    public ResponseEntity<?> saveImage(@PathVariable long id, @RequestPart MultipartFile img) {
+        FileResult res = itemService.saveImage(id, img);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "이미지 저장 성공", res));
     }
 
 }

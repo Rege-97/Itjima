@@ -34,6 +34,12 @@ public class GlobalExceptionHandler {
                 .body(ApiResponseDTO.error(HttpStatus.BAD_REQUEST.value(), errors));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> illegalArgumentException(IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponseDTO.error(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+    }
+
     @ExceptionHandler(DuplicateUserFieldException.class)
     public ResponseEntity<?> handleDuplicateEmailException(DuplicateUserFieldException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)

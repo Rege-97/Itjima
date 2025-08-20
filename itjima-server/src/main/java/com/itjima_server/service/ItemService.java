@@ -9,10 +9,13 @@ import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.item.NotFoundItemException;
 import com.itjima_server.exception.item.NotInsertItemException;
 import com.itjima_server.mapper.ItemMapper;
+import com.itjima_server.util.FileResult;
+import com.itjima_server.util.FileUtil;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +24,7 @@ public class ItemService {
     private final ItemMapper itemMapper;
 
     @Transactional(rollbackFor = Exception.class)
-    public ItemResponseDTO create(ItemCreateRequestDTO req, Long userId) {
+    public ItemResponseDTO create(ItemCreateRequestDTO req, long userId) {
         Item item = Item.builder()
                 .userId(userId)
                 .type(req.getType())
@@ -40,7 +43,7 @@ public class ItemService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public ItemResponseDTO update(ItemUpdateRequestDTO req, Long userId, Long id) {
+    public ItemResponseDTO update(ItemUpdateRequestDTO req, long userId, Long id) {
         Item item = itemMapper.findById(id);
         if (item == null) {
             throw new NotFoundItemException("해당 물품을 찾을 수 없습니다.");
@@ -52,12 +55,26 @@ public class ItemService {
 
         item.setTitle(req.getTitle());
         item.setDescription(req.getDescription());
-        int result = itemMapper.update(item);
+        int result = itemMapper.updateById(item);
 
         if (result < 1) {
             throw new UpdateFailedException("물품 업데이트 중 알 수 없는 오류가 발생했습니다.");
         }
 
         return ItemResponseDTO.from(item);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public FileResult saveImage(long id, MultipartFile img) {
+        FileResult fileResult = FileUtil.save(img, "items", id);
+
+        Item item = Item.builder()
+                .fileUrl(fileResult.getFileUrl())
+                .fileType(fileResult.getFileType())
+                .build();
+
+        int result = itemMapper.updateFileById(item);
+
+        return fileResult;
     }
 }

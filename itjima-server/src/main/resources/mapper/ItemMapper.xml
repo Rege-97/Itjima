@@ -13,10 +13,18 @@
     FROM ITEMS
     WHERE id = #{id}
   </select>
-  <update id="update" parameterType="com.itjima_server.domain.Item">
+  <update id="updateById" parameterType="com.itjima_server.domain.Item">
     UPDATE ITEMS
     SET title       = #{title},
-        description = #{description}
+        description = #{description},
+        file_url    = #{fileUrl},
+        file_type   = #{fileType}
+    WHERE id = #{id}
+  </update>
+  <update id="updateFileById" parameterType="com.itjima_server.domain.Item">
+    UPDATE ITEMS
+    SET file_url  = #{fileUrl},
+        file_type = #{fileType}
     WHERE id = #{id}
   </update>
 </mapper>

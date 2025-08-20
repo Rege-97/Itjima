@@ -17,10 +17,12 @@ public class ItemResponseDTO {
     private ItemType type;
     private String name;
     private String description;
+    private String fileUrl;
+    private String fileType;
     private LocalDateTime createdAt;
 
     public static ItemResponseDTO from(Item item) {
         return new ItemResponseDTO(item.getId(), item.getUserId(), item.getType(), item.getTitle(),
-                item.getDescription(), item.getCreatedAt());
+                item.getDescription(), item.getFileUrl(), item.getFileType(), item.getCreatedAt());
     }
 }

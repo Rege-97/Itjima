@@ -11,5 +11,7 @@ public interface ItemMapper {
 
     Item findById(@Param("id") Long id);
 
-    int update(Item item);
+    int updateById(Item item);
+
+    int updateFileById(Item item);
 }
