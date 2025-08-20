@@ -13,6 +13,7 @@ import com.itjima_server.util.FileResult;
 import com.itjima_server.util.FileUtil;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 public class ItemService {
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     private final ItemMapper itemMapper;
 
@@ -66,15 +70,31 @@ public class ItemService {
 
     @Transactional(rollbackFor = Exception.class)
     public FileResult saveImage(long id, MultipartFile img) {
-        FileResult fileResult = FileUtil.save(img, "items", id);
 
-        Item item = Item.builder()
-                .fileUrl(fileResult.getFileUrl())
-                .fileType(fileResult.getFileType())
-                .build();
+        FileResult fileResult = FileUtil.save(img, "items", id, uploadDir);
 
-        int result = itemMapper.updateFileById(item);
+        if (fileResult == null) {
+            throw new IllegalArgumentException("이미지 파일이 유효하지 않습니다.");
+        }
 
-        return fileResult;
+        try {
+            Item item = Item.builder()
+                    .id(id)
+                    .fileUrl(fileResult.getFileUrl())
+                    .fileType(fileResult.getFileType())
+                    .build();
+
+            int result = itemMapper.updateFileById(item);
+
+            if (result < 1) {
+                throw new UpdateFailedException("물품 이미지 정보 업데이트에 실패했습니다.");
+            }
+
+            return fileResult;
+
+        } catch (Exception e) {
+            FileUtil.delete(fileResult.getFileUrl(), uploadDir);
+            throw e;
+        }
     }
 }
