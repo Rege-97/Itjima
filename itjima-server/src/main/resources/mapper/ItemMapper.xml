@@ -8,4 +8,15 @@
     INSERT INTO ITEMS (user_id, type, title, description)
     VALUES (#{userId}, #{type}, #{title}, #{description})
   </insert>
+  <select id="existsById" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM ITEMS
+    WHERE id = #{id}
+  </select>
+  <update id="update" parameterType="com.itjima_server.domain.Item">
+    UPDATE ITEMS
+    SET title       = #{title},
+        description = #{description}
+    WHERE id = #{id}
+  </update>
 </mapper>
