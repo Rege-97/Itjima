@@ -3,7 +3,7 @@ package com.itjima_server.service;
 import com.itjima_server.domain.Item;
 import com.itjima_server.dto.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.response.ItemResponseDTO;
-import com.itjima_server.exception.NotInsertItemException;
+import com.itjima_server.exception.item.NotInsertItemException;
 import com.itjima_server.mapper.ItemMapper;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;

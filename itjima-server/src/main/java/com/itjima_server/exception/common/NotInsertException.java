@@ -1,4 +1,4 @@
-package com.itjima_server.exception;
+package com.itjima_server.exception.common;
 
 public class NotInsertException extends RuntimeException {
 

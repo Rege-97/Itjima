@@ -1,4 +1,6 @@
-package com.itjima_server.exception;
+package com.itjima_server.exception.item;
+
+import com.itjima_server.exception.common.NotInsertException;
 
 public class NotInsertItemException extends NotInsertException {
 

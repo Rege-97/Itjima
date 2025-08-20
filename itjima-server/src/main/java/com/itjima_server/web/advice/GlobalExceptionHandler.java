@@ -1,6 +1,10 @@
-package com.itjima_server.exception;
+package com.itjima_server.web.advice;
 
 import com.itjima_server.common.ApiResponseDTO;
+import com.itjima_server.exception.user.DuplicateUserFieldException;
+import com.itjima_server.exception.user.InvalidRefreshTokenException;
+import com.itjima_server.exception.user.LoginFailedException;
+import com.itjima_server.exception.common.NotInsertException;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
