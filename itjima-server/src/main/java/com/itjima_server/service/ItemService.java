@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ItemService {
 
-    private ItemMapper itemMapper;
+    private final ItemMapper itemMapper;
 
     @Transactional(rollbackFor = Exception.class)
     public ItemResponseDTO create(ItemCreateRequestDTO req, Long userId) {

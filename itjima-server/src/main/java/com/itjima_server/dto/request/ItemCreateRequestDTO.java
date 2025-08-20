@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class ItemCreateRequestDTO {
 
-    @NotNull
+    @NotNull(message = "타입은 비어 있을 수 없습니다.")
     private ItemType type;
 
     @NotBlank(message = "제목은 비어 있을 수 없습니다.")
