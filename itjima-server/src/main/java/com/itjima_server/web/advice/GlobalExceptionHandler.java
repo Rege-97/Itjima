@@ -1,6 +1,12 @@
-package com.itjima_server.exception;
+package com.itjima_server.web.advice;
 
 import com.itjima_server.common.ApiResponseDTO;
+import com.itjima_server.exception.common.NotAuthorException;
+import com.itjima_server.exception.common.NotFoundException;
+import com.itjima_server.exception.user.DuplicateUserFieldException;
+import com.itjima_server.exception.user.InvalidRefreshTokenException;
+import com.itjima_server.exception.user.LoginFailedException;
+import com.itjima_server.exception.common.NotInsertException;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -28,14 +34,20 @@ public class GlobalExceptionHandler {
                 .body(ApiResponseDTO.error(HttpStatus.BAD_REQUEST.value(), errors));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> illegalArgumentException(IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponseDTO.error(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+    }
+
     @ExceptionHandler(DuplicateUserFieldException.class)
     public ResponseEntity<?> handleDuplicateEmailException(DuplicateUserFieldException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ApiResponseDTO.error(HttpStatus.CONFLICT.value(), e.getMessage()));
     }
 
-    @ExceptionHandler(NotInsertUserException.class)
-    public ResponseEntity<?> handleNotInsertUserException(NotInsertUserException e) {
+    @ExceptionHandler(NotInsertException.class)
+    public ResponseEntity<?> handleNotInsertException(NotInsertException e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponseDTO.error(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                         e.getMessage()));
@@ -57,6 +69,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleUsernameNotFoundException(UsernameNotFoundException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ApiResponseDTO.error(HttpStatus.UNAUTHORIZED.value(), e.getMessage()));
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<?> handleNotFoundException(NotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponseDTO.error(HttpStatus.NOT_FOUND.value(), e.getMessage()));
+    }
+
+    @ExceptionHandler(NotAuthorException.class)
+    public ResponseEntity<?> handleNotAuthorException(NotAuthorException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponseDTO.error(HttpStatus.FORBIDDEN.value(), e.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
