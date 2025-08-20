@@ -8,8 +8,8 @@
     INSERT INTO ITEMS (user_id, type, title, description)
     VALUES (#{userId}, #{type}, #{title}, #{description})
   </insert>
-  <select id="existsById" resultType="boolean">
-    SELECT COUNT(*) > 0
+  <select id="findById" resultType="boolean">
+    SELECT id, user_id, type, title, description, created_at
     FROM ITEMS
     WHERE id = #{id}
   </select>

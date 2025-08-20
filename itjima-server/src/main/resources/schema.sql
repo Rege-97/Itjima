@@ -51,6 +51,8 @@ CREATE TABLE IF NOT EXISTS `ITEMS`
     `type`        varchar(8)   NOT NULL COMMENT '구분 (MONEY, OBJECT)',
     `title`       varchar(100) NOT NULL COMMENT '품목명',
     `description` text         NULL COMMENT '설명',
+    `file_url`     varchar(2048) NOT NULL COMMENT '파일 경로',
+    `file_type`    varchar(100)  NOT NULL COMMENT '파일 타입',
     `created_at`  datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '등록일',
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_items_user` FOREIGN KEY (`user_id`) REFERENCES `USERS` (`id`)
@@ -113,19 +115,6 @@ CREATE TABLE IF NOT EXISTS `SCHEDULES`
     CONSTRAINT `fk_schedules_agreement` FOREIGN KEY (`agreement_id`) REFERENCES `AGREEMENTS` (`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='일정/리마인드';
-
--- 첨부/증빙 테이블
-CREATE TABLE IF NOT EXISTS `ATTACHMENTS`
-(
-    `id`           bigint        NOT NULL AUTO_INCREMENT COMMENT 'ID',
-    `agreement_id` bigint        NOT NULL COMMENT '대여ID',
-    `file_url`     varchar(2048) NOT NULL COMMENT '파일 경로',
-    `file_type`    varchar(100)  NOT NULL COMMENT '파일 타입',
-    `created_at`   datetime      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '업로드일시',
-    PRIMARY KEY (`id`),
-    CONSTRAINT `fk_attachments_agreement` FOREIGN KEY (`agreement_id`) REFERENCES `AGREEMENTS` (`id`) ON DELETE CASCADE
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4 COMMENT ='첨부/증빙';
 
 -- 알림 테이블
 CREATE TABLE IF NOT EXISTS `NOTIFICATIONS`

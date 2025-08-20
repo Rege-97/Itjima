@@ -9,7 +9,7 @@ public interface ItemMapper {
 
     int insert(Item item);
 
-    boolean existsById(@Param("id") Long id);
+    Item findById(@Param("id") Long id);
 
     int update(Item item);
 }
