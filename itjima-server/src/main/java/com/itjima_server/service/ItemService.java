@@ -1,5 +1,6 @@
 package com.itjima_server.service;
 
+import com.itjima_server.common.PagedResultDTO;
 import com.itjima_server.domain.Item;
 import com.itjima_server.dto.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.request.ItemUpdateRequestDTO;
@@ -12,6 +13,9 @@ import com.itjima_server.mapper.ItemMapper;
 import com.itjima_server.util.FileResult;
 import com.itjima_server.util.FileUtil;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -96,5 +100,29 @@ public class ItemService {
             FileUtil.delete(fileResult.getFileUrl(), uploadDir);
             throw e;
         }
+    }
+
+    public PagedResultDTO<?> getList(Long userId, Long lastId, int size) {
+        int sizePlusOne = size + 1;
+        List<Item> itemList = itemMapper.findByUserId(userId, lastId, sizePlusOne);
+
+        if (itemList == null || itemList.isEmpty()) {
+            return PagedResultDTO.from(null, false, null);
+        }
+        boolean hasNext = false;
+        if (itemList.size() == sizePlusOne) {
+            hasNext = true;
+            itemList.remove(size);
+        }
+
+        List<ItemResponseDTO> items = new ArrayList<ItemResponseDTO>();
+
+        for (Item item : itemList) {
+            items.add(ItemResponseDTO.from(item));
+        }
+
+        lastId = itemList.get(itemList.size() - 1).getId();
+
+        return PagedResultDTO.from(items, hasNext, lastId);
     }
 }

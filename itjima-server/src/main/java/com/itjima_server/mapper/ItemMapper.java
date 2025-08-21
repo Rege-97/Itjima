@@ -1,6 +1,7 @@
 package com.itjima_server.mapper;
 
 import com.itjima_server.domain.Item;
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -15,6 +16,6 @@ public interface ItemMapper {
 
     int updateFileById(Item item);
 
-    Item findByUserId(@Param("userId") Long userId, @Param("lastId") Long lastId,
-            @Param("size") int size);
+    List<Item> findByUserId(@Param("userId") Long userId, @Param("lastId") Long lastId,
+            @Param("sizePlusOne") int sizePlusOne);
 }

@@ -1,6 +1,7 @@
 package com.itjima_server.controller;
 
 import com.itjima_server.common.ApiResponseDTO;
+import com.itjima_server.common.PagedResultDTO;
 import com.itjima_server.dto.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.request.ItemUpdateRequestDTO;
 import com.itjima_server.dto.response.ItemResponseDTO;
@@ -12,11 +13,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,5 +53,15 @@ public class ItemController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "이미지 저장 성공", res));
     }
+
+    @GetMapping
+    public ResponseEntity<?> getList(@RequestParam(required = false) Long lastId,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        PagedResultDTO<?> res = itemService.getList(user.getId(), lastId, size);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 목록 조회 성공", res));
+    }
+
 
 }

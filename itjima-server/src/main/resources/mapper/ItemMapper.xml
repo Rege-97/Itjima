@@ -43,6 +43,6 @@
       AND id &lt; #{lastId}
     </if>
     ORDER by id DESC
-    LIMIT #{size}
+    LIMIT #{sizePlusOne}
   </select>
 </mapper>
