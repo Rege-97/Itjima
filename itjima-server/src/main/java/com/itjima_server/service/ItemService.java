@@ -114,7 +114,7 @@ public class ItemService {
             itemList.remove(size);
         }
 
-        List<ItemResponseDTO> items = new ArrayList<ItemResponseDTO>();
+        List<ItemResponseDTO> items = new ArrayList<>();
 
         for (Item item : itemList) {
             items.add(ItemResponseDTO.from(item));

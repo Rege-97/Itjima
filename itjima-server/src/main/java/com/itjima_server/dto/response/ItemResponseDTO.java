@@ -15,7 +15,7 @@ public class ItemResponseDTO {
     private long id;
     private long userId;
     private ItemType type;
-    private String name;
+    private String title;
     private String description;
     private String fileUrl;
     private String fileType;
