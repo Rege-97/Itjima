@@ -63,5 +63,13 @@ public class ItemController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 목록 조회 성공", res));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> get(@PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        ItemResponseDTO res = itemService.get(id, user.getId());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 조회 성공", res));
+    }
+
 
 }
