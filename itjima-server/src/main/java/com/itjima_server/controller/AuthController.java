@@ -1,12 +1,12 @@
 package com.itjima_server.controller;
 
 import com.itjima_server.common.ApiResponseDTO;
-import com.itjima_server.dto.request.TokenRefreshRequestDTO;
-import com.itjima_server.dto.request.UserLoginRequestDTO;
-import com.itjima_server.dto.request.UserRegisterRequestDTO;
-import com.itjima_server.dto.response.TokenResponseDTO;
-import com.itjima_server.dto.response.UserLoginResponseDTO;
-import com.itjima_server.dto.response.UserResponseDTO;
+import com.itjima_server.dto.user.request.TokenRefreshRequestDTO;
+import com.itjima_server.dto.user.request.UserLoginRequestDTO;
+import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
+import com.itjima_server.dto.user.response.TokenResponseDTO;
+import com.itjima_server.dto.user.response.UserLoginResponseDTO;
+import com.itjima_server.dto.user.response.UserResponseDTO;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;

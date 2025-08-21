@@ -1,4 +1,4 @@
-package com.itjima_server.dto.response;
+package com.itjima_server.dto.user.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -8,17 +8,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-@Schema(description = "로그인 응답 DTO")
-public class UserLoginResponseDTO {
-
-    @Schema(description = "사용자 ID", example = "1")
-    private long id;
-
-    @Schema(description = "사용자 이름", example = "홍길동")
-    private String name;
-
-    @Schema(description = "사용자 이메일", example = "test@example.com")
-    private String email;
+@Schema(description = "토큰 정보 응답 DTO")
+public class TokenResponseDTO {
 
     @Schema(description = "액세스 토큰", example = "eyJhbGciOiJIUzI1NiJ9...")
     private String accessToken;

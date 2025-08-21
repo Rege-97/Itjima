@@ -1,4 +1,4 @@
-package com.itjima_server.dto.response;
+package com.itjima_server.dto.item.response;
 
 import com.itjima_server.domain.Item;
 import com.itjima_server.domain.ItemType;

@@ -10,12 +10,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itjima_server.domain.ItemType;
-import com.itjima_server.dto.request.ItemCreateRequestDTO;
-import com.itjima_server.dto.request.ItemUpdateRequestDTO;
-import com.itjima_server.dto.request.UserLoginRequestDTO;
-import com.itjima_server.dto.request.UserRegisterRequestDTO;
-import com.itjima_server.dto.response.ItemResponseDTO;
-import com.itjima_server.dto.response.UserLoginResponseDTO;
+import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
+import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
+import com.itjima_server.dto.user.request.UserLoginRequestDTO;
+import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
+import com.itjima_server.dto.item.response.ItemResponseDTO;
+import com.itjima_server.dto.user.response.UserLoginResponseDTO;
 import com.itjima_server.service.ItemService;
 import com.itjima_server.service.UserService;
 import org.junit.jupiter.api.BeforeEach;

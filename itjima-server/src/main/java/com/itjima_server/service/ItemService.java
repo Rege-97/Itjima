@@ -2,9 +2,9 @@ package com.itjima_server.service;
 
 import com.itjima_server.common.PagedResultDTO;
 import com.itjima_server.domain.Item;
-import com.itjima_server.dto.request.ItemCreateRequestDTO;
-import com.itjima_server.dto.request.ItemUpdateRequestDTO;
-import com.itjima_server.dto.response.ItemResponseDTO;
+import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
+import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
+import com.itjima_server.dto.item.response.ItemResponseDTO;
 import com.itjima_server.exception.common.NotAuthorException;
 import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.item.NotFoundItemException;

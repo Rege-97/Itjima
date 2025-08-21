@@ -1,4 +1,4 @@
-package com.itjima_server.dto.response;
+package com.itjima_server.dto.user.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.itjima_server.domain.Provider;

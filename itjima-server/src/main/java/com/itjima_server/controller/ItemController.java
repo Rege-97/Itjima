@@ -2,9 +2,9 @@ package com.itjima_server.controller;
 
 import com.itjima_server.common.ApiResponseDTO;
 import com.itjima_server.common.PagedResultDTO;
-import com.itjima_server.dto.request.ItemCreateRequestDTO;
-import com.itjima_server.dto.request.ItemUpdateRequestDTO;
-import com.itjima_server.dto.response.ItemResponseDTO;
+import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
+import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
+import com.itjima_server.dto.item.response.ItemResponseDTO;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.ItemService;
 import com.itjima_server.util.FileResult;
