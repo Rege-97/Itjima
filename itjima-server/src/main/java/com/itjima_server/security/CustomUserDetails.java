@@ -8,10 +8,10 @@ import org.springframework.security.core.userdetails.User;
 @Getter
 public class CustomUserDetails extends User {
 
-    private final long id;
+    private final Long id;
     private final String email;
 
-    public CustomUserDetails(long id, String email, String password,
+    public CustomUserDetails(Long id, String email, String password,
             Collection<? extends GrantedAuthority> authorities) {
         super(email, password, authorities);
         this.id = id;

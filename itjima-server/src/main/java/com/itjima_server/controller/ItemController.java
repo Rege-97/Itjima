@@ -41,14 +41,14 @@ public class ItemController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@AuthenticationPrincipal CustomUserDetails user,
-            @Valid @RequestBody ItemUpdateRequestDTO req, @PathVariable long id) {
+            @Valid @RequestBody ItemUpdateRequestDTO req, @PathVariable Long id) {
         ItemResponseDTO res = itemService.update(req, user.getId(), id);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 수정 성공", res));
     }
 
     @PostMapping("/{id}/file")
-    public ResponseEntity<?> saveImage(@PathVariable long id, @RequestPart MultipartFile img) {
+    public ResponseEntity<?> saveImage(@PathVariable Long id, @RequestPart MultipartFile img) {
         FileResult res = itemService.saveImage(id, img);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "이미지 저장 성공", res));

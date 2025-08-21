@@ -162,7 +162,7 @@ public class UserService {
      * @param id 인증된 유저의 PK
      */
     @Transactional(rollbackFor = Exception.class)
-    public void logout(long id) {
+    public void logout(Long id) {
         User user = userMapper.findById(id);
         if (user == null) {
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다.");

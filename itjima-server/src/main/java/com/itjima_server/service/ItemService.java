@@ -32,7 +32,7 @@ public class ItemService {
     private final ItemMapper itemMapper;
 
     @Transactional(rollbackFor = Exception.class)
-    public ItemResponseDTO create(ItemCreateRequestDTO req, long userId) {
+    public ItemResponseDTO create(ItemCreateRequestDTO req, Long userId) {
         Item item = Item.builder()
                 .userId(userId)
                 .type(req.getType())
@@ -51,7 +51,7 @@ public class ItemService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public ItemResponseDTO update(ItemUpdateRequestDTO req, long userId, Long id) {
+    public ItemResponseDTO update(ItemUpdateRequestDTO req, Long userId, Long id) {
         Item item = itemMapper.findById(id);
         if (item == null) {
             throw new NotFoundItemException("해당 물품을 찾을 수 없습니다.");
@@ -73,7 +73,7 @@ public class ItemService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public FileResult saveImage(long id, MultipartFile img) {
+    public FileResult saveImage(Long id, MultipartFile img) {
 
         FileResult fileResult = FileUtil.save(img, "items", id, uploadDir);
 
@@ -124,5 +124,18 @@ public class ItemService {
         lastId = itemList.get(itemList.size() - 1).getId();
 
         return PagedResultDTO.from(items, hasNext, lastId);
+    }
+
+    public ItemResponseDTO get(Long id, Long userId) {
+        Item item = itemMapper.findById(id);
+        if (item == null) {
+            throw new NotFoundItemException("해당 물품을 찾을 수 없습니다.");
+        }
+
+        if (item.getUserId() != userId) {
+            throw new NotAuthorException("로그인한 사용자의 물품이 아닙니다.");
+        }
+
+        return ItemResponseDTO.from(item);
     }
 }
