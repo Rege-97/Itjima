@@ -56,8 +56,10 @@ public class AuthController {
             @ApiResponse(responseCode = "201", description = "회원가입 성공",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = UserResponseDTO.class))),
-            @ApiResponse(responseCode = "400", description = "요청 검증 실패"),
-            @ApiResponse(responseCode = "409", description = "중복 이메일/전화번호")
+            @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "409", description = "중복 이메일/전화번호",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
     })
     @PostMapping("/signup")
     public ResponseEntity<?> register(@Valid @RequestBody UserRegisterRequestDTO req) {
@@ -80,8 +82,10 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "로그인 성공",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = UserLoginResponseDTO.class))),
-            @ApiResponse(responseCode = "400", description = "요청 검증 실패"),
-            @ApiResponse(responseCode = "401", description = "인증 실패")
+            @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "401", description = "인증 실패",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
     })
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody UserLoginRequestDTO req) {
@@ -104,8 +108,10 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "재발급 성공",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = TokenResponseDTO.class))),
-            @ApiResponse(responseCode = "400", description = "요청 검증 실패"),
-            @ApiResponse(responseCode = "401", description = "리프레시 토큰 무효/만료")
+            @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "401", description = "리프레시 토큰 무효/만료",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
     })
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshAccessToken(@Valid @RequestBody TokenRefreshRequestDTO req) {
@@ -126,8 +132,10 @@ public class AuthController {
             security = {@SecurityRequirement(name = "bearerAuth")} // Swagger UI의 Authorize 버튼과 연동
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
-            @ApiResponse(responseCode = "401", description = "인증 필요")
+            @ApiResponse(responseCode = "200", description = "로그아웃 성공",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "401", description = "인증 필요",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
     })
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails user) {
