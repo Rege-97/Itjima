@@ -1,5 +1,6 @@
 package com.itjima_server.dto.item.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.itjima_server.domain.Item;
 import com.itjima_server.domain.ItemType;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -36,6 +37,7 @@ public class ItemResponseDTO {
     private String fileType;
 
     @Schema(description = "등록일시", example = "2025-08-22 13:45:10")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
 
