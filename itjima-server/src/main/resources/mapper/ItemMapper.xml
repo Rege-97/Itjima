@@ -9,7 +9,15 @@
     VALUES (#{userId}, #{type}, #{title}, #{description})
   </insert>
   <select id="findById" resultType="com.itjima_server.domain.Item">
-    SELECT id, user_id, type, title, description, file_url, file_type, created_at
+    SELECT id,
+           user_id,
+           type,
+           title,
+           description,
+           status,
+           file_url,
+           file_type,
+           created_at
     FROM ITEMS
     WHERE id = #{id}
   </select>
@@ -45,4 +53,9 @@
     ORDER by id DESC
     LIMIT #{sizePlusOne}
   </select>
+  <update id="updateStatusById">
+    UPDATE ITEMS
+    SET status = #{status}
+    WHERE id = #{id}
+  </update>
 </mapper>

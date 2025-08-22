@@ -2,6 +2,7 @@ package com.itjima_server.service;
 
 import com.itjima_server.common.PagedResultDTO;
 import com.itjima_server.domain.Item;
+import com.itjima_server.domain.ItemStatus;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;
@@ -50,6 +51,7 @@ public class ItemService {
                 .type(req.getType())
                 .title(req.getTitle())
                 .description(req.getDescription())
+                .status(ItemStatus.AVAILABLE)
                 .createdAt(LocalDateTime.now())
                 .build();
 

@@ -1,6 +1,7 @@
 package com.itjima_server.web.advice;
 
 import com.itjima_server.common.ApiResponseDTO;
+import com.itjima_server.exception.common.InvalidStateException;
 import com.itjima_server.exception.common.NotAuthorException;
 import com.itjima_server.exception.common.NotFoundException;
 import com.itjima_server.exception.user.DuplicateUserFieldException;
@@ -81,6 +82,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleNotAuthorException(NotAuthorException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ApiResponseDTO.error(HttpStatus.FORBIDDEN.value(), e.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidStateException.class)
+    public ResponseEntity<?> handleInvalidStateException(InvalidStateException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponseDTO.error(HttpStatus.CONFLICT.value(), e.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

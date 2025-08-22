@@ -13,6 +13,7 @@ public class Item {
     private ItemType type;
     private String title;
     private String description;
+    private ItemStatus status;
     private String fileUrl;
     private String fileType;
     private LocalDateTime createdAt;
