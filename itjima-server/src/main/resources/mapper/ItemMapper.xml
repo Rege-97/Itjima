@@ -27,4 +27,22 @@
         file_type = #{fileType}
     WHERE id = #{id}
   </update>
+  <select id="findByUserId" resultType="com.itjima_server.domain.Item">
+    SELECT id,
+    user_id,
+    type,
+    title,
+    description,
+    file_url,
+    file_type,
+    created_at
+    FROM ITEMS
+    WHERE
+    user_id = #{userId}
+    <if test="lastId != null">
+      AND id &lt; #{lastId}
+    </if>
+    ORDER by id DESC
+    LIMIT #{sizePlusOne}
+  </select>
 </mapper>

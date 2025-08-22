@@ -3,12 +3,12 @@ package com.itjima_server.service;
 import com.itjima_server.domain.Provider;
 import com.itjima_server.domain.RefreshToken;
 import com.itjima_server.domain.User;
-import com.itjima_server.dto.request.TokenRefreshRequestDTO;
-import com.itjima_server.dto.request.UserLoginRequestDTO;
-import com.itjima_server.dto.request.UserRegisterRequestDTO;
-import com.itjima_server.dto.response.TokenResponseDTO;
-import com.itjima_server.dto.response.UserLoginResponseDTO;
-import com.itjima_server.dto.response.UserResponseDTO;
+import com.itjima_server.dto.user.request.TokenRefreshRequestDTO;
+import com.itjima_server.dto.user.request.UserLoginRequestDTO;
+import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
+import com.itjima_server.dto.user.response.TokenResponseDTO;
+import com.itjima_server.dto.user.response.UserLoginResponseDTO;
+import com.itjima_server.dto.user.response.UserResponseDTO;
 import com.itjima_server.exception.user.DuplicateUserFieldException;
 import com.itjima_server.exception.user.InvalidRefreshTokenException;
 import com.itjima_server.exception.user.LoginFailedException;
@@ -162,7 +162,7 @@ public class UserService {
      * @param id 인증된 유저의 PK
      */
     @Transactional(rollbackFor = Exception.class)
-    public void logout(long id) {
+    public void logout(Long id) {
         User user = userMapper.findById(id);
         if (user == null) {
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다.");
