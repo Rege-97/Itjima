@@ -6,5 +6,5 @@ public enum AgreementStatus {
     REJECTED,
     COMPLETED,
     CANCELLED,
-    OVERDUE;
+    OVERDUE
 }
