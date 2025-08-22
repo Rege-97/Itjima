@@ -10,7 +10,7 @@ public interface AgreementMapper {
 
     int insert(Agreement agreement);
 
-    Agreement findById(@Param("id") int id);
+    Agreement findById(@Param("id") Long id);
 
-    int updateStatusById(@Param("status") AgreementStatus status);
+    int updateStatusById(@Param("id")Long id, @Param("status") AgreementStatus status);
 }

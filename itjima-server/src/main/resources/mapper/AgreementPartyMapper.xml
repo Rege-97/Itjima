@@ -8,11 +8,10 @@
     INSERT INTO AGREEMENT_PARTIES (agreement_id, user_id, role, confirm_at)
     VALUES (#{agreementId}, ${userId}, #{role}, #{confirmAt})
   </insert>
-  <select id="findByAgreementIdAndRole" resultType="com.itjima_server.domain.AgreementParty">
+  <select id="findByAgreementId" resultType="com.itjima_server.domain.AgreementParty">
     SELECT id, agreement_id, user_id, role, confirm_at
     FROM AGREEMENT_PARTIES
     WHERE agreement_id = #{agreementId}
-      AND role = #{role}
   </select>
   <update id="updateConfirmedAtById">
     UPDATE AGREEMENT_PARTIES

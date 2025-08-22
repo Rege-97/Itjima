@@ -11,9 +11,11 @@ import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementPartyInfoDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
 import com.itjima_server.dto.user.response.UserSimpleInfoDTO;
+import com.itjima_server.exception.agreement.NotFoundAgreementException;
 import com.itjima_server.exception.agreement.NotInsertAgreementException;
 import com.itjima_server.exception.common.InvalidStateException;
 import com.itjima_server.exception.common.NotAuthorException;
+import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.item.NotFoundItemException;
 import com.itjima_server.exception.user.NotFoundUserException;
 import com.itjima_server.mapper.AgreementMapper;
@@ -21,6 +23,7 @@ import com.itjima_server.mapper.AgreementPartyMapper;
 import com.itjima_server.mapper.ItemMapper;
 import com.itjima_server.mapper.UserMapper;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,15 +38,15 @@ public class AgreementService {
     private final ItemMapper itemMapper;
 
     @Transactional(rollbackFor = Exception.class)
-    public AgreementResponseDTO create(long userId, AgreementCreateRequestDTO req) {
+    public AgreementResponseDTO create(Long userId, AgreementCreateRequestDTO req) {
         // 사용자 검증
         if (userId == req.getDebtorUserId()) {
             throw new InvalidStateException("자기 자신에게 대여 요청을 보낼 수 없습니다.");
         }
 
         User creditorUser = userMapper.findById(userId);
-        User debitorUser = userMapper.findById(req.getDebtorUserId());
-        if (debitorUser == null) {
+        User debtorUser = userMapper.findById(req.getDebtorUserId());
+        if (debtorUser == null) {
             throw new NotFoundUserException("상대방 사용자를 찾을 수 없습니다.");
         }
 
@@ -71,7 +74,7 @@ public class AgreementService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        checkInsertAndUpdateResult(agreementMapper.insert(agreement), "대여 계약 등록에 실패했습니다.");
+        checkInsertResult(agreementMapper.insert(agreement), "대여 계약 등록에 실패했습니다.");
 
         // 채권자 생성
         AgreementParty agreementPartyCreditor = AgreementParty.builder()
@@ -81,7 +84,7 @@ public class AgreementService {
                 .confirmAt(LocalDateTime.now())
                 .build();
 
-        checkInsertAndUpdateResult(agreementPartyMapper.insert(agreementPartyCreditor),
+        checkInsertResult(agreementPartyMapper.insert(agreementPartyCreditor),
                 "채권자 정보 등록에 실패했습니다.");
 
         // 채무자 생성
@@ -91,24 +94,94 @@ public class AgreementService {
                 .role(AgreementPartyRole.DEBTOR)
                 .build();
 
-        checkInsertAndUpdateResult(agreementPartyMapper.insert(agreementPartyDebtor),
+        checkInsertResult(agreementPartyMapper.insert(agreementPartyDebtor),
                 "채무자 정보 등록에 실패했습니다.");
 
-        checkInsertAndUpdateResult(
+        checkUpdateResult(
                 itemMapper.updateStatusById(item.getId(), ItemStatus.PENDING_APPROVAL),
                 "물품 상태 변경에 실패했습니다.");
 
         AgreementPartyInfoDTO creditor = AgreementPartyInfoDTO.from(agreementPartyCreditor,
                 UserSimpleInfoDTO.from(creditorUser));
         AgreementPartyInfoDTO debtor = AgreementPartyInfoDTO.from(agreementPartyDebtor,
-                UserSimpleInfoDTO.from(debitorUser));
+                UserSimpleInfoDTO.from(debtorUser));
 
         return AgreementResponseDTO.from(agreement, creditor, debtor);
     }
 
-    private void checkInsertAndUpdateResult(int result, String errorMessage) {
+    @Transactional(rollbackFor = Exception.class)
+    public AgreementResponseDTO accept(Long userId, Long agreementId) {
+        // 대여 검증
+        Agreement agreement = agreementMapper.findById(agreementId);
+        if (agreement == null) {
+            throw new NotFoundAgreementException("해당 대여 요청을 찾을 수 없습니다.");
+        }
+
+        if (agreement.getStatus() != AgreementStatus.PENDING) {
+            throw new InvalidStateException("해당 대여는 승인 대기 중이 아닙니다.");
+        }
+
+        // 대여 참여자 검증
+        List<AgreementParty> agreementParties = agreementPartyMapper.findByAgreementId(agreementId);
+
+        if (agreementParties == null || agreementParties.size() != 2) {
+            throw new NotFoundAgreementException("해당 대여의 사용자들을 찾을 수 없습니다.");
+        }
+
+        AgreementParty agreementPartyCreditor = null;
+        AgreementParty agreementPartyDebtor = null;
+
+        for (AgreementParty agreementParty : agreementParties) {
+            if (agreementParty.getRole() == AgreementPartyRole.CREDITOR) {
+                agreementPartyCreditor = agreementParty;
+            } else {
+                agreementPartyDebtor = agreementParty;
+            }
+        }
+
+        if (agreementPartyCreditor == null || agreementPartyDebtor == null) {
+            throw new InvalidStateException("계약 참여자 정보 구성이 올바르지 않습니다.");
+        }
+
+        if (agreementPartyDebtor.getUserId() != userId) {
+            throw new NotAuthorException("로그인한 사용자의 대여 요청이 아닙니다.");
+        }
+
+        // 승인 처리
+        agreement.setStatus(AgreementStatus.ACCEPTED);
+        checkUpdateResult(
+                agreementMapper.updateStatusById(agreementId, agreement.getStatus()),
+                "대여 상태 변경에 실패했습니다.");
+
+        agreementPartyDebtor.setConfirmAt(LocalDateTime.now());
+        checkUpdateResult(
+                agreementPartyMapper.updateConfirmedAtById(agreementPartyDebtor.getId(),
+                        agreementPartyDebtor.getConfirmAt()), "대여 승인 등록에 실패했습니다.");
+
+        checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.ON_LOAN),
+                "물품 상태 변경에 실패했습니다.");
+
+        User creditorUser = userMapper.findById(agreementPartyCreditor.getUserId());
+        User debtorUser = userMapper.findById(agreementPartyDebtor.getUserId());
+
+        AgreementPartyInfoDTO creditor = AgreementPartyInfoDTO.from(agreementPartyCreditor,
+                UserSimpleInfoDTO.from(creditorUser));
+        AgreementPartyInfoDTO debtor = AgreementPartyInfoDTO.from(agreementPartyDebtor,
+                UserSimpleInfoDTO.from(debtorUser));
+
+        return AgreementResponseDTO.from(agreement, creditor, debtor);
+    }
+
+    private void checkInsertResult(int result, String errorMessage) {
         if (result < 1) {
             throw new NotInsertAgreementException(errorMessage);
         }
     }
+
+    private void checkUpdateResult(int result, String errorMessage) {
+        if (result < 1) {
+            throw new UpdateFailedException(errorMessage);
+        }
+    }
+
 }

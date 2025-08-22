@@ -6,7 +6,6 @@ import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.AgreementService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.graphql.GraphQlProperties.Http;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

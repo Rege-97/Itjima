@@ -3,7 +3,6 @@ package com.itjima_server.dto.agreement.response;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.itjima_server.domain.Agreement;
 import com.itjima_server.domain.AgreementStatus;
-import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
