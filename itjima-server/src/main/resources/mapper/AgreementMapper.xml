@@ -8,4 +8,21 @@
     INSERT INTO AGREEMENTS (item_id, status, amount, due_at, terms)
     VALUES (#{itemId}, #{status}, #{amount}, #{dueAt}, #{terms})
   </insert>
+  <select id="findById" resultType="com.itjima_server.domain.Agreement">
+    SELECT id,
+           item_id,
+           status,
+           amount,
+           due_at,
+           terms,
+           created_at,
+           updated_at
+    FROM AGREEMENTS
+    WHERE id = #{id}
+  </select>
+  <update id="updateStatusById">
+    UPDATE AGREEMENTS
+    SET status = #{status}
+    WHERE id = #{id}
+  </update>
 </mapper>
