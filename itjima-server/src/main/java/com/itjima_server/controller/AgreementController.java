@@ -47,4 +47,21 @@ public class AgreementController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 거절 성공", res));
     }
 
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<?> cancel(@PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        AgreementResponseDTO res = agreementService.cancel(user.getId(), id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 취소 성공", res));
+    }
+
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<?> complete(@PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        AgreementResponseDTO res = agreementService.complete(user.getId(), id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 완료 성공", res));
+    }
+
+
 }
