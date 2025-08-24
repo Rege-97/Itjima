@@ -15,7 +15,7 @@ import lombok.Setter;
 public class AgreementResponseDTO {
 
     private long id;
-    private long item_id;
+    private long itemId;
     private BigDecimal amount;
     private AgreementStatus status;
     private LocalDateTime dueAt;

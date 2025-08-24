@@ -8,6 +8,7 @@ import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.AgreementService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class AgreementController {
     private final AgreementService agreementService;
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody AgreementCreateRequestDTO req,
+    public ResponseEntity<?> create(@Valid @RequestBody AgreementCreateRequestDTO req,
             @AuthenticationPrincipal CustomUserDetails user) {
         AgreementResponseDTO res = agreementService.create(user.getId(), req);
         return ResponseEntity.status(HttpStatus.CREATED)
