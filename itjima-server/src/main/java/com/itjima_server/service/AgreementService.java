@@ -134,15 +134,7 @@ public class AgreementService {
         checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.ON_LOAN),
                 "물품 상태 변경에 실패했습니다.");
 
-        User creditorUser = userMapper.findById(agreementPartyCreditor.getUserId());
-        User debtorUser = userMapper.findById(agreementPartyDebtor.getUserId());
-
-        AgreementPartyInfoDTO creditor = AgreementPartyInfoDTO.from(agreementPartyCreditor,
-                UserSimpleInfoDTO.from(creditorUser));
-        AgreementPartyInfoDTO debtor = AgreementPartyInfoDTO.from(agreementPartyDebtor,
-                UserSimpleInfoDTO.from(debtorUser));
-
-        return AgreementResponseDTO.from(agreement, creditor, debtor);
+        return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -165,15 +157,7 @@ public class AgreementService {
         checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.AVAILABLE),
                 "물품 상태 변경에 실패했습니다.");
 
-        User creditorUser = userMapper.findById(agreementPartyCreditor.getUserId());
-        User debtorUser = userMapper.findById(agreementPartyDebtor.getUserId());
-
-        AgreementPartyInfoDTO creditor = AgreementPartyInfoDTO.from(agreementPartyCreditor,
-                UserSimpleInfoDTO.from(creditorUser));
-        AgreementPartyInfoDTO debtor = AgreementPartyInfoDTO.from(agreementPartyDebtor,
-                UserSimpleInfoDTO.from(debtorUser));
-
-        return AgreementResponseDTO.from(agreement, creditor, debtor);
+        return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
     }
 
     private void checkInsertResult(int result, String errorMessage) {
@@ -226,6 +210,19 @@ public class AgreementService {
         }
 
         return List.of(creditor, debtor);
+    }
+
+    private AgreementResponseDTO toAgreementResponseDTO(AgreementParty agreementPartyCreditor,
+            AgreementParty agreementPartyDebtor, Agreement agreement) {
+        User creditorUser = userMapper.findById(agreementPartyCreditor.getUserId());
+        User debtorUser = userMapper.findById(agreementPartyDebtor.getUserId());
+
+        AgreementPartyInfoDTO creditor = AgreementPartyInfoDTO.from(agreementPartyCreditor,
+                UserSimpleInfoDTO.from(creditorUser));
+        AgreementPartyInfoDTO debtor = AgreementPartyInfoDTO.from(agreementPartyDebtor,
+                UserSimpleInfoDTO.from(debtorUser));
+
+        return AgreementResponseDTO.from(agreement, creditor, debtor);
     }
 
 }
