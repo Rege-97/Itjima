@@ -1,6 +1,8 @@
 package com.itjima_server.dto.item.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.itjima_server.domain.Item;
+import com.itjima_server.domain.ItemStatus;
 import com.itjima_server.domain.ItemType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
@@ -29,6 +31,9 @@ public class ItemResponseDTO {
     @Schema(description = "설명", example = "C타입 정품 충전기. 생활 스크래치 있음.")
     private String description;
 
+    @Schema(description = "대여 상태", example = "AVAILABLE")
+    private ItemStatus status;
+
     @Schema(description = "첨부 파일 URL(이미지 등)", example = "/uploads/items/10/abc123.jpg")
     private String fileUrl;
 
@@ -36,11 +41,13 @@ public class ItemResponseDTO {
     private String fileType;
 
     @Schema(description = "등록일시", example = "2025-08-22 13:45:10")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
 
     public static ItemResponseDTO from(Item item) {
         return new ItemResponseDTO(item.getId(), item.getUserId(), item.getType(), item.getTitle(),
-                item.getDescription(), item.getFileUrl(), item.getFileType(), item.getCreatedAt());
+                item.getDescription(), item.getStatus(), item.getFileUrl(), item.getFileType(),
+                item.getCreatedAt());
     }
 }

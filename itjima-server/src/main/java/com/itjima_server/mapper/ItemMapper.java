@@ -1,6 +1,7 @@
 package com.itjima_server.mapper;
 
 import com.itjima_server.domain.Item;
+import com.itjima_server.domain.ItemStatus;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -18,4 +19,6 @@ public interface ItemMapper {
 
     List<Item> findByUserId(@Param("userId") Long userId, @Param("lastId") Long lastId,
             @Param("sizePlusOne") int sizePlusOne);
+
+    int updateStatusById(@Param("id") Long id, @Param("status") ItemStatus status);
 }
