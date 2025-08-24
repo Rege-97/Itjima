@@ -57,4 +57,47 @@
            JOIN USERS debtor_user ON debtor_party.user_id = debtor_user.id
     WHERE a.id = #{id}
   </select>
+  <select id="findByUserId" resultType="com.itjima_server.dto.agreement.response.AgreementDetailDTO">
+    SELECT a.id               AS agreementId,
+    a.status                  AS agreementStatus,
+    a.amount                  AS amount,
+    a.due_at                  AS dueAt,
+    a.terms                   AS terms,
+    a.created_at              AS createdAt,
+    i.id                      AS itemId,
+    i.type                    AS itemType,
+    i.title                   AS itemTitle,
+    i.description             AS itemDescription,
+    i.status                  AS itemStatus,
+    i.file_url                AS itemFileUrl,
+    i.file_type               AS itemFileType,
+    creditor_user.id          AS creditorId,
+    creditor_user.name        AS creditorName,
+    creditor_party.confirm_at AS creditorConfirmAt,
+    debtor_user.id            AS debtorId,
+    debtor_user.name          AS debtorName,
+    debtor_party.confirm_at   AS debtorConfirmAt
+    FROM AGREEMENTS a
+    JOIN ITEMS i
+    ON a.item_id = i.id
+    JOIN AGREEMENT_PARTIES creditor_party
+    ON a.id = creditor_party.agreement_id AND creditor_party.role = 'CREDITOR'
+    JOIN USERS creditor_user ON creditor_party.user_id = creditor_user.id
+    JOIN AGREEMENT_PARTIES debtor_party
+    ON a.id = debtor_party.agreement_id AND debtor_party.role = 'DEBTOR'
+    JOIN USERS debtor_user ON debtor_party.user_id = debtor_user.id
+    <where>
+      <if test="role == 'CREDITOR'">
+        AND creditor_user.id = #{userId}
+      </if>
+      <if test="role == 'DEBTOR'">
+        AND debtor_user.id = #{userId}
+      </if>
+      <if test="lastId != null">
+        AND a.id &lt; #{lastId}
+      </if>
+    </where>
+    ORDER by a.id DESC
+    LIMIT #{sizePlusOne}
+  </select>
 </mapper>
