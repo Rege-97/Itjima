@@ -114,8 +114,8 @@ public class AgreementService {
         // 대여 검증
         Agreement agreement = findByAgreementId(agreementId);
 
-        List<AgreementParty> agreementPartyList = verifyAndGetParties(userId, agreementId,
-                agreement);
+        List<AgreementParty> agreementPartyList = verifyCanRespond(userId, agreement,
+                AgreementPartyRole.DEBTOR, List.of(AgreementStatus.PENDING));
 
         AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
         AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
@@ -142,8 +142,8 @@ public class AgreementService {
         // 대여 검증
         Agreement agreement = findByAgreementId(agreementId);
 
-        List<AgreementParty> agreementPartyList = verifyAndGetParties(userId, agreementId,
-                agreement);
+        List<AgreementParty> agreementPartyList = verifyCanRespond(userId, agreement,
+                AgreementPartyRole.DEBTOR, List.of(AgreementStatus.PENDING));
 
         AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
         AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
@@ -154,6 +154,50 @@ public class AgreementService {
                 agreementMapper.updateStatusById(agreementId, agreement.getStatus()),
                 "대여 상태 변경에 실패했습니다.");
 
+        checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.AVAILABLE),
+                "물품 상태 변경에 실패했습니다.");
+
+        return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public AgreementResponseDTO cancel(Long userId, Long agreementId) {
+        // 대여 검증
+        Agreement agreement = findByAgreementId(agreementId);
+
+        List<AgreementParty> agreementPartyList = verifyCanRespond(userId, agreement,
+                AgreementPartyRole.CREDITOR, List.of(AgreementStatus.PENDING));
+
+        AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
+        AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
+
+        // 취소 처리
+        agreement.setStatus(AgreementStatus.CANCELED);
+        checkUpdateResult(
+                agreementMapper.updateStatusById(agreementId, agreement.getStatus()),
+                "대여 상태 변경에 실패했습니다.");
+        checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.AVAILABLE),
+                "물품 상태 변경에 실패했습니다.");
+
+        return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public AgreementResponseDTO complete(Long userId, Long agreementId) {
+        // 대여 검증
+        Agreement agreement = findByAgreementId(agreementId);
+
+        List<AgreementParty> agreementPartyList = verifyCanRespond(userId, agreement,
+                AgreementPartyRole.CREDITOR,
+                List.of(AgreementStatus.ACCEPTED, AgreementStatus.OVERDUE));
+
+        AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
+        AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
+
+        // 완료 처리
+        agreement.setStatus(AgreementStatus.COMPLETED);
+        checkUpdateResult(agreementMapper.updateStatusById(agreementId, agreement.getStatus()),
+                "대여 상태 변경에 실패했습니다.");
         checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.AVAILABLE),
                 "물품 상태 변경에 실패했습니다.");
 
@@ -180,16 +224,25 @@ public class AgreementService {
         return agreement;
     }
 
-    private List<AgreementParty> verifyAndGetParties(Long userId, Long agreementId,
-            Agreement agreement) {
-        if (agreement.getStatus() != AgreementStatus.PENDING) {
+    private List<AgreementParty> verifyAgreementStatus(Agreement agreement,
+            List<AgreementStatus> agreementStatuses) {
+        if (!agreementStatuses.contains(agreement.getStatus())) {
             throw new InvalidStateException("이미 처리된 대여 요청입니다.");
         }
 
-        List<AgreementParty> parties = agreementPartyMapper.findByAgreementId(agreementId);
+        List<AgreementParty> parties = agreementPartyMapper.findByAgreementId(agreement.getId());
         if (parties == null || parties.size() != 2) {
             throw new NotFoundAgreementException("해당 대여의 사용자들을 찾을 수 없습니다.");
         }
+
+        return parties;
+    }
+
+    private List<AgreementParty> verifyCanRespond(Long userId,
+            Agreement agreement, AgreementPartyRole agreementPartyRole,
+            List<AgreementStatus> agreementStatuses) {
+        List<AgreementParty> parties = verifyAgreementStatus(agreement,
+                agreementStatuses);
 
         AgreementParty creditor = null;
         AgreementParty debtor = null;
@@ -205,7 +258,10 @@ public class AgreementService {
             throw new InvalidStateException("계약 참여자 정보 구성이 올바르지 않습니다.");
         }
 
-        if (debtor.getUserId() != userId) {
+        AgreementParty requiredParty =
+                (agreementPartyRole == AgreementPartyRole.CREDITOR) ? creditor : debtor;
+
+        if (requiredParty.getUserId() != userId) {
             throw new NotAuthorException("해당 요청을 처리할 권한이 없습니다.");
         }
 
