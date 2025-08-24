@@ -8,6 +8,8 @@ import com.itjima_server.domain.Item;
 import com.itjima_server.domain.ItemStatus;
 import com.itjima_server.domain.User;
 import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
+import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
+import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementPartyInfoDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
 import com.itjima_server.dto.user.response.UserSimpleInfoDTO;
@@ -205,41 +207,20 @@ public class AgreementService {
     }
 
     @Transactional(readOnly = true)
-    public AgreementResponseDTO get(Long userId, Long agreementId) {
-        Agreement agreement = findByAgreementId(agreementId);
+    public AgreementDetailResponseDTO get(Long userId, Long agreementId) {
 
-        List<AgreementParty> parties = agreementPartyMapper.findByAgreementId(agreement.getId());
-        if (parties == null || parties.size() != 2) {
-            throw new NotFoundAgreementException("해당 대여의 사용자들을 찾을 수 없습니다.");
+        AgreementDetailDTO agreementDetailDTO = agreementMapper.findDetailById(agreementId);
+
+        if (agreementDetailDTO == null) {
+            throw new NotFoundAgreementException("해당 대여 요청을 찾을 수 없습니다.");
         }
 
-        AgreementParty creditor = null;
-        AgreementParty debtor = null;
-
-        int count = 0;
-        for (AgreementParty party : parties) {
-            if (party.getRole() == AgreementPartyRole.CREDITOR) {
-                creditor = party;
-                if (creditor.getUserId() == userId) {
-                    count++;
-                }
-            } else {
-                debtor = party;
-                if (debtor.getUserId() == userId) {
-                    count++;
-                }
-            }
-        }
-
-        if (creditor == null || debtor == null) {
-            throw new InvalidStateException("계약 참여자 정보 구성이 올바르지 않습니다.");
-        }
-
-        if (count == 0) {
+        if (agreementDetailDTO.getCreditorId() != userId
+                && agreementDetailDTO.getDebtorId() != userId) {
             throw new NotAuthorException("해당 요청을 처리할 권한이 없습니다.");
         }
 
-        return toAgreementResponseDTO(creditor, debtor, agreement);
+        return AgreementDetailResponseDTO.from(agreementDetailDTO);
     }
 
     private void checkInsertResult(int result, String errorMessage) {
