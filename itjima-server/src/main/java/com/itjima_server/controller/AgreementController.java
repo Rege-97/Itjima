@@ -39,4 +39,12 @@ public class AgreementController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 승인 성공", res));
     }
 
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<?> reject(@PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        AgreementResponseDTO res = agreementService.reject(user.getId(), id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 거절 성공", res));
+    }
+
 }
