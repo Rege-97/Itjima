@@ -20,7 +20,7 @@ public interface AgreementMapper {
 
     AgreementDetailDTO findDetailById(@Param("id") Long id);
 
-    List<Item> findByUserId(@Param("userId") Long userId, @Param("role") AgreementPartyRole role,
+    List<AgreementDetailDTO> findByUserId(@Param("userId") Long userId, @Param("role") AgreementPartyRole role,
             @Param("lastId") Long lastId,
             @Param("sizePlusOne") int sizePlusOne);
 }

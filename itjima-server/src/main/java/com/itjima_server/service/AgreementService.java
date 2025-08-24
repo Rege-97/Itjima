@@ -1,5 +1,6 @@
 package com.itjima_server.service;
 
+import com.itjima_server.common.PagedResultDTO;
 import com.itjima_server.domain.Agreement;
 import com.itjima_server.domain.AgreementParty;
 import com.itjima_server.domain.AgreementPartyRole;
@@ -12,6 +13,7 @@ import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementPartyInfoDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
+import com.itjima_server.dto.item.response.ItemResponseDTO;
 import com.itjima_server.dto.user.response.UserSimpleInfoDTO;
 import com.itjima_server.exception.agreement.NotFoundAgreementException;
 import com.itjima_server.exception.agreement.NotInsertAgreementException;
@@ -25,6 +27,7 @@ import com.itjima_server.mapper.AgreementPartyMapper;
 import com.itjima_server.mapper.ItemMapper;
 import com.itjima_server.mapper.UserMapper;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -221,6 +224,35 @@ public class AgreementService {
         }
 
         return AgreementDetailResponseDTO.from(agreementDetailDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResultDTO<?> getList(Long userId, Long agreementId, Long lastId,
+            int size, AgreementPartyRole role) {
+
+        int sizePlusOne = size + 1;
+        List<AgreementDetailDTO> AgreementList = agreementMapper.findByUserId(userId, role,
+                lastId, sizePlusOne);
+
+        if (AgreementList == null || AgreementList.isEmpty()) {
+            return PagedResultDTO.from(null, false, null);
+        }
+
+        boolean hasNext = false;
+        if (AgreementList.size() == sizePlusOne) {
+            hasNext = true;
+            AgreementList.remove(size);
+        }
+
+        List<AgreementDetailResponseDTO> agreements = new ArrayList<>();
+
+        for (AgreementDetailDTO agreementDetailDTO : AgreementList) {
+            agreements.add(AgreementDetailResponseDTO.from(agreementDetailDTO));
+        }
+
+        lastId = AgreementList.get(AgreementList.size() - 1).getAgreementId();
+
+        return PagedResultDTO.from(agreements, hasNext, lastId);
     }
 
     private void checkInsertResult(int result, String errorMessage) {
