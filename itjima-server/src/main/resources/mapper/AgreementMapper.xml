@@ -93,6 +93,9 @@
       <if test="role == 'DEBTOR'">
         AND debtor_user.id = #{userId}
       </if>
+      <if test="role == null">
+      AND 1 = 0
+      </if>
       <if test="lastId != null">
         AND a.id &lt; #{lastId}
       </if>

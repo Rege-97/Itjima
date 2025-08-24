@@ -13,7 +13,6 @@ import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementPartyInfoDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
-import com.itjima_server.dto.item.response.ItemResponseDTO;
 import com.itjima_server.dto.user.response.UserSimpleInfoDTO;
 import com.itjima_server.exception.agreement.NotFoundAgreementException;
 import com.itjima_server.exception.agreement.NotInsertAgreementException;
@@ -227,11 +226,10 @@ public class AgreementService {
     }
 
     @Transactional(readOnly = true)
-    public PagedResultDTO<?> getList(Long userId, Long agreementId, Long lastId,
-            int size, AgreementPartyRole role) {
+    public PagedResultDTO<?> getList(Long userId, Long lastId, int size, AgreementPartyRole role) {
 
         int sizePlusOne = size + 1;
-        List<AgreementDetailDTO> AgreementList = agreementMapper.findByUserId(userId, role,
+        List<AgreementDetailDTO> AgreementList = agreementMapper.findByUserId(userId, role.name(),
                 lastId, sizePlusOne);
 
         if (AgreementList == null || AgreementList.isEmpty()) {

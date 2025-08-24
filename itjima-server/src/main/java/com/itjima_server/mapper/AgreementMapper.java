@@ -1,9 +1,7 @@
 package com.itjima_server.mapper;
 
 import com.itjima_server.domain.Agreement;
-import com.itjima_server.domain.AgreementPartyRole;
 import com.itjima_server.domain.AgreementStatus;
-import com.itjima_server.domain.Item;
 import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -20,7 +18,7 @@ public interface AgreementMapper {
 
     AgreementDetailDTO findDetailById(@Param("id") Long id);
 
-    List<AgreementDetailDTO> findByUserId(@Param("userId") Long userId, @Param("role") AgreementPartyRole role,
+    List<AgreementDetailDTO> findByUserId(@Param("userId") Long userId, @Param("role") String role,
             @Param("lastId") Long lastId,
             @Param("sizePlusOne") int sizePlusOne);
 }

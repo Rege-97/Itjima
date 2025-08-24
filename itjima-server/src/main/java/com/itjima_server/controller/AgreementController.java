@@ -1,6 +1,8 @@
 package com.itjima_server.controller;
 
 import com.itjima_server.common.ApiResponseDTO;
+import com.itjima_server.common.PagedResultDTO;
+import com.itjima_server.domain.AgreementPartyRole;
 import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -63,6 +66,16 @@ public class AgreementController {
         AgreementResponseDTO res = agreementService.complete(user.getId(), id);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 완료 성공", res));
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getList(@RequestParam(required = false) Long lastId,
+            @RequestParam AgreementPartyRole role,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        PagedResultDTO<?> res = agreementService.getList(user.getId(), lastId, size, role);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 목록 조회 성공", res));
     }
 
     @GetMapping("/{id}")
