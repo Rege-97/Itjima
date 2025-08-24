@@ -112,40 +112,13 @@ public class AgreementService {
     @Transactional(rollbackFor = Exception.class)
     public AgreementResponseDTO accept(Long userId, Long agreementId) {
         // 대여 검증
-        Agreement agreement = agreementMapper.findById(agreementId);
-        if (agreement == null) {
-            throw new NotFoundAgreementException("해당 대여 요청을 찾을 수 없습니다.");
-        }
+        Agreement agreement = findByAgreementId(agreementId);
 
-        if (agreement.getStatus() != AgreementStatus.PENDING) {
-            throw new InvalidStateException("해당 대여는 승인 대기 중이 아닙니다.");
-        }
+        List<AgreementParty> agreementPartyList = verifyAndGetParties(userId, agreementId,
+                agreement);
 
-        // 대여 참여자 검증
-        List<AgreementParty> agreementParties = agreementPartyMapper.findByAgreementId(agreementId);
-
-        if (agreementParties == null || agreementParties.size() != 2) {
-            throw new NotFoundAgreementException("해당 대여의 사용자들을 찾을 수 없습니다.");
-        }
-
-        AgreementParty agreementPartyCreditor = null;
-        AgreementParty agreementPartyDebtor = null;
-
-        for (AgreementParty agreementParty : agreementParties) {
-            if (agreementParty.getRole() == AgreementPartyRole.CREDITOR) {
-                agreementPartyCreditor = agreementParty;
-            } else {
-                agreementPartyDebtor = agreementParty;
-            }
-        }
-
-        if (agreementPartyCreditor == null || agreementPartyDebtor == null) {
-            throw new InvalidStateException("계약 참여자 정보 구성이 올바르지 않습니다.");
-        }
-
-        if (agreementPartyDebtor.getUserId() != userId) {
-            throw new NotAuthorException("로그인한 사용자의 대여 요청이 아닙니다.");
-        }
+        AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
+        AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
 
         // 승인 처리
         agreement.setStatus(AgreementStatus.ACCEPTED);
@@ -172,6 +145,37 @@ public class AgreementService {
         return AgreementResponseDTO.from(agreement, creditor, debtor);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public AgreementResponseDTO reject(Long userId, Long agreementId) {
+        // 대여 검증
+        Agreement agreement = findByAgreementId(agreementId);
+
+        List<AgreementParty> agreementPartyList = verifyAndGetParties(userId, agreementId,
+                agreement);
+
+        AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
+        AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
+
+        // 거절 처리
+        agreement.setStatus(AgreementStatus.REJECTED);
+        checkUpdateResult(
+                agreementMapper.updateStatusById(agreementId, agreement.getStatus()),
+                "대여 상태 변경에 실패했습니다.");
+
+        checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.AVAILABLE),
+                "물품 상태 변경에 실패했습니다.");
+
+        User creditorUser = userMapper.findById(agreementPartyCreditor.getUserId());
+        User debtorUser = userMapper.findById(agreementPartyDebtor.getUserId());
+
+        AgreementPartyInfoDTO creditor = AgreementPartyInfoDTO.from(agreementPartyCreditor,
+                UserSimpleInfoDTO.from(creditorUser));
+        AgreementPartyInfoDTO debtor = AgreementPartyInfoDTO.from(agreementPartyDebtor,
+                UserSimpleInfoDTO.from(debtorUser));
+
+        return AgreementResponseDTO.from(agreement, creditor, debtor);
+    }
+
     private void checkInsertResult(int result, String errorMessage) {
         if (result < 1) {
             throw new NotInsertAgreementException(errorMessage);
@@ -182,6 +186,46 @@ public class AgreementService {
         if (result < 1) {
             throw new UpdateFailedException(errorMessage);
         }
+    }
+
+    private Agreement findByAgreementId(Long agreementId) {
+        Agreement agreement = agreementMapper.findById(agreementId);
+        if (agreement == null) {
+            throw new NotFoundAgreementException("해당 대여 요청을 찾을 수 없습니다.");
+        }
+        return agreement;
+    }
+
+    private List<AgreementParty> verifyAndGetParties(Long userId, Long agreementId,
+            Agreement agreement) {
+        if (agreement.getStatus() != AgreementStatus.PENDING) {
+            throw new InvalidStateException("이미 처리된 대여 요청입니다.");
+        }
+
+        List<AgreementParty> parties = agreementPartyMapper.findByAgreementId(agreementId);
+        if (parties == null || parties.size() != 2) {
+            throw new NotFoundAgreementException("해당 대여의 사용자들을 찾을 수 없습니다.");
+        }
+
+        AgreementParty creditor = null;
+        AgreementParty debtor = null;
+        for (AgreementParty party : parties) {
+            if (party.getRole() == AgreementPartyRole.CREDITOR) {
+                creditor = party;
+            } else {
+                debtor = party;
+            }
+        }
+
+        if (creditor == null || debtor == null) {
+            throw new InvalidStateException("계약 참여자 정보 구성이 올바르지 않습니다.");
+        }
+
+        if (debtor.getUserId() != userId) {
+            throw new NotAuthorException("해당 요청을 처리할 권한이 없습니다.");
+        }
+
+        return List.of(creditor, debtor);
     }
 
 }
