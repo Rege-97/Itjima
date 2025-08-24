@@ -6,11 +6,19 @@ import com.itjima_server.domain.AgreementPartyRole;
 import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
+import com.itjima_server.dto.agreement.swagger.AgreementPagedResponse;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.AgreementService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,13 +30,47 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 대여 약정 관련 API 클래스
+ *
+ * @author Rege-97
+ * @since 2025-08-25
+ */
 @RestController
 @RequestMapping("/api/agreements")
 @RequiredArgsConstructor
+@Tag(name = "Agreement", description = "대여 약정 API")
+@SecurityRequirement(name = "bearerAuth")
 public class AgreementController {
 
     private final AgreementService agreementService;
 
+    /**
+     * 대여 요청 등록 처리
+     *
+     * @param req  대여 요청 등록 DTO
+     * @param user 로그인한 사용자
+     * @return 등록된 대여 요청 응답
+     */
+    @Operation(
+            summary = "대여 요청 등록",
+            description = "대여 요청 신규 생성",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "대여 요청 등록 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = AgreementResponseDTO.class))),
+                    @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "403", description = "권한 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 사용자/물품 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "409", description = "대여 불가 상태",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody AgreementCreateRequestDTO req,
             @AuthenticationPrincipal CustomUserDetails user) {
@@ -37,6 +79,30 @@ public class AgreementController {
                 .body(ApiResponseDTO.success(HttpStatus.CREATED.value(), "대여 요청 성공", res));
     }
 
+    /**
+     * 대여 승인 처리 (채무자만 가능)
+     *
+     * @param id   대여 ID
+     * @param user 로그인한 유저
+     * @return 승인 처리된 대여 응답
+     */
+    @Operation(
+            summary = "대여 승인",
+            description = "채무자의 대여 승인 처리",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "대여 승인 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = AgreementResponseDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "403", description = "권한 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
     @PutMapping("/{id}/accept")
     public ResponseEntity<?> accept(@PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails user) {
@@ -45,6 +111,30 @@ public class AgreementController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 승인 성공", res));
     }
 
+    /**
+     * 대여 거절 처리 (채무자만 가능)
+     *
+     * @param id   대여 ID
+     * @param user 로그인한 유저
+     * @return 거절 처리된 대여 응답
+     */
+    @Operation(
+            summary = "대여 거절",
+            description = "채무자의 대여 거절 처리",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "대여 거절 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = AgreementResponseDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "403", description = "권한 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
     @PutMapping("/{id}/reject")
     public ResponseEntity<?> reject(@PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails user) {
@@ -53,6 +143,30 @@ public class AgreementController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 거절 성공", res));
     }
 
+    /**
+     * 대여 취소 처리 (채권자만 가능, PENDING 상태에서 가능)
+     *
+     * @param id   대여 ID
+     * @param user 로그인한 유저
+     * @return 취소 처리된 대여 응답
+     */
+    @Operation(
+            summary = "대여 취소",
+            description = "채권자의 대여 요청 중 대여 취소 처리",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "대여 취소 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = AgreementResponseDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "403", description = "권한 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
     @PutMapping("/{id}/cancel")
     public ResponseEntity<?> cancel(@PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails user) {
@@ -61,6 +175,30 @@ public class AgreementController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 취소 성공", res));
     }
 
+    /**
+     * 대여 완료 처리 (채권자만 가능, ACCEPTED/OVERDUE → COMPLETED)
+     *
+     * @param id   대여 ID
+     * @param user 로그인한 유저
+     * @return 완료 처리된 대여 응답
+     */
+    @Operation(
+            summary = "대여 완료",
+            description = "채권자의 대여 완료 처리",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "대여 완료 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = AgreementResponseDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "403", description = "권한 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
     @PutMapping("/{id}/complete")
     public ResponseEntity<?> complete(@PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails user) {
@@ -69,6 +207,26 @@ public class AgreementController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 완료 성공", res));
     }
 
+    /**
+     * 대여 목록 조회 (무한 스크롤 커서 기반)
+     *
+     * @param lastId 조회할 마지막 id
+     * @param role   조회 관점(CREDITOR/DEBTOR)
+     * @param size   한 페이지에 보여줄 개수
+     * @param user   로그인한 유저
+     * @return 항목(items), hasNext, lastId를 포함한 페이지 응답
+     */
+    @Operation(
+            summary = "대여 목록 조회(커서 기반)",
+            description = "lastId와 size로 커서 기반 페이지네이션",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "대여 목록 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = AgreementPagedResponse.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
     @GetMapping
     public ResponseEntity<?> getList(@RequestParam(required = false) Long lastId,
             @RequestParam AgreementPartyRole role,
@@ -79,6 +237,32 @@ public class AgreementController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 목록 조회 성공", res));
     }
 
+    /**
+     * 대여 단건 상세 조회
+     *
+     * @param id   대여 ID
+     * @param user 로그인한 유저
+     * @return 대여 상세 응답
+     */
+    @Operation(
+            summary = "대여 상세 조회",
+            description = "대여 단건 상세 조회 처리",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "대여 상세 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = AgreementDetailResponseDTO.class))),
+                    @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "403", description = "권한 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails user) {

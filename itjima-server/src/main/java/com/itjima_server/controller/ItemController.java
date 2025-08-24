@@ -5,6 +5,7 @@ import com.itjima_server.common.PagedResultDTO;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;
+import com.itjima_server.dto.item.swagger.ItemPagedResponse;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.ItemService;
 import com.itjima_server.util.FileResult;
@@ -152,7 +153,7 @@ public class ItemController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "물품 목록 조회 성공",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = PagedResultDTO.class))),
+                                    schema = @Schema(implementation = ItemPagedResponse.class))),
                     @ApiResponse(responseCode = "401", description = "인증 필요",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
             }
@@ -188,7 +189,6 @@ public class ItemController {
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
             }
     )
-
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails user) {

@@ -1,5 +1,6 @@
 package com.itjima_server.dto.agreement.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Future;
@@ -14,8 +15,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@Schema(description = "대여 생성 요청 DTO")
 public class AgreementCreateRequestDTO {
 
+    @Schema(description = "대여할 물품 ID", example = "101")
     @Positive(message = "itemId는 양수여야 합니다.")
     private long itemId;
 

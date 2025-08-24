@@ -32,6 +32,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 대여 관련 비즈니스 로직을 수행하는 서비스 클래스
+ *
+ * @author Rege-97
+ * @since 2025-08-25
+ */
 @Service
 @RequiredArgsConstructor
 public class AgreementService {
@@ -41,6 +47,13 @@ public class AgreementService {
     private final UserMapper userMapper;
     private final ItemMapper itemMapper;
 
+    /**
+     * 대여 생성 처리
+     *
+     * @param userId 로그인한 사용자 ID (채권자)
+     * @param req    대여 생성 요청 DTO
+     * @return 생성된 대여 응답 DTO
+     */
     @Transactional(rollbackFor = Exception.class)
     public AgreementResponseDTO create(Long userId, AgreementCreateRequestDTO req) {
         // 사용자 검증
@@ -78,7 +91,7 @@ public class AgreementService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        checkInsertResult(agreementMapper.insert(agreement), "대여 계약 등록에 실패했습니다.");
+        checkInsertResult(agreementMapper.insert(agreement), "대여 등록에 실패했습니다.");
 
         // 채권자 생성
         AgreementParty agreementPartyCreditor = AgreementParty.builder()
@@ -113,6 +126,13 @@ public class AgreementService {
         return AgreementResponseDTO.from(agreement, creditor, debtor);
     }
 
+    /**
+     * 대여 승인 처리 (채무자만 가능)
+     *
+     * @param userId      로그인한 사용자 ID (채무자)
+     * @param agreementId 승인할 대여 ID
+     * @return 승인 처리된 대여 응답 DTO
+     */
     @Transactional(rollbackFor = Exception.class)
     public AgreementResponseDTO accept(Long userId, Long agreementId) {
         // 대여 검증
@@ -124,23 +144,32 @@ public class AgreementService {
         AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
         AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
 
-        // 승인 처리
+        // 상태 업데이트: ACCEPTED
         agreement.setStatus(AgreementStatus.ACCEPTED);
         checkUpdateResult(
                 agreementMapper.updateStatusById(agreementId, agreement.getStatus()),
                 "대여 상태 변경에 실패했습니다.");
 
+        // 채무자 확인일 업데이트
         agreementPartyDebtor.setConfirmAt(LocalDateTime.now());
         checkUpdateResult(
                 agreementPartyMapper.updateConfirmedAtById(agreementPartyDebtor.getId(),
                         agreementPartyDebtor.getConfirmAt()), "대여 승인 등록에 실패했습니다.");
 
+        // 물품 상태 업데이트: ON_LOAN
         checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.ON_LOAN),
                 "물품 상태 변경에 실패했습니다.");
 
         return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
     }
 
+    /**
+     * 대여 거절 처리 (채무자만 가능)
+     *
+     * @param userId      로그인한 사용자 ID (채무자)
+     * @param agreementId 거절할 대여 ID
+     * @return 거절 처리된 대여 응답 DTO
+     */
     @Transactional(rollbackFor = Exception.class)
     public AgreementResponseDTO reject(Long userId, Long agreementId) {
         // 대여 검증
@@ -152,18 +181,26 @@ public class AgreementService {
         AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
         AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
 
-        // 거절 처리
+        // 상태 업데이트: REJECTED
         agreement.setStatus(AgreementStatus.REJECTED);
         checkUpdateResult(
                 agreementMapper.updateStatusById(agreementId, agreement.getStatus()),
                 "대여 상태 변경에 실패했습니다.");
 
+        // 물품 상태 업데이트: AVAILABLE
         checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.AVAILABLE),
                 "물품 상태 변경에 실패했습니다.");
 
         return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
     }
 
+    /**
+     * 대여 취소 처리 (채권자만 가능, PENDING 상태에서 가능)
+     *
+     * @param userId      로그인한 사용자 ID (채권자)
+     * @param agreementId 취소할 대여 ID
+     * @return 취소 처리된 대여 응답 DTO
+     */
     @Transactional(rollbackFor = Exception.class)
     public AgreementResponseDTO cancel(Long userId, Long agreementId) {
         // 대여 검증
@@ -175,17 +212,26 @@ public class AgreementService {
         AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
         AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
 
-        // 취소 처리
+        // 상태 업데이트: CANCELED
         agreement.setStatus(AgreementStatus.CANCELED);
         checkUpdateResult(
                 agreementMapper.updateStatusById(agreementId, agreement.getStatus()),
                 "대여 상태 변경에 실패했습니다.");
+
+        // 물품 상태 업데이트: AVAILABLE
         checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.AVAILABLE),
                 "물품 상태 변경에 실패했습니다.");
 
         return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
     }
 
+    /**
+     * 대여 완료 처리 (채권자만 가능, ACCEPTED/OVERDUE → COMPLETED)
+     *
+     * @param userId      로그인한 사용자 ID (채권자)
+     * @param agreementId 완료 처리할 대여 ID
+     * @return 완료 처리된 대여 응답 DTO
+     */
     @Transactional(rollbackFor = Exception.class)
     public AgreementResponseDTO complete(Long userId, Long agreementId) {
         // 대여 검증
@@ -198,16 +244,25 @@ public class AgreementService {
         AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
         AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
 
-        // 완료 처리
+        // 상태 업데이트: COMPLETED
         agreement.setStatus(AgreementStatus.COMPLETED);
         checkUpdateResult(agreementMapper.updateStatusById(agreementId, agreement.getStatus()),
                 "대여 상태 변경에 실패했습니다.");
+
+        // 물품 상태 업데이트: AVAILABLE
         checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.AVAILABLE),
                 "물품 상태 변경에 실패했습니다.");
 
         return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
     }
 
+    /**
+     * 대여 단건 상세 조회
+     *
+     * @param userId      로그인한 사용자 ID
+     * @param agreementId 조회할 대여 ID
+     * @return 대여 상세 응답 DTO
+     */
     @Transactional(readOnly = true)
     public AgreementDetailResponseDTO get(Long userId, Long agreementId) {
 
@@ -225,6 +280,15 @@ public class AgreementService {
         return AgreementDetailResponseDTO.from(agreementDetailDTO);
     }
 
+    /**
+     * 대여 목록 조회 (무한 스크롤 커서 기반)
+     *
+     * @param userId 로그인한 사용자 ID
+     * @param lastId 마지막으로 조회한 대여 ID
+     * @param size   요청한 페이지 크기
+     * @param role   조회 관점(CREDITOR/DEBTOR)
+     * @return 항목(items), hasNext, lastId를 포함한 페이지 응답
+     */
     @Transactional(readOnly = true)
     public PagedResultDTO<?> getList(Long userId, Long lastId, int size, AgreementPartyRole role) {
 
@@ -253,18 +317,43 @@ public class AgreementService {
         return PagedResultDTO.from(agreements, hasNext, lastId);
     }
 
+    // ==========================
+    // 내부 유틸리티
+    // ==========================
+
+    /**
+     * INSERT 실행 결과 검증 유틸리티
+     *
+     * @param result       실행된 row 수
+     * @param errorMessage 실패 시 예외 메시지
+     * @throws NotInsertAgreementException insert 실패 시
+     */
     private void checkInsertResult(int result, String errorMessage) {
         if (result < 1) {
             throw new NotInsertAgreementException(errorMessage);
         }
     }
 
+    /**
+     * UPDATE 실행 결과 검증 유틸리티
+     *
+     * @param result       실행된 row 수
+     * @param errorMessage 실패 시 예외 메시지
+     * @throws UpdateFailedException update 실패 시
+     */
     private void checkUpdateResult(int result, String errorMessage) {
         if (result < 1) {
             throw new UpdateFailedException(errorMessage);
         }
     }
 
+    /**
+     * ID로 대여 조회 (없으면 예외 발생)
+     *
+     * @param agreementId 대여 ID
+     * @return 조회된 Agreement
+     * @throws NotFoundAgreementException 대여가 존재하지 않을 경우
+     */
     private Agreement findByAgreementId(Long agreementId) {
         Agreement agreement = agreementMapper.findById(agreementId);
         if (agreement == null) {
@@ -273,6 +362,15 @@ public class AgreementService {
         return agreement;
     }
 
+    /**
+     * 대여 상태와 파티 정보 검증 유틸리티
+     *
+     * @param agreement         대여 엔티티
+     * @param agreementStatuses 허용되는 상태 목록
+     * @return 대여 참여자 목록 (채권자, 채무자)
+     * @throws InvalidStateException      상태가 허용되지 않을 경우
+     * @throws NotFoundAgreementException 파티 정보가 없거나 올바르지 않을 경우
+     */
     private List<AgreementParty> verifyAgreementStatus(Agreement agreement,
             List<AgreementStatus> agreementStatuses) {
         if (!agreementStatuses.contains(agreement.getStatus())) {
@@ -287,6 +385,16 @@ public class AgreementService {
         return parties;
     }
 
+    /**
+     * 특정 역할의 사용자가 응답할 수 있는지 검증 유틸리티
+     *
+     * @param userId             사용자 ID
+     * @param agreement          대여 엔티티
+     * @param agreementPartyRole 요구되는 역할 (CREDITOR/DEBTOR)
+     * @param agreementStatuses  허용되는 상태 목록
+     * @return 대여 참여자 목록 (채권자, 채무자)
+     * @throws NotAuthorException 권한 없는 사용자인 경우
+     */
     private List<AgreementParty> verifyCanRespond(Long userId,
             Agreement agreement, AgreementPartyRole agreementPartyRole,
             List<AgreementStatus> agreementStatuses) {
@@ -304,7 +412,7 @@ public class AgreementService {
         }
 
         if (creditor == null || debtor == null) {
-            throw new InvalidStateException("계약 참여자 정보 구성이 올바르지 않습니다.");
+            throw new InvalidStateException("대여 참여자 정보 구성이 올바르지 않습니다.");
         }
 
         AgreementParty requiredParty =
@@ -317,6 +425,14 @@ public class AgreementService {
         return List.of(creditor, debtor);
     }
 
+    /**
+     * Agreement, 파티, 사용자 정보를 종합해 응답 DTO로 변환
+     *
+     * @param agreementPartyCreditor 채권자 파티
+     * @param agreementPartyDebtor   채무자 파티
+     * @param agreement              대여 엔티티
+     * @return 대여 응답 DTO
+     */
     private AgreementResponseDTO toAgreementResponseDTO(AgreementParty agreementPartyCreditor,
             AgreementParty agreementPartyDebtor, Agreement agreement) {
         User creditorUser = userMapper.findById(agreementPartyCreditor.getUserId());
