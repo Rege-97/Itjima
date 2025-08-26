@@ -1,6 +1,6 @@
 package com.itjima_server.security;
 
-import com.itjima_server.domain.User;
+import com.itjima_server.domain.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

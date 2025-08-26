@@ -1,8 +1,8 @@
 package com.itjima_server.dto.user.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.itjima_server.domain.Provider;
-import com.itjima_server.domain.User;
+import com.itjima_server.domain.user.Provider;
+import com.itjima_server.domain.user.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;

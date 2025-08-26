@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itjima_server.domain.ItemType;
+import com.itjima_server.domain.item.ItemType;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
 import com.itjima_server.dto.user.request.UserLoginRequestDTO;

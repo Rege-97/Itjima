@@ -1,13 +1,13 @@
 package com.itjima_server.service;
 
 import com.itjima_server.common.PagedResultDTO;
-import com.itjima_server.domain.Agreement;
-import com.itjima_server.domain.AgreementParty;
-import com.itjima_server.domain.AgreementPartyRole;
-import com.itjima_server.domain.AgreementStatus;
-import com.itjima_server.domain.Item;
-import com.itjima_server.domain.ItemStatus;
-import com.itjima_server.domain.User;
+import com.itjima_server.domain.agreement.Agreement;
+import com.itjima_server.domain.agreement.AgreementParty;
+import com.itjima_server.domain.agreement.AgreementPartyRole;
+import com.itjima_server.domain.agreement.AgreementStatus;
+import com.itjima_server.domain.item.Item;
+import com.itjima_server.domain.item.ItemStatus;
+import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;

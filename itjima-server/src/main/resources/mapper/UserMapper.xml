@@ -13,13 +13,13 @@
     FROM USERS
     WHERE phone = #{phone}
   </select>
-  <insert parameterType="com.itjima_server.domain.User" id="insert" useGeneratedKeys="true"
+  <insert parameterType="com.itjima_server.domain.user.User" id="insert" useGeneratedKeys="true"
     keyProperty="id">
     INSERT INTO USERS (name, email, password, phone, provider)
     VALUES (#{name}, #{email}, #{password}, #{phone}, #{provider})
   </insert>
 
-  <select id="findById" resultType="com.itjima_server.domain.User">
+  <select id="findById" resultType="com.itjima_server.domain.user.User">
     SELECT id,
            name,
            email,
@@ -32,7 +32,7 @@
     FROM USERS
     WHERE id = #{id}
   </select>
-  <select id="findByEmail" resultType="com.itjima_server.domain.User">
+  <select id="findByEmail" resultType="com.itjima_server.domain.user.User">
     SELECT id,
            name,
            email,

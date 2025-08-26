@@ -1,8 +1,8 @@
 package com.itjima_server.dto.agreement.response;
 
-import com.itjima_server.domain.AgreementStatus;
-import com.itjima_server.domain.ItemStatus;
-import com.itjima_server.domain.ItemType;
+import com.itjima_server.domain.agreement.AgreementStatus;
+import com.itjima_server.domain.item.ItemStatus;
+import com.itjima_server.domain.item.ItemType;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.Getter;

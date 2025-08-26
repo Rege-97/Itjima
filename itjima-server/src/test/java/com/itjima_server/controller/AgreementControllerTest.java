@@ -11,10 +11,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itjima_server.domain.AgreementPartyRole;
-import com.itjima_server.domain.AgreementStatus;
-import com.itjima_server.domain.ItemStatus;
-import com.itjima_server.domain.ItemType;
+import com.itjima_server.domain.agreement.AgreementPartyRole;
+import com.itjima_server.domain.agreement.AgreementStatus;
+import com.itjima_server.domain.item.ItemStatus;
+import com.itjima_server.domain.item.ItemType;
 import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;

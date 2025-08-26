@@ -1,6 +1,6 @@
 package com.itjima_server.mapper;
 
-import com.itjima_server.domain.AgreementParty;
+import com.itjima_server.domain.agreement.AgreementParty;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;

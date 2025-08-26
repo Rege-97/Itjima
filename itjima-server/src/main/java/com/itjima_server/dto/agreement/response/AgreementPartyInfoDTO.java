@@ -1,8 +1,8 @@
 package com.itjima_server.dto.agreement.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.itjima_server.domain.AgreementParty;
-import com.itjima_server.domain.AgreementPartyRole;
+import com.itjima_server.domain.agreement.AgreementParty;
+import com.itjima_server.domain.agreement.AgreementPartyRole;
 import com.itjima_server.dto.user.response.UserSimpleInfoDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;

@@ -1,6 +1,6 @@
 package com.itjima_server.dto.item.request;
 
-import com.itjima_server.domain.ItemType;
+import com.itjima_server.domain.item.ItemType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

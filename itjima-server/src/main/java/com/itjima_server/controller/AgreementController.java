@@ -2,7 +2,7 @@ package com.itjima_server.controller;
 
 import com.itjima_server.common.ApiResponseDTO;
 import com.itjima_server.common.PagedResultDTO;
-import com.itjima_server.domain.AgreementPartyRole;
+import com.itjima_server.domain.agreement.AgreementPartyRole;
 import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;

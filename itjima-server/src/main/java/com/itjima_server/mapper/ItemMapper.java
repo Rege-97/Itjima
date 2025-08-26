@@ -1,7 +1,7 @@
 package com.itjima_server.mapper;
 
-import com.itjima_server.domain.Item;
-import com.itjima_server.domain.ItemStatus;
+import com.itjima_server.domain.item.Item;
+import com.itjima_server.domain.item.ItemStatus;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

@@ -1,13 +1,13 @@
-package com.itjima_server.domain;
+package com.itjima_server.domain.agreement;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum Provider {
-    LOCAL("로컬"),
-    KAKAO("카카오");
-    
+public enum AgreementPartyRole {
+    CREDITOR("채권자"),
+    DEBTOR("채무자");
+
     private final String description;
 }

@@ -10,7 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.itjima_server.domain.RefreshToken;
+import com.itjima_server.domain.user.RefreshToken;
 import com.itjima_server.dto.user.request.TokenRefreshRequestDTO;
 import com.itjima_server.dto.user.request.UserLoginRequestDTO;
 import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
@@ -36,7 +36,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import com.itjima_server.domain.User;
+import com.itjima_server.domain.user.User;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {

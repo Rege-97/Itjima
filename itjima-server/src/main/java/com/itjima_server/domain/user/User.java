@@ -1,4 +1,4 @@
-package com.itjima_server.domain;
+package com.itjima_server.domain.user;
 
 import lombok.Builder;
 import lombok.Data;

@@ -3,12 +3,12 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.itjima_server.mapper.ItemMapper">
-  <insert id="insert" parameterType="com.itjima_server.domain.Item" useGeneratedKeys="true"
+  <insert id="insert" parameterType="com.itjima_server.domain.item.Item" useGeneratedKeys="true"
     keyProperty="id">
     INSERT INTO ITEMS (user_id, type, title, description)
     VALUES (#{userId}, #{type}, #{title}, #{description})
   </insert>
-  <select id="findById" resultType="com.itjima_server.domain.Item">
+  <select id="findById" resultType="com.itjima_server.domain.item.Item">
     SELECT id,
            user_id,
            type,
@@ -21,7 +21,7 @@
     FROM ITEMS
     WHERE id = #{id}
   </select>
-  <update id="updateById" parameterType="com.itjima_server.domain.Item">
+  <update id="updateById" parameterType="com.itjima_server.domain.item.Item">
     UPDATE ITEMS
     SET title       = #{title},
         description = #{description},
@@ -29,13 +29,13 @@
         file_type   = #{fileType}
     WHERE id = #{id}
   </update>
-  <update id="updateFileById" parameterType="com.itjima_server.domain.Item">
+  <update id="updateFileById" parameterType="com.itjima_server.domain.item.Item">
     UPDATE ITEMS
     SET file_url  = #{fileUrl},
         file_type = #{fileType}
     WHERE id = #{id}
   </update>
-  <select id="findByUserId" resultType="com.itjima_server.domain.Item">
+  <select id="findByUserId" resultType="com.itjima_server.domain.item.Item">
     SELECT id,
     user_id,
     type,
