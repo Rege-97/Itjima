@@ -50,6 +50,7 @@ public class TransactionService {
         checkUpdateResult(transactionMapper.updateStatusById(id, TransactionStatus.CONFIRMED),
                 "상환 요청 승인에 실패했습니다.");
 
+        // 완납 여부 검증 및 처리
         BigDecimal totalPaidAmount = transactionMapper.sumConfirmedAmountByAgreementId(
                 agreement.getId());
         if (agreement.getAmount().compareTo(totalPaidAmount) <= 0) {
@@ -62,6 +63,28 @@ public class TransactionService {
         }
         return TransactionResponseDTO.from(transaction);
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    public TransactionResponseDTO reject(Long id, Long userId) {
+        // 상환 요청 검증
+        Transaction transaction = findByTransactionId(id);
+        if (transaction.getStatus() != TransactionStatus.PENDING) {
+            throw new InvalidStateException("해당 상환 요청은 이미 처리되었습니다.");
+        }
+
+        // 대여 검증
+        Agreement agreement = findByAgreementId(transaction.getAgreementId());
+        verifyCanRespond(userId, agreement, AgreementPartyRole.CREDITOR,
+                List.of(AgreementStatus.ACCEPTED, AgreementStatus.OVERDUE));
+
+        // 승인 처리
+        transaction.setStatus(TransactionStatus.REJECTED);
+        checkUpdateResult(transactionMapper.updateStatusById(id, TransactionStatus.REJECTED),
+                "상환 요청 승인에 실패했습니다.");
+
+        return TransactionResponseDTO.from(transaction);
+    }
+
 // ==========================
     // 내부 유틸리티
     // ==========================
