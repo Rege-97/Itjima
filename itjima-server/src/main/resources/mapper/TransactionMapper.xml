@@ -26,4 +26,14 @@
     ORDER BY id DESC
     LIMIT #{sizePlusOne}
   </select>
+  <select id="findById" resultType="com.itjima_server.domain.transaction.Transaction">
+    SELECT id, agreement_id, type, amount, status, created_at
+    FROM TRANSACTIONS
+    WHERE id = #{id}
+  </select>
+  <update id="updateStatusById">
+    UPDATE TRANSACTIONS
+    SET status = #{status}
+    WHERE id = #{id}
+  </update>
 </mapper>

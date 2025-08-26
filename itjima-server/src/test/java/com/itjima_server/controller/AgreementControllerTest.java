@@ -683,12 +683,9 @@ public class AgreementControllerTest {
             agreementService.accept(debtorId, agreementId);
 
             // 3) 거래 3건 생성
-            TransactionResponseDTO t1 = agreementService.createTransaction(debtorId, agreementId,
-                    new BigDecimal("1000"));
-            TransactionResponseDTO t2 = agreementService.createTransaction(debtorId, agreementId,
-                    new BigDecimal("1500"));
-            TransactionResponseDTO t3 = agreementService.createTransaction(debtorId, agreementId,
-                    new BigDecimal("2000"));
+            agreementService.createTransaction(debtorId, agreementId, new BigDecimal("1000"));
+            agreementService.createTransaction(debtorId, agreementId, new BigDecimal("1500"));
+            agreementService.createTransaction(debtorId, agreementId, new BigDecimal("2000"));
         }
 
         @Test
