@@ -2,7 +2,6 @@ package com.itjima_server.controller;
 
 import com.itjima_server.common.ApiResponseDTO;
 import com.itjima_server.common.PagedResultDTO;
-import com.itjima_server.dto.transaction.swagger.TransactionPagedResponse;
 import com.itjima_server.dto.user.request.UserChangeProfileRequestDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
 import com.itjima_server.dto.user.swagger.RecentPartnerPagedResponse;

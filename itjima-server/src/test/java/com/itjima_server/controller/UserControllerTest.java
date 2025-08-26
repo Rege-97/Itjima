@@ -3,6 +3,7 @@ package com.itjima_server.controller;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -13,6 +14,7 @@ import com.itjima_server.domain.item.ItemType;
 import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;
+import com.itjima_server.dto.user.request.UserChangeProfileRequestDTO;
 import com.itjima_server.dto.user.request.UserLoginRequestDTO;
 import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
 import com.itjima_server.dto.user.response.UserLoginResponseDTO;
@@ -158,4 +160,139 @@ class UserControllerTest {
                     .andDo(print());
         }
     }
+
+    @Nested
+    @DisplayName("프로필 조회 API TEST")
+    class GetProfileApi {
+
+        @Test
+        @DisplayName("성공 - 내 프로필 반환")
+        void get_me_success() throws Exception {
+            ResultActions ra = mockMvc.perform(
+                    get("/api/users/me")
+                            .header("Authorization", "Bearer " + userAAccessToken)
+                            .accept(MediaType.APPLICATION_JSON)
+            );
+
+            ra.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.data.id").value(userAId))
+                    .andExpect(jsonPath("$.data.email").value("usera@example.com"))
+                    .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("프로필 변경 API TEST")
+    class ChangeProfileApi {
+
+        @Test
+        @DisplayName("성공 - 전화번호만 변경")
+        void change_phone_only_success() throws Exception {
+            UserChangeProfileRequestDTO req = new UserChangeProfileRequestDTO();
+            req.setPhone("01077776666");
+
+            ResultActions ra = mockMvc.perform(
+                    patch("/api/users/me")
+                            .header("Authorization", "Bearer " + userAAccessToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(req))
+            );
+
+            ra.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.data.phone").value("01077776666"))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("성공 - 비밀번호만 변경")
+        void change_password_only_success() throws Exception {
+            UserChangeProfileRequestDTO req = new UserChangeProfileRequestDTO();
+            req.setPassword("NewPass123!");
+
+            ResultActions ra = mockMvc.perform(
+                    patch("/api/users/me")
+                            .header("Authorization", "Bearer " + userAAccessToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(req))
+            );
+
+            ra.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.data.id").value(userAId))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("성공 - 전화번호+비밀번호 동시 변경")
+        void change_both_success() throws Exception {
+            UserChangeProfileRequestDTO req = new UserChangeProfileRequestDTO();
+            req.setPhone("01066665555");
+            req.setPassword("Mix1234!");
+
+            ResultActions ra = mockMvc.perform(
+                    patch("/api/users/me")
+                            .header("Authorization", "Bearer " + userAAccessToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(req))
+            );
+
+            ra.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.data.phone").value("01066665555"))
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("실패 - 유효성 오류(하이픈 포함 전화번호)")
+        void change_invalid_phone_format() throws Exception {
+            UserChangeProfileRequestDTO req = new UserChangeProfileRequestDTO();
+            req.setPhone("010-1234-5678"); // 숫자만 허용
+
+            mockMvc.perform(
+                            patch("/api/users/me")
+                                    .header("Authorization", "Bearer " + userAAccessToken)
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(req))
+                    )
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("실패 - 전화번호 중복")
+        void change_phone_duplicate() throws Exception {
+            // 중복 대상 유저 생성
+            UserRegisterRequestDTO regB = new UserRegisterRequestDTO();
+            regB.setName("UserB");
+            regB.setEmail("userb@example.com");
+            regB.setPassword("password123!");
+            regB.setPhone("01099998888");
+            authService.register(regB);
+
+            // A가 같은 번호로 변경 시도 → 409
+            UserChangeProfileRequestDTO req = new UserChangeProfileRequestDTO();
+            req.setPhone("01099998888");
+
+            mockMvc.perform(
+                            patch("/api/users/me")
+                                    .header("Authorization", "Bearer " + userAAccessToken)
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(req))
+                    )
+                    .andExpect(status().isConflict());
+        }
+
+        @Test
+        @DisplayName("실패 - 본문 없음")
+        void change_missing_body() throws Exception {
+            mockMvc.perform(
+                            patch("/api/users/me")
+                                    .header("Authorization", "Bearer " + userAAccessToken)
+                                    .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isBadRequest());
+        }
+    }
+
 }
