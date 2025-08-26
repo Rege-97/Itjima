@@ -300,7 +300,7 @@ public class AgreementController {
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
             }
     )
-    @PostMapping("/{id}/transaction")
+    @PostMapping("/{id}/transactions")
     public ResponseEntity<?> createTransaction(@PathVariable Long id,
             @Valid @RequestBody TransactionCreateRequestDTO req,
             @AuthenticationPrincipal CustomUserDetails user) {
@@ -308,6 +308,16 @@ public class AgreementController {
                 req.getAmount());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponseDTO.success(HttpStatus.CREATED.value(), "상환 요청 성공", res));
+    }
+
+    @GetMapping("/{id}/transactions")
+    public ResponseEntity<?> getTransactionList(@PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestParam(required = false) Long lastId,
+            @RequestParam(defaultValue = "20") int size) {
+        PagedResultDTO<?> res = agreementService.getTransactionList(user.getId(), id, lastId, size);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 목록 조회 성공", res));
     }
 
 
