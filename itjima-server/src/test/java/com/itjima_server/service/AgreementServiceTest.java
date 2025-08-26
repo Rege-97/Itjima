@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
@@ -20,7 +21,9 @@ import com.itjima_server.domain.agreement.AgreementStatus;
 import com.itjima_server.domain.item.Item;
 import com.itjima_server.domain.item.ItemStatus;
 import com.itjima_server.domain.item.ItemType;
+import com.itjima_server.domain.transaction.Transaction;
 import com.itjima_server.domain.transaction.TransactionStatus;
+import com.itjima_server.domain.transaction.TransactionType;
 import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
@@ -960,23 +963,18 @@ public class AgreementServiceTest {
         }
 
         @Test
-        @DisplayName("실패 - 남은 금액 초과")
-        void create_transaction_fail_over_amount() {
+        @DisplayName("실패 - 허용되지 않은 상태(PENDING 등)")
+        void create_transaction_fail_invalid_status() {
             // given
-            when(agreementMapper.findById(agreementMoney.getId())).thenReturn(agreementMoney);
-            when(itemMapper.findById(agreementMoney.getItemId()))
-                    .thenReturn(moneyItem);
-            when(agreementPartyMapper.findByAgreementId(agreementMoney.getId())).thenReturn(
-                    List.of(creditorParty, debtorParty));
-            // 총 확정 상환 9,000 → 남은 1,000
-            when(transactionMapper.sumConfirmedAmountByAgreementId(agreementMoney.getId()))
-                    .thenReturn(new BigDecimal("9000.00"));
+            agreementMoney.setStatus(AgreementStatus.PENDING);
 
-            // when & then (요청 2,000은 초과)
+            when(agreementMapper.findById(agreementMoney.getId())).thenReturn(agreementMoney);
+            when(itemMapper.findById(agreementMoney.getItemId())).thenReturn(moneyItem);
+
+            // when & then
             assertThrows(InvalidStateException.class, () ->
                     agreementService.createTransaction(debtor.getId(), agreementMoney.getId(),
-                            new BigDecimal("2000.00")));
-            verify(transactionMapper, times(0)).insert(any());
+                            new BigDecimal("500.00")));
         }
 
         @Test
@@ -995,6 +993,178 @@ public class AgreementServiceTest {
         }
 
         @Test
+        @DisplayName("실패 - 남은 금액 초과")
+        void create_transaction_fail_over_amount() {
+            // given
+            when(agreementMapper.findById(agreementMoney.getId())).thenReturn(agreementMoney);
+            when(itemMapper.findById(agreementMoney.getItemId()))
+                    .thenReturn(moneyItem);
+            when(agreementPartyMapper.findByAgreementId(agreementMoney.getId())).thenReturn(
+                    List.of(creditorParty, debtorParty));
+            // 총 확정 상환 9,000 → 남은 1,000
+            when(transactionMapper.sumConfirmedAmountByAgreementId(agreementMoney.getId()))
+                    .thenReturn(new BigDecimal("9000.00"));
+
+            // when & then (요청 2,000은 초과)
+            assertThrows(InvalidStateException.class, () ->
+                    agreementService.createTransaction(debtor.getId(), agreementMoney.getId(),
+                            new BigDecimal("2000.00")));
+            verify(transactionMapper, times(0)).insert(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("상환 목록 조회 로직")
+    class GetTransactionListTest {
+
+        private Agreement agreementMoney;
+        private Agreement agreementObject;
+        private Item moneyItem;
+        private Item objectItem;
+        private AgreementParty creditorParty;
+        private AgreementParty debtorParty;
+        private Transaction transaction1;
+        private Transaction transaction2;
+        private Transaction transaction3;
+
+
+        @BeforeEach
+        void setUp() {
+            long agreementId = 100L;
+
+            // 금전 타입 아이템
+            moneyItem = Item.builder()
+                    .id(10L)
+                    .userId(creditor.getId())
+                    .type(ItemType.MONEY)
+                    .title("금전 대여")
+                    .status(ItemStatus.ON_LOAN)
+                    .build();
+
+            // 물건 타입 아이템
+            objectItem = Item.builder()
+                    .id(11L)
+                    .userId(creditor.getId())
+                    .type(ItemType.OBJECT)
+                    .title("물건 대여")
+                    .status(ItemStatus.ON_LOAN)
+                    .build();
+
+            agreementMoney = Agreement.builder()
+                    .id(agreementId)
+                    .itemId(moneyItem.getId())
+                    .status(AgreementStatus.ACCEPTED) // 상환 요청 허용 상태
+                    .amount(new BigDecimal("10000.00"))
+                    .build();
+
+            agreementObject = Agreement.builder()
+                    .id(agreementId + 1)
+                    .itemId(objectItem.getId())
+                    .status(AgreementStatus.ACCEPTED)
+                    .amount(new BigDecimal("10000.00"))
+                    .build();
+
+            // 공통 파티(mock)
+            creditorParty = AgreementParty.builder()
+                    .agreementId(agreementId)
+                    .userId(creditor.getId())
+                    .role(AgreementPartyRole.CREDITOR)
+                    .build();
+            debtorParty = AgreementParty.builder()
+                    .agreementId(agreementId)
+                    .userId(debtor.getId())
+                    .role(AgreementPartyRole.DEBTOR)
+                    .build();
+
+            transaction1 = Transaction.builder()
+                    .id(1L)
+                    .agreementId(agreementMoney.getId())
+                    .type(TransactionType.REPAYMENT)
+                    .status(TransactionStatus.PENDING)
+                    .amount(new BigDecimal("100.00"))
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            transaction2 = Transaction.builder()
+                    .id(2L)
+                    .agreementId(agreementMoney.getId())
+                    .type(TransactionType.REPAYMENT)
+                    .status(TransactionStatus.PENDING)
+                    .amount(new BigDecimal("100.00"))
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            transaction3 = Transaction.builder()
+                    .id(3L)
+                    .agreementId(agreementMoney.getId())
+                    .type(TransactionType.REPAYMENT)
+                    .status(TransactionStatus.PENDING)
+                    .amount(new BigDecimal("100.00"))
+                    .createdAt(LocalDateTime.now())
+                    .build();
+        }
+
+        @Test
+        @DisplayName("성공")
+        void get_transaction_list_success() {
+            // given
+            int size = 5;
+
+            when(agreementMapper.findById(agreementMoney.getId())).thenReturn(agreementMoney);
+            when(itemMapper.findById(agreementMoney.getItemId())).thenReturn(moneyItem);
+            when(agreementPartyMapper.findByAgreementId(agreementMoney.getId())).thenReturn(
+                    List.of(creditorParty, debtorParty));
+            when(transactionMapper.findByAgreementId(agreementMoney.getId(), null,
+                    size + 1)).thenReturn(
+                    List.of(transaction1));
+
+            // when
+            PagedResultDTO<?> res = agreementService.getTransactionList(debtor.getId(),
+                    agreementMoney.getId(), null, size);
+
+            // then
+            assertNotNull(res);
+            assertEquals(1, res.getItems().size());
+            assertFalse(res.isHasNext());
+        }
+
+        @Test
+        @DisplayName("성공 - 다음 페이지 있음")
+        void get_transaction_list_success_has_next() {
+            // given
+            int size = 2;
+            List<Transaction> dummyList = Arrays.asList(
+                    transaction1, transaction2, transaction3
+            );
+            when(agreementMapper.findById(agreementMoney.getId())).thenReturn(agreementMoney);
+            when(itemMapper.findById(agreementMoney.getItemId())).thenReturn(moneyItem);
+            when(agreementPartyMapper.findByAgreementId(agreementMoney.getId())).thenReturn(
+                    List.of(creditorParty, debtorParty));
+            when(transactionMapper.findByAgreementId(agreementMoney.getId(), null,
+                    size + 1)).thenReturn(new ArrayList<>(dummyList));
+
+            // when
+            PagedResultDTO<?> res = agreementService.getTransactionList(debtor.getId(),
+                    agreementMoney.getId(), null, size);
+
+            // then
+            assertNotNull(res);
+            assertEquals(size, res.getItems().size());
+            assertTrue(res.isHasNext());
+        }
+
+        @Test
+        @DisplayName("실패 - 금전 대여가 아닌 경우")
+        void create_transaction_fail_not_money_item() {
+            // given
+            when(agreementMapper.findById(agreementObject.getId())).thenReturn(agreementObject);
+            when(itemMapper.findById(agreementObject.getItemId())).thenReturn(objectItem);
+
+            // when & then
+            assertThrows(InvalidStateException.class, () ->
+                    agreementService.getTransactionList(debtor.getId(),
+                            agreementObject.getId(), null, anyInt()));
+        }
+
+        @Test
         @DisplayName("실패 - 허용되지 않은 상태(PENDING 등)")
         void create_transaction_fail_invalid_status() {
             // given
@@ -1005,8 +1175,8 @@ public class AgreementServiceTest {
 
             // when & then
             assertThrows(InvalidStateException.class, () ->
-                    agreementService.createTransaction(debtor.getId(), agreementMoney.getId(),
-                            new BigDecimal("500.00")));
+                    agreementService.getTransactionList(debtor.getId(),
+                            agreementMoney.getId(), null, anyInt()));
         }
     }
 }
