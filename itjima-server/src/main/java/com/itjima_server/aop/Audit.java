@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AuditLog {
+public @interface Audit {
 
     AuditLogAction action();
 }
