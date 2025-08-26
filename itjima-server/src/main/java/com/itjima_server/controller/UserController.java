@@ -2,6 +2,7 @@ package com.itjima_server.controller;
 
 import com.itjima_server.common.ApiResponseDTO;
 import com.itjima_server.common.PagedResultDTO;
+import com.itjima_server.dto.user.request.UserChangeProfileRequestDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
 import com.itjima_server.dto.user.swagger.RecentPartnerPagedResponse;
 import com.itjima_server.security.CustomUserDetails;
@@ -10,12 +11,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -66,5 +70,13 @@ public class UserController {
         UserResponseDTO res = userService.getProfile(user.getId());
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "프로필 조회 성공", res));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<?> changeProfile(@AuthenticationPrincipal CustomUserDetails user,
+            @Valid @RequestBody UserChangeProfileRequestDTO req) {
+        UserResponseDTO res = userService.changeProfile(user.getId(), req);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "프로필 변경 성공", res));
     }
 }
