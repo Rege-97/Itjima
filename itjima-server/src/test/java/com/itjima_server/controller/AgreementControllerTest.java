@@ -464,7 +464,7 @@ public class AgreementControllerTest {
             reg3.setEmail("third@example.com");
             reg3.setPassword("password123!");
             reg3.setPhone("01022223333");
-            UserResponseDTO third = userService.register(reg3);
+            userService.register(reg3);
             UserLoginResponseDTO thirdLogin =
                     userService.login(new UserLoginRequestDTO("third@example.com", "password123!"));
 
@@ -659,12 +659,7 @@ public class AgreementControllerTest {
     @DisplayName("상환(거래) 목록 조회 API")
     class GetTransactionListApi {
 
-        private long moneyItemId;
         private long agreementId;
-
-        private long tx1Id;
-        private long tx2Id;
-        private long tx3Id;
 
         @BeforeEach
         void setUpAcceptedMoneyAgreementWithTransactions() {
@@ -674,7 +669,7 @@ public class AgreementControllerTest {
             itemReq.setTitle("금전 대여 아이템");
             itemReq.setDescription("설명");
             ItemResponseDTO itemRes = itemService.create(itemReq, creditorId);
-            moneyItemId = itemRes.getId();
+            long moneyItemId = itemRes.getId();
 
             // 2) 대여 생성 후 채무자가 수락하여 ACCEPTED로 변경
             AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
@@ -688,12 +683,12 @@ public class AgreementControllerTest {
             agreementService.accept(debtorId, agreementId);
 
             // 3) 거래 3건 생성
-            TransactionResponseDTO t1 = agreementService.createTransaction(debtorId, agreementId, new BigDecimal("1000"));
-            TransactionResponseDTO t2 = agreementService.createTransaction(debtorId, agreementId, new BigDecimal("1500"));
-            TransactionResponseDTO t3 = agreementService.createTransaction(debtorId, agreementId, new BigDecimal("2000"));
-            tx1Id = t1.getId();
-            tx2Id = t2.getId();
-            tx3Id = t3.getId();
+            TransactionResponseDTO t1 = agreementService.createTransaction(debtorId, agreementId,
+                    new BigDecimal("1000"));
+            TransactionResponseDTO t2 = agreementService.createTransaction(debtorId, agreementId,
+                    new BigDecimal("1500"));
+            TransactionResponseDTO t3 = agreementService.createTransaction(debtorId, agreementId,
+                    new BigDecimal("2000"));
         }
 
         @Test
