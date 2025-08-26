@@ -15,4 +15,15 @@
       AND status = 'CONFIRMED'
       AND agreement_id = #{agreementId}
   </select>
+  <select id="findByAgreementId" resultType="com.itjima_server.domain.transaction.Transaction">
+    SELECT id, agreement_id, type, amount, status, created_at
+    FROM TRANSACTIONS
+    WHERE
+    agreement_id = #{agreementId}
+    <if test="lastId != null">
+      AND id &lt; #{lastId}
+    </if>
+    ORDER BY id DESC
+    LIMIT #{sizePlusOne}
+  </select>
 </mapper>

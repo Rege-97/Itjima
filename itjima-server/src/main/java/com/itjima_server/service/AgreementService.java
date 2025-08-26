@@ -299,7 +299,6 @@ public class AgreementService {
      */
     @Transactional(readOnly = true)
     public PagedResultDTO<?> getList(Long userId, Long lastId, int size, AgreementPartyRole role) {
-
         int sizePlusOne = size + 1;
         List<AgreementDetailDTO> AgreementList = agreementMapper.findByUserId(userId, role.name(),
                 lastId, sizePlusOne);
@@ -366,6 +365,48 @@ public class AgreementService {
         checkUpdateResult(transactionMapper.insert(transaction), "상환 요청에 실패했습니다.");
 
         return TransactionResponseDTO.from(transaction);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResultDTO<?> getTransactionList(Long userId, Long agreementId, Long lastId,
+            int size) {
+        // 대여 검증
+        Agreement agreement = findByAgreementId(agreementId);
+
+        // 대여 물품 검증
+        Item item = itemMapper.findById(agreement.getItemId());
+        if (item != null && item.getType() != ItemType.MONEY) {
+            throw new InvalidStateException("상환 요청은 금전 대여에만 이용할 수 있습니다.");
+        }
+
+        verifyCanRespond(userId, agreement, null,
+                List.of(AgreementStatus.ACCEPTED, AgreementStatus.OVERDUE,
+                        AgreementStatus.COMPLETED));
+
+        int sizePlusOne = size + 1;
+
+        List<Transaction> transactionList = transactionMapper.findByAgreementId(agreementId, lastId,
+                sizePlusOne);
+
+        if (transactionList == null || transactionList.isEmpty()) {
+            return PagedResultDTO.from(null, false, null);
+        }
+
+        boolean hasNext = false;
+        if (transactionList.size() == sizePlusOne) {
+            hasNext = true;
+            transactionList.remove(size);
+        }
+
+        List<TransactionResponseDTO> transactions = new ArrayList<>();
+
+        for (Transaction transaction : transactionList) {
+            transactions.add(TransactionResponseDTO.from(transaction));
+        }
+
+        lastId = transactionList.get(transactionList.size() - 1).getId();
+
+        return PagedResultDTO.from(transactions, hasNext, lastId);
     }
 
     // ==========================
@@ -466,11 +507,17 @@ public class AgreementService {
             throw new InvalidStateException("대여 참여자 정보 구성이 올바르지 않습니다.");
         }
 
-        AgreementParty requiredParty =
-                (agreementPartyRole == AgreementPartyRole.CREDITOR) ? creditor : debtor;
+        if (agreementPartyRole != null) {
+            AgreementParty requiredParty =
+                    (agreementPartyRole == AgreementPartyRole.CREDITOR) ? creditor : debtor;
 
-        if (requiredParty.getUserId() != userId) {
-            throw new NotAuthorException("해당 요청을 처리할 권한이 없습니다.");
+            if (requiredParty.getUserId() != userId) {
+                throw new NotAuthorException("해당 요청을 처리할 권한이 없습니다.");
+            }
+        } else {
+            if (creditor.getUserId() != userId && debtor.getUserId() != userId) {
+                throw new NotAuthorException("해당 요청을 처리할 권한이 없습니다.");
+            }
         }
 
         return List.of(creditor, debtor);
