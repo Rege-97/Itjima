@@ -1,6 +1,7 @@
 package com.itjima_server.controller;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -11,14 +12,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itjima_server.domain.AgreementPartyRole;
-import com.itjima_server.domain.AgreementStatus;
-import com.itjima_server.domain.ItemStatus;
-import com.itjima_server.domain.ItemType;
+import com.itjima_server.domain.agreement.AgreementPartyRole;
+import com.itjima_server.domain.agreement.AgreementStatus;
+import com.itjima_server.domain.item.ItemStatus;
+import com.itjima_server.domain.item.ItemType;
+import com.itjima_server.domain.transaction.TransactionStatus;
 import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;
+import com.itjima_server.dto.transaction.request.TransactionCreateRequestDTO;
 import com.itjima_server.dto.user.request.UserLoginRequestDTO;
 import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
 import com.itjima_server.dto.user.response.UserLoginResponseDTO;
@@ -37,6 +40,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -459,7 +463,7 @@ public class AgreementControllerTest {
             reg3.setEmail("third@example.com");
             reg3.setPassword("password123!");
             reg3.setPhone("01022223333");
-            UserResponseDTO third = userService.register(reg3);
+            userService.register(reg3);
             UserLoginResponseDTO thirdLogin =
                     userService.login(new UserLoginRequestDTO("third@example.com", "password123!"));
 
@@ -519,6 +523,214 @@ public class AgreementControllerTest {
                     .andExpect(jsonPath("$.data.hasNext").value(true))
                     .andExpect(jsonPath("$.data.lastId", notNullValue()))
                     .andDo(print());
+        }
+    }
+
+    @Nested
+    @DisplayName("상환 요청 API")
+    class CreateTransactionApi {
+
+        private long agreementId;
+
+        @BeforeEach
+        void setUpMoneyAgreementAccepted() {
+            // 금전 아이템 생성 (채권자 소유)
+            ItemCreateRequestDTO itemReq = new ItemCreateRequestDTO();
+            itemReq.setType(ItemType.MONEY);
+            itemReq.setTitle("금전 대여 아이템");
+            itemReq.setDescription("설명");
+            ItemResponseDTO itemRes = itemService.create(itemReq, creditorId);
+            long moneyItemId = itemRes.getId();
+
+            // 대여 생성(채권자 → 채무자)
+            AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
+            req.setItemId(moneyItemId);
+            req.setAmount(new BigDecimal("10000.00"));
+            req.setDueAt(LocalDateTime.now().plusDays(7));
+            req.setTerms("money-only");
+            req.setDebtorUserId(debtorId);
+            AgreementResponseDTO created = agreementService.create(creditorId, req);
+            agreementId = created.getId();
+
+            // 채무자 승인 → ACCEPTED
+            agreementService.accept(debtorId, agreementId);
+        }
+
+        @Test
+        @DisplayName("성공")
+        void create_transaction_success() throws Exception {
+            // given
+            TransactionCreateRequestDTO body = new TransactionCreateRequestDTO();
+            body.setAmount(new BigDecimal("5000.00"));
+            String json = objectMapper.writeValueAsString(body);
+
+            // when
+            ResultActions ra = mockMvc.perform(
+                    post("/api/agreements/{id}/transactions", agreementId)
+                            .header("Authorization", "Bearer " + debtorAccessToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json)
+            );
+
+            // then
+            ra.andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.status").value(201))
+                    .andExpect(jsonPath("$.message", containsString("상환 요청 성공")))
+                    .andExpect(jsonPath("$.data.amount").value(5000.00))
+                    .andExpect(jsonPath("$.data.status").value(TransactionStatus.PENDING.name()));
+        }
+
+        @Test
+        @DisplayName("실패 - 금전 대여가 아님(OBJECT)")
+        void create_transaction_fail_not_money_item() throws Exception {
+            // given: 물건 아이템으로 새 대여 생성
+            ItemCreateRequestDTO itemReq = new ItemCreateRequestDTO();
+            itemReq.setType(ItemType.OBJECT);
+            itemReq.setTitle("물건 아이템");
+            itemReq.setDescription("설명");
+            ItemResponseDTO obj = itemService.create(itemReq, creditorId);
+
+            AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
+            req.setItemId(obj.getId());
+            req.setAmount(new BigDecimal("10000.00"));
+            req.setDueAt(LocalDateTime.now().plusDays(7));
+            req.setTerms("object");
+            req.setDebtorUserId(debtorId);
+            AgreementResponseDTO created = agreementService.create(creditorId, req);
+            long objectAgreementId = created.getId();
+            agreementService.accept(debtorId, objectAgreementId);
+
+            TransactionCreateRequestDTO body = new TransactionCreateRequestDTO();
+            body.setAmount(new BigDecimal("1000.00"));
+            String json = objectMapper.writeValueAsString(body);
+
+            // when & then
+            mockMvc.perform(post("/api/agreements/{id}/transactions", objectAgreementId)
+                            .header("Authorization", "Bearer " + debtorAccessToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.status").value(409));
+        }
+
+        @Test
+        @DisplayName("실패 - 남은 금액 초과")
+        void create_transaction_fail_over_amount() throws Exception {
+            // given
+            TransactionCreateRequestDTO body = new TransactionCreateRequestDTO();
+            body.setAmount(new BigDecimal("20000.00")); // 총액 10,000 초과
+            String json = objectMapper.writeValueAsString(body);
+
+            mockMvc.perform(post("/api/agreements/{id}/transactions", agreementId)
+                            .header("Authorization", "Bearer " + debtorAccessToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.status").value(409));
+        }
+
+        @Test
+        @DisplayName("실패 - 본인 권한 아님(채권자가 호출)")
+        void create_transaction_fail_forbidden() throws Exception {
+            TransactionCreateRequestDTO body = new TransactionCreateRequestDTO();
+            body.setAmount(new BigDecimal("1000.00"));
+            String json = objectMapper.writeValueAsString(body);
+
+            mockMvc.perform(post("/api/agreements/{id}/transactions", agreementId)
+                            .header("Authorization", "Bearer " + creditorAccessToken) // 채권자 토큰
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().isForbidden()) // NotAuthorException → 403
+                    .andExpect(jsonPath("$.status").value(403));
+        }
+
+        @Test
+        @DisplayName("실패 - 요청 본문 없음")
+        void create_transaction_fail_missing_body() throws Exception {
+            mockMvc.perform(post("/api/agreements/{id}/transactions", agreementId)
+                            .header("Authorization", "Bearer " + debtorAccessToken)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest());
+        }
+    }
+
+    @Nested
+    @DisplayName("상환(거래) 목록 조회 API")
+    class GetTransactionListApi {
+
+        private long agreementId;
+
+        @BeforeEach
+        void setUpAcceptedMoneyAgreementWithTransactions() {
+            // 1) 금전 아이템 생성
+            ItemCreateRequestDTO itemReq = new ItemCreateRequestDTO();
+            itemReq.setType(ItemType.MONEY);
+            itemReq.setTitle("금전 대여 아이템");
+            itemReq.setDescription("설명");
+            ItemResponseDTO itemRes = itemService.create(itemReq, creditorId);
+            long moneyItemId = itemRes.getId();
+
+            // 2) 대여 생성 후 채무자가 수락하여 ACCEPTED로 변경
+            AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
+            req.setItemId(moneyItemId);
+            req.setAmount(new BigDecimal("10000.00"));
+            req.setDueAt(LocalDateTime.now().plusDays(7));
+            req.setTerms("money-only");
+            req.setDebtorUserId(debtorId);
+            AgreementResponseDTO created = agreementService.create(creditorId, req);
+            agreementId = created.getId();
+            agreementService.accept(debtorId, agreementId);
+
+            // 3) 거래 3건 생성
+            agreementService.createTransaction(debtorId, agreementId, new BigDecimal("1000"));
+            agreementService.createTransaction(debtorId, agreementId, new BigDecimal("1500"));
+            agreementService.createTransaction(debtorId, agreementId, new BigDecimal("2000"));
+        }
+
+        @Test
+        @DisplayName("성공 - 첫 페이지, 다음 페이지 있음(size=2)")
+        void get_transaction_list_success_has_next() throws Exception {
+            ResultActions ra = mockMvc.perform(
+                    get("/api/agreements/{id}/transactions", agreementId)
+                            .param("size", "2")
+                            .header("Authorization", "Bearer " + debtorAccessToken)
+                            .accept(MediaType.APPLICATION_JSON)
+            );
+
+            ra.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.data.items", hasSize(2)))
+                    .andExpect(jsonPath("$.data.hasNext").value(true))
+                    .andExpect(jsonPath("$.data.lastId", notNullValue()));
+        }
+
+        @Test
+        @DisplayName("성공 - 다음 페이지 없음(lastId로 이어받기)")
+        void get_transaction_list_success_no_next() throws Exception {
+            MvcResult firstResult = mockMvc.perform(
+                            get("/api/agreements/{id}/transactions", agreementId)
+                                    .param("size", "2")
+                                    .header("Authorization", "Bearer " + debtorAccessToken)
+                                    .accept(MediaType.APPLICATION_JSON)
+                    ).andExpect(status().isOk())
+                    .andReturn();
+
+            String body = firstResult.getResponse().getContentAsString();
+            String lastId = body.replaceAll(".*\"lastId\"\\s*:\\s*(\\d+).*", "$1");
+
+            ResultActions ra = mockMvc.perform(
+                    get("/api/agreements/{id}/transactions", agreementId)
+                            .param("size", "2")
+                            .param("lastId", lastId)
+                            .header("Authorization", "Bearer " + debtorAccessToken)
+                            .accept(MediaType.APPLICATION_JSON)
+            );
+
+            ra.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.data.items", hasSize(1))) // 총 3건 → 2 + 1
+                    .andExpect(jsonPath("$.data.hasNext").value(false))
+                    .andExpect(jsonPath("$.data.lastId", notNullValue()));
         }
     }
 }

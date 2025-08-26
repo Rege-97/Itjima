@@ -1,4 +1,4 @@
-package com.itjima_server.domain;
+package com.itjima_server.domain.agreement;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

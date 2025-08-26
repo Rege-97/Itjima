@@ -1,6 +1,6 @@
 package com.itjima_server.mapper;
 
-import com.itjima_server.domain.User;
+import com.itjima_server.domain.user.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

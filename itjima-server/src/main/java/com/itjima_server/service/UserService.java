@@ -1,8 +1,8 @@
 package com.itjima_server.service;
 
-import com.itjima_server.domain.Provider;
-import com.itjima_server.domain.RefreshToken;
-import com.itjima_server.domain.User;
+import com.itjima_server.domain.user.Provider;
+import com.itjima_server.domain.user.RefreshToken;
+import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.user.request.TokenRefreshRequestDTO;
 import com.itjima_server.dto.user.request.UserLoginRequestDTO;
 import com.itjima_server.dto.user.request.UserRegisterRequestDTO;

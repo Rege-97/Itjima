@@ -1,6 +1,6 @@
 package com.itjima_server.mapper;
 
-import com.itjima_server.domain.RefreshToken;
+import com.itjima_server.domain.user.RefreshToken;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

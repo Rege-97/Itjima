@@ -1,7 +1,7 @@
 package com.itjima_server.mapper;
 
-import com.itjima_server.domain.Agreement;
-import com.itjima_server.domain.AgreementStatus;
+import com.itjima_server.domain.agreement.Agreement;
+import com.itjima_server.domain.agreement.AgreementStatus;
 import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;

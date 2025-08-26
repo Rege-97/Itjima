@@ -1,6 +1,6 @@
 package com.itjima_server.security;
 
-import com.itjima_server.domain.User;
+import com.itjima_server.domain.user.User;
 import com.itjima_server.mapper.UserMapper;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;

@@ -95,8 +95,9 @@ CREATE TABLE IF NOT EXISTS `TRANSACTIONS`
 (
     `id`           bigint         NOT NULL AUTO_INCREMENT COMMENT 'ID',
     `agreement_id` bigint         NOT NULL COMMENT '대여ID',
-    `tx_type`      varchar(10)    NOT NULL COMMENT '거래유형 (REPAYMENT)',
+    `type`         varchar(10)    NOT NULL COMMENT '거래유형 (REPAYMENT)',
     `amount`       decimal(10, 0) NOT NULL COMMENT '거래금액',
+    `status`       varchar(20)    NOT NULL COMMENT '상태 (PENDING, CONFIRMED, REJECTED)',
     `created_at`   datetime       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '기록일',
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_transactions_agreement` FOREIGN KEY (`agreement_id`) REFERENCES `AGREEMENTS` (`id`) ON DELETE CASCADE

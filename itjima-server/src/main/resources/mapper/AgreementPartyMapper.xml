@@ -3,12 +3,12 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.itjima_server.mapper.AgreementPartyMapper">
-  <insert id="insert" parameterType="com.itjima_server.domain.AgreementParty"
+  <insert id="insert" parameterType="com.itjima_server.domain.agreement.AgreementParty"
     useGeneratedKeys="true" keyProperty="id">
     INSERT INTO AGREEMENT_PARTIES (agreement_id, user_id, role, confirm_at)
     VALUES (#{agreementId}, ${userId}, #{role}, #{confirmAt})
   </insert>
-  <select id="findByAgreementId" resultType="com.itjima_server.domain.AgreementParty">
+  <select id="findByAgreementId" resultType="com.itjima_server.domain.agreement.AgreementParty">
     SELECT id, agreement_id, user_id, role, confirm_at
     FROM AGREEMENT_PARTIES
     WHERE agreement_id = #{agreementId}

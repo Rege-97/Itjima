@@ -11,8 +11,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.itjima_server.common.PagedResultDTO;
-import com.itjima_server.domain.Item;
-import com.itjima_server.domain.ItemType;
+import com.itjima_server.domain.item.Item;
+import com.itjima_server.domain.item.ItemType;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;

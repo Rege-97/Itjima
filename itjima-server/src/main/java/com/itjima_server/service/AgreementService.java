@@ -1,18 +1,23 @@
 package com.itjima_server.service;
 
 import com.itjima_server.common.PagedResultDTO;
-import com.itjima_server.domain.Agreement;
-import com.itjima_server.domain.AgreementParty;
-import com.itjima_server.domain.AgreementPartyRole;
-import com.itjima_server.domain.AgreementStatus;
-import com.itjima_server.domain.Item;
-import com.itjima_server.domain.ItemStatus;
-import com.itjima_server.domain.User;
+import com.itjima_server.domain.agreement.Agreement;
+import com.itjima_server.domain.agreement.AgreementParty;
+import com.itjima_server.domain.agreement.AgreementPartyRole;
+import com.itjima_server.domain.agreement.AgreementStatus;
+import com.itjima_server.domain.item.Item;
+import com.itjima_server.domain.item.ItemStatus;
+import com.itjima_server.domain.item.ItemType;
+import com.itjima_server.domain.transaction.Transaction;
+import com.itjima_server.domain.transaction.TransactionStatus;
+import com.itjima_server.domain.transaction.TransactionType;
+import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementPartyInfoDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
+import com.itjima_server.dto.transaction.response.TransactionResponseDTO;
 import com.itjima_server.dto.user.response.UserSimpleInfoDTO;
 import com.itjima_server.exception.agreement.NotFoundAgreementException;
 import com.itjima_server.exception.agreement.NotInsertAgreementException;
@@ -24,7 +29,9 @@ import com.itjima_server.exception.user.NotFoundUserException;
 import com.itjima_server.mapper.AgreementMapper;
 import com.itjima_server.mapper.AgreementPartyMapper;
 import com.itjima_server.mapper.ItemMapper;
+import com.itjima_server.mapper.TransactionMapper;
 import com.itjima_server.mapper.UserMapper;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 대여 관련 비즈니스 로직을 수행하는 서비스 클래스
  *
  * @author Rege-97
- * @since 2025-08-25
+ * @since 2025-08-26
  */
 @Service
 @RequiredArgsConstructor
@@ -46,6 +53,7 @@ public class AgreementService {
     private final AgreementPartyMapper agreementPartyMapper;
     private final UserMapper userMapper;
     private final ItemMapper itemMapper;
+    private final TransactionMapper transactionMapper;
 
     /**
      * 대여 생성 처리
@@ -291,7 +299,6 @@ public class AgreementService {
      */
     @Transactional(readOnly = true)
     public PagedResultDTO<?> getList(Long userId, Long lastId, int size, AgreementPartyRole role) {
-
         int sizePlusOne = size + 1;
         List<AgreementDetailDTO> AgreementList = agreementMapper.findByUserId(userId, role.name(),
                 lastId, sizePlusOne);
@@ -315,6 +322,100 @@ public class AgreementService {
         lastId = AgreementList.get(AgreementList.size() - 1).getAgreementId();
 
         return PagedResultDTO.from(agreements, hasNext, lastId);
+    }
+
+    /**
+     * 금전 상환 요청 (채무자만 가능)
+     *
+     * @param userId      로그인한 사용자
+     * @param agreementId 대여 ID
+     * @param amount      상환 금액
+     * @return 요청 완료된 상환 응답 DTO
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public TransactionResponseDTO createTransaction(Long userId, Long agreementId,
+            BigDecimal amount) {
+        // 대여 검증
+        Agreement agreement = findByAgreementId(agreementId);
+
+        // 대여 물품 검증
+        Item item = itemMapper.findById(agreement.getItemId());
+        if (item != null && item.getType() != ItemType.MONEY) {
+            throw new InvalidStateException("상환 요청은 금전 대여에만 이용할 수 있습니다.");
+        }
+
+        verifyCanRespond(userId, agreement, AgreementPartyRole.DEBTOR,
+                List.of(AgreementStatus.ACCEPTED, AgreementStatus.OVERDUE));
+
+        // 남은 상환 금액 검증
+        BigDecimal totalPaidAmount = transactionMapper.sumConfirmedAmountByAgreementId(agreementId);
+        BigDecimal remainingAmount = agreement.getAmount().subtract(totalPaidAmount);
+        if (amount.compareTo(remainingAmount) > 0) {
+            throw new InvalidStateException("요청 금액이 남은 잔액(" + remainingAmount + "원)을 초과할 수 없습니다.");
+        }
+
+        Transaction transaction = Transaction.builder()
+                .agreementId(agreementId)
+                .type(TransactionType.REPAYMENT)
+                .amount(amount)
+                .status(TransactionStatus.PENDING)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        checkUpdateResult(transactionMapper.insert(transaction), "상환 요청에 실패했습니다.");
+
+        return TransactionResponseDTO.from(transaction);
+    }
+
+    /**
+     * 대여 목록 조회 (무한 스크롤 커서 기반)
+     *
+     * @param userId      로그인한 사용자 ID
+     * @param agreementId 대여 ID
+     * @param lastId      마지막으로 조회한 대여 ID
+     * @param size        요청한 페이지 크기
+     * @return 항목(items), hasNext, lastId를 포함한 페이지 응답
+     */
+    @Transactional(readOnly = true)
+    public PagedResultDTO<?> getTransactionList(Long userId, Long agreementId, Long lastId,
+            int size) {
+        // 대여 검증
+        Agreement agreement = findByAgreementId(agreementId);
+
+        // 대여 물품 검증
+        Item item = itemMapper.findById(agreement.getItemId());
+        if (item != null && item.getType() != ItemType.MONEY) {
+            throw new InvalidStateException("상환 요청은 금전 대여에만 이용할 수 있습니다.");
+        }
+
+        verifyCanRespond(userId, agreement, null,
+                List.of(AgreementStatus.ACCEPTED, AgreementStatus.OVERDUE,
+                        AgreementStatus.COMPLETED));
+
+        int sizePlusOne = size + 1;
+
+        List<Transaction> transactionList = transactionMapper.findByAgreementId(agreementId, lastId,
+                sizePlusOne);
+
+        if (transactionList == null || transactionList.isEmpty()) {
+            return PagedResultDTO.from(null, false, null);
+        }
+
+        boolean hasNext = false;
+        if (transactionList.size() == sizePlusOne) {
+            hasNext = true;
+            transactionList.remove(size);
+        }
+
+        List<TransactionResponseDTO> transactions = new ArrayList<>();
+
+        for (Transaction transaction : transactionList) {
+            transactions.add(TransactionResponseDTO.from(transaction));
+        }
+
+        lastId = transactionList.get(transactionList.size() - 1).getId();
+
+        return PagedResultDTO.from(transactions, hasNext, lastId);
     }
 
     // ==========================
@@ -415,11 +516,17 @@ public class AgreementService {
             throw new InvalidStateException("대여 참여자 정보 구성이 올바르지 않습니다.");
         }
 
-        AgreementParty requiredParty =
-                (agreementPartyRole == AgreementPartyRole.CREDITOR) ? creditor : debtor;
+        if (agreementPartyRole != null) {
+            AgreementParty requiredParty =
+                    (agreementPartyRole == AgreementPartyRole.CREDITOR) ? creditor : debtor;
 
-        if (requiredParty.getUserId() != userId) {
-            throw new NotAuthorException("해당 요청을 처리할 권한이 없습니다.");
+            if (requiredParty.getUserId() != userId) {
+                throw new NotAuthorException("해당 요청을 처리할 권한이 없습니다.");
+            }
+        } else {
+            if (creditor.getUserId() != userId && debtor.getUserId() != userId) {
+                throw new NotAuthorException("해당 요청을 처리할 권한이 없습니다.");
+            }
         }
 
         return List.of(creditor, debtor);

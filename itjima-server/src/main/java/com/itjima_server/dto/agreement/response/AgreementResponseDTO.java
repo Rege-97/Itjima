@@ -1,8 +1,8 @@
 package com.itjima_server.dto.agreement.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.itjima_server.domain.Agreement;
-import com.itjima_server.domain.AgreementStatus;
+import com.itjima_server.domain.agreement.Agreement;
+import com.itjima_server.domain.agreement.AgreementStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

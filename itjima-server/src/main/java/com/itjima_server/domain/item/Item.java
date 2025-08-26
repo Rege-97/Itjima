@@ -1,4 +1,4 @@
-package com.itjima_server.domain;
+package com.itjima_server.domain.item;
 
 import java.time.LocalDateTime;
 import lombok.Builder;

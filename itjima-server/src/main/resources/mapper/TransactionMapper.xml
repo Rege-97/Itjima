@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itjima_server.mapper.TransactionMapper">
+  <insert id="insert" parameterType="com.itjima_server.domain.transaction.Transaction"
+    useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO TRANSACTIONS (agreement_id, type, amount, status)
+    VALUES (#{agreementId}, #{type}, #{amount}, #{status})
+  </insert>
+  <select id="sumConfirmedAmountByAgreementId" resultType="decimal">
+    SELECT IFNULL(SUM(amount), 0)
+    FROM TRANSACTIONS
+    WHERE type = 'REPAYMENT'
+      AND status = 'CONFIRMED'
+      AND agreement_id = #{agreementId}
+  </select>
+  <select id="findByAgreementId" resultType="com.itjima_server.domain.transaction.Transaction">
+    SELECT id, agreement_id, type, amount, status, created_at
+    FROM TRANSACTIONS
+    WHERE
+    agreement_id = #{agreementId}
+    <if test="lastId != null">
+      AND id &lt; #{lastId}
+    </if>
+    ORDER BY id DESC
+    LIMIT #{sizePlusOne}
+  </select>
+  <select id="findById" resultType="com.itjima_server.domain.transaction.Transaction">
+    SELECT id, agreement_id, type, amount, status, created_at
+    FROM TRANSACTIONS
+    WHERE id = #{id}
+  </select>
+  <update id="updateStatusById">
+    UPDATE TRANSACTIONS
+    SET status = #{status}
+    WHERE id = #{id}
+  </update>
+</mapper>

@@ -1,9 +1,9 @@
 package com.itjima_server.dto.agreement.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.itjima_server.domain.AgreementStatus;
-import com.itjima_server.domain.ItemStatus;
-import com.itjima_server.domain.ItemType;
+import com.itjima_server.domain.agreement.AgreementStatus;
+import com.itjima_server.domain.item.ItemStatus;
+import com.itjima_server.domain.item.ItemType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
