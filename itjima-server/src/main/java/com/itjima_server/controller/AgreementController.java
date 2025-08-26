@@ -7,6 +7,8 @@ import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
 import com.itjima_server.dto.agreement.swagger.AgreementPagedResponse;
+import com.itjima_server.dto.transaction.request.TransactionCreateRequestDTO;
+import com.itjima_server.dto.transaction.response.TransactionResponseDTO;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.AgreementService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -269,6 +271,16 @@ public class AgreementController {
         AgreementDetailResponseDTO res = agreementService.get(user.getId(), id);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 상세 조회 성공", res));
+    }
+
+    @PostMapping("/{id}/transaction")
+    public ResponseEntity<?> createTransaction(@PathVariable Long id,
+            @Valid @RequestBody TransactionCreateRequestDTO req,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        TransactionResponseDTO res = agreementService.createTransaction(user.getId(), id,
+                req.getAmount());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponseDTO.success(HttpStatus.CREATED.value(), "상환 요청 성공", res));
     }
 
 

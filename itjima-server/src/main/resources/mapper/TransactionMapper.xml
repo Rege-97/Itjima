@@ -8,4 +8,11 @@
     INSERT INTO TRANSACTIONS (agreement_id, type, amount, status)
     VALUES (#{agreementId}, #{type}, #{amount}, #{status})
   </insert>
+  <select id="sumConfirmedAmountByAgreementId" resultType="decimal">
+    SELECT IFNULL(SUM(amount), 0)
+    FROM TRANSACTIONS
+    WHERE type = 'REPAYMENT'
+      AND status = 'CONFIRMED'
+      AND agreement_id = #{agreementId}
+  </select>
 </mapper>
