@@ -40,7 +40,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("TransactionService 단위 테스트")
 public class TransactionServiceTest {
 
     @InjectMocks
@@ -111,7 +110,7 @@ public class TransactionServiceTest {
     }
 
     @Nested
-    @DisplayName("confirm()")
+    @DisplayName("상환 요청 승인 로직")
     class ConfirmTest {
 
         @Test
@@ -241,7 +240,7 @@ public class TransactionServiceTest {
     }
 
     @Nested
-    @DisplayName("reject()")
+    @DisplayName("상환 요청 거절 로직")
     class RejectTest {
 
         @Test
