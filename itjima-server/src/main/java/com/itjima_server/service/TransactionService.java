@@ -23,6 +23,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 상환 관련 비즈니스 로직을 수행하는 서비스 클래스
+ *
+ * @author Rege-97
+ * @since 2025-08-26
+ */
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
@@ -32,6 +38,13 @@ public class TransactionService {
     private final ItemMapper itemMapper;
     private final TransactionMapper transactionMapper;
 
+    /**
+     * 상환 요청 승인 처리(채권자만 가능)
+     *
+     * @param id     상환 ID
+     * @param userId 로그인한 유저 ID
+     * @return 상환 승인 응답 DTO
+     */
     @Transactional(rollbackFor = Exception.class)
     public TransactionResponseDTO confirm(Long id, Long userId) {
         // 상환 요청 검증
@@ -64,6 +77,13 @@ public class TransactionService {
         return TransactionResponseDTO.from(transaction);
     }
 
+    /**
+     * 상환 요청 거절 처리(채권자만 가능)
+     *
+     * @param id     상환 ID
+     * @param userId 로그인한 유저 ID
+     * @return 상환 거절 응답 DTO
+     */
     @Transactional(rollbackFor = Exception.class)
     public TransactionResponseDTO reject(Long id, Long userId) {
         // 상환 요청 검증
