@@ -1,8 +1,12 @@
 package com.itjima_server.service;
 
 import com.itjima_server.common.PagedResultDTO;
+import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.user.response.RecentPartnerResponseDTO;
+import com.itjima_server.dto.user.response.UserResponseDTO;
+import com.itjima_server.exception.user.NotFoundUserException;
 import com.itjima_server.mapper.AgreementMapper;
+import com.itjima_server.mapper.UserMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final AgreementMapper agreementMapper;
+    private final UserMapper userMapper;
 
     /**
      * 대여 목록 조회 (무한 스크롤 커서 기반)
@@ -46,5 +51,14 @@ public class UserService {
         lastId = userList.get(userList.size() - 1).getLastAgreementId();
 
         return PagedResultDTO.from(userList, hasNext, lastId);
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponseDTO getProfile(Long id) {
+        User user = userMapper.findById(id);
+        if (user == null) {
+            throw new NotFoundUserException("해당 사용자의 정보를 찾을 수 없습니다.");
+        }
+        return UserResponseDTO.from(user);
     }
 }

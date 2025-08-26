@@ -2,6 +2,7 @@ package com.itjima_server.controller;
 
 import com.itjima_server.common.ApiResponseDTO;
 import com.itjima_server.common.PagedResultDTO;
+import com.itjima_server.dto.user.response.UserResponseDTO;
 import com.itjima_server.dto.user.swagger.RecentPartnerPagedResponse;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.UserService;
@@ -58,5 +59,12 @@ public class UserController {
         PagedResultDTO<?> res = userService.getRecentPartnerList(user.getId(), lastId, size);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "최근 대여 상대 목록 조회 성공", res));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getProfile(@AuthenticationPrincipal CustomUserDetails user) {
+        UserResponseDTO res = userService.getProfile(user.getId());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "프로필 조회 성공", res));
     }
 }
