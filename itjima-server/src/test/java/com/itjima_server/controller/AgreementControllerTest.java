@@ -22,7 +22,6 @@ import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;
 import com.itjima_server.dto.transaction.request.TransactionCreateRequestDTO;
-import com.itjima_server.dto.transaction.response.TransactionResponseDTO;
 import com.itjima_server.dto.user.request.UserLoginRequestDTO;
 import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
 import com.itjima_server.dto.user.response.UserLoginResponseDTO;

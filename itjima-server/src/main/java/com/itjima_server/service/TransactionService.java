@@ -60,7 +60,6 @@ public class TransactionService {
                     itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.AVAILABLE),
                     "물품 상태 변경에 실패했습니다.");
         }
-
         return TransactionResponseDTO.from(transaction);
     }
 // ==========================
@@ -140,10 +139,9 @@ public class TransactionService {
      * @param agreement          대여 엔티티
      * @param agreementPartyRole 요구되는 역할 (CREDITOR/DEBTOR)
      * @param agreementStatuses  허용되는 상태 목록
-     * @return 대여 참여자 목록 (채권자, 채무자)
      * @throws NotAuthorException 권한 없는 사용자인 경우
      */
-    private List<AgreementParty> verifyCanRespond(Long userId,
+    private void verifyCanRespond(Long userId,
             Agreement agreement, AgreementPartyRole agreementPartyRole,
             List<AgreementStatus> agreementStatuses) {
         List<AgreementParty> parties = verifyAgreementStatus(agreement,
@@ -175,8 +173,6 @@ public class TransactionService {
                 throw new NotAuthorException("해당 요청을 처리할 권한이 없습니다.");
             }
         }
-
-        return List.of(creditor, debtor);
     }
 
 }
