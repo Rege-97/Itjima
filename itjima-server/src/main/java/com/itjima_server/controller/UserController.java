@@ -2,6 +2,7 @@ package com.itjima_server.controller;
 
 import com.itjima_server.common.ApiResponseDTO;
 import com.itjima_server.common.PagedResultDTO;
+import com.itjima_server.dto.transaction.swagger.TransactionPagedResponse;
 import com.itjima_server.dto.user.request.UserChangeProfileRequestDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
 import com.itjima_server.dto.user.swagger.RecentPartnerPagedResponse;
@@ -65,6 +66,27 @@ public class UserController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "최근 대여 상대 목록 조회 성공", res));
     }
 
+    /**
+     * 로그인한 사용자의 프로필 조회
+     *
+     * @param user 로그인한 유저
+     * @return 조회된 유저 프로필
+     */
+    @Operation(
+            summary = "프로필 조회",
+            description = "로그인한 사용자의 프로필 조회",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "프로필 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = UserResponseDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
     @GetMapping("/me")
     public ResponseEntity<?> getProfile(@AuthenticationPrincipal CustomUserDetails user) {
         UserResponseDTO res = userService.getProfile(user.getId());
@@ -72,6 +94,30 @@ public class UserController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "프로필 조회 성공", res));
     }
 
+    /**
+     * 로그인한 사용자의 전화번호 또는 비밀번호 변경
+     *
+     * @param user  로그인한 유저
+     * @param req 변경할 데이터
+     * @return 변경된 유저 프로필
+     */
+    @Operation(
+            summary = "프로필 조회",
+            description = "로그인한 사용자의 프로필 조회",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "프로필 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = UserResponseDTO.class))),
+                    @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
     @PatchMapping("/me")
     public ResponseEntity<?> changeProfile(@AuthenticationPrincipal CustomUserDetails user,
             @Valid @RequestBody UserChangeProfileRequestDTO req) {

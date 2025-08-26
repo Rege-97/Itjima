@@ -5,7 +5,6 @@ import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.user.request.UserChangeProfileRequestDTO;
 import com.itjima_server.dto.user.response.RecentPartnerResponseDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
-import com.itjima_server.exception.agreement.NotFoundAgreementException;
 import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.user.DuplicateUserFieldException;
 import com.itjima_server.exception.user.NotFoundUserException;
@@ -59,12 +58,25 @@ public class UserService {
         return PagedResultDTO.from(userList, hasNext, lastId);
     }
 
+    /**
+     * 로그인한 사용자의 프로필 조회
+     *
+     * @param id 로그인한 유저 ID
+     * @return 조회된 유저 프로필 DTO
+     */
     @Transactional(readOnly = true)
     public UserResponseDTO getProfile(Long id) {
         User user = findById(id);
         return UserResponseDTO.from(user);
     }
 
+    /**
+     * 로그인한 사용자의 전화번호 또는 비밀번호 변경
+     *
+     * @param id  로그인한 유저 ID
+     * @param req 변경할 데이터
+     * @return 변경된 유저 프로필 DTO
+     */
     @Transactional(rollbackFor = Exception.class)
     public UserResponseDTO changeProfile(Long id, UserChangeProfileRequestDTO req) {
         User user = findById(id);
