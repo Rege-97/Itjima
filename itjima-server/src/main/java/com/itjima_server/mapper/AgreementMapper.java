@@ -2,7 +2,6 @@ package com.itjima_server.mapper;
 
 import com.itjima_server.domain.agreement.Agreement;
 import com.itjima_server.domain.agreement.AgreementStatus;
-import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
 import com.itjima_server.dto.user.response.RecentPartnerResponseDTO;
 import java.util.List;

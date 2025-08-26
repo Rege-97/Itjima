@@ -1,13 +1,11 @@
 package com.itjima_server.service;
 
-import com.itjima_server.common.PagedResultDTO;
 import com.itjima_server.domain.user.Provider;
 import com.itjima_server.domain.user.RefreshToken;
 import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.user.request.TokenRefreshRequestDTO;
 import com.itjima_server.dto.user.request.UserLoginRequestDTO;
 import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
-import com.itjima_server.dto.user.response.RecentPartnerResponseDTO;
 import com.itjima_server.dto.user.response.TokenResponseDTO;
 import com.itjima_server.dto.user.response.UserLoginResponseDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
@@ -15,12 +13,10 @@ import com.itjima_server.exception.user.DuplicateUserFieldException;
 import com.itjima_server.exception.user.InvalidRefreshTokenException;
 import com.itjima_server.exception.user.LoginFailedException;
 import com.itjima_server.exception.user.NotInsertUserException;
-import com.itjima_server.mapper.AgreementMapper;
 import com.itjima_server.mapper.RefreshTokenMapper;
 import com.itjima_server.mapper.UserMapper;
 import com.itjima_server.security.JwtTokenProvider;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final UserMapper userMapper;
-    private final AgreementMapper agreementMapper;
     private final RefreshTokenMapper refreshTokenMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
