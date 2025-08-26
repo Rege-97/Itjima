@@ -367,6 +367,15 @@ public class AgreementService {
         return TransactionResponseDTO.from(transaction);
     }
 
+    /**
+     * 대여 목록 조회 (무한 스크롤 커서 기반)
+     *
+     * @param userId      로그인한 사용자 ID
+     * @param agreementId 대여 ID
+     * @param lastId      마지막으로 조회한 대여 ID
+     * @param size        요청한 페이지 크기
+     * @return 항목(items), hasNext, lastId를 포함한 페이지 응답
+     */
     @Transactional(readOnly = true)
     public PagedResultDTO<?> getTransactionList(Long userId, Long agreementId, Long lastId,
             int size) {

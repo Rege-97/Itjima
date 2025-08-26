@@ -9,6 +9,7 @@ import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
 import com.itjima_server.dto.agreement.swagger.AgreementPagedResponse;
 import com.itjima_server.dto.transaction.request.TransactionCreateRequestDTO;
 import com.itjima_server.dto.transaction.response.TransactionResponseDTO;
+import com.itjima_server.dto.transaction.swagger.TransactionPagedResponse;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.AgreementService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -310,6 +311,34 @@ public class AgreementController {
                 .body(ApiResponseDTO.success(HttpStatus.CREATED.value(), "상환 요청 성공", res));
     }
 
+    /**
+     * 대여 목록 조회 (무한 스크롤 커서 기반)
+     *
+     * @param id     대여 ID
+     * @param user   로그인한 사용자
+     * @param lastId 마지막으로 조회한 대여 ID
+     * @param size   요청한 페이지 크기
+     * @return 항목(items), hasNext, lastId를 포함한 페이지 응답
+     */
+    @Operation(
+            summary = "상환 내역 조회",
+            description = "해당 대여의 상환 내역 조회",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "상환 내역 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = TransactionPagedResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "403", description = "권한 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
     @GetMapping("/{id}/transactions")
     public ResponseEntity<?> getTransactionList(@PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails user,
