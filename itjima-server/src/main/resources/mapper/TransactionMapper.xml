@@ -5,7 +5,7 @@
 <mapper namespace="com.itjima_server.mapper.TransactionMapper">
   <insert id="insert" parameterType="com.itjima_server.domain.transaction.Transaction"
     useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO TRANSACTIONS (agreement_id, type, amount)
-    VALUES (#{agreementId}, #{type}, #{amount})
+    INSERT INTO TRANSACTIONS (agreement_id, type, amount, status)
+    VALUES (#{agreementId}, #{type}, #{amount}, #{status})
   </insert>
 </mapper>
