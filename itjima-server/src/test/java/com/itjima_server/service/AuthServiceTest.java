@@ -39,10 +39,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.itjima_server.domain.user.User;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+public class AuthServiceTest {
 
     @InjectMocks
-    private UserService userService;
+    private AuthService authService;
 
     @Mock
     private UserMapper userMapper;
@@ -84,7 +84,7 @@ public class UserServiceTest {
             when(userMapper.insert(any(User.class))).thenReturn(1);
 
             // when
-            UserResponseDTO response = userService.register(userRegisterRequestDTO);
+            UserResponseDTO response = authService.register(userRegisterRequestDTO);
 
             // then
             assertNotNull(response);
@@ -102,7 +102,7 @@ public class UserServiceTest {
             when(userMapper.existsByEmail(userRegisterRequestDTO.getEmail())).thenReturn(true);
 
             // when & then
-            assertThrows(DuplicateUserFieldException.class, () -> userService.register(
+            assertThrows(DuplicateUserFieldException.class, () -> authService.register(
                     userRegisterRequestDTO));
 
             verify(userMapper, never()).existsByPhone(anyString());
@@ -117,7 +117,7 @@ public class UserServiceTest {
             when(userMapper.existsByPhone(userRegisterRequestDTO.getPhone())).thenReturn(true);
 
             // when & then
-            assertThrows(DuplicateUserFieldException.class, () -> userService.register(
+            assertThrows(DuplicateUserFieldException.class, () -> authService.register(
                     userRegisterRequestDTO));
 
             verify(userMapper, never()).insert(any(User.class));
@@ -132,7 +132,7 @@ public class UserServiceTest {
             when(userMapper.insert(any(User.class))).thenReturn(0);
 
             // when & then
-            assertThrows(NotInsertUserException.class, () -> userService.register(
+            assertThrows(NotInsertUserException.class, () -> authService.register(
                     userRegisterRequestDTO));
         }
     }
@@ -167,7 +167,7 @@ public class UserServiceTest {
             when(refreshTokenMapper.existsByUserId(fakeUser.getId())).thenReturn(true);
 
             // when
-            UserLoginResponseDTO res = userService.login(userLoginRequestDTO);
+            UserLoginResponseDTO res = authService.login(userLoginRequestDTO);
 
             // then
             assertNotNull(res);
@@ -191,7 +191,7 @@ public class UserServiceTest {
             when(refreshTokenMapper.existsByUserId(fakeUser.getId())).thenReturn(false);
 
             // when
-            UserLoginResponseDTO res = userService.login(userLoginRequestDTO);
+            UserLoginResponseDTO res = authService.login(userLoginRequestDTO);
 
             // then
             assertNotNull(res);
@@ -209,7 +209,7 @@ public class UserServiceTest {
             when(userMapper.findByEmail(userLoginRequestDTO.getEmail())).thenReturn(null);
 
             // when & then
-            assertThrows(LoginFailedException.class, () -> userService.login(userLoginRequestDTO));
+            assertThrows(LoginFailedException.class, () -> authService.login(userLoginRequestDTO));
         }
 
         @Test
@@ -222,7 +222,7 @@ public class UserServiceTest {
                     mismatchUser.getPassword())).thenReturn(false);
 
             // when & then
-            assertThrows(LoginFailedException.class, () -> userService.login(userLoginRequestDTO));
+            assertThrows(LoginFailedException.class, () -> authService.login(userLoginRequestDTO));
         }
     }
 
@@ -258,7 +258,7 @@ public class UserServiceTest {
             when(jwtTokenProvider.generateAccessToken(fakeUser)).thenReturn("new_access_token");
 
             // when
-            TokenResponseDTO res = userService.refreshAccessToken(tokenRefreshRequestDTO);
+            TokenResponseDTO res = authService.refreshAccessToken(tokenRefreshRequestDTO);
 
             // then
             assertNotNull(res);
@@ -280,7 +280,7 @@ public class UserServiceTest {
 
             // when & then
             assertThrows(InvalidRefreshTokenException.class,
-                    () -> userService.refreshAccessToken(tokenRefreshRequestDTO));
+                    () -> authService.refreshAccessToken(tokenRefreshRequestDTO));
         }
 
         @Test
@@ -296,7 +296,7 @@ public class UserServiceTest {
 
             // when & then
             assertThrows(InvalidRefreshTokenException.class,
-                    () -> userService.refreshAccessToken(tokenRefreshRequestDTO));
+                    () -> authService.refreshAccessToken(tokenRefreshRequestDTO));
             verify(refreshTokenMapper, times(1)).deleteByUserId(fakeUser.getId());
         }
 
@@ -310,7 +310,7 @@ public class UserServiceTest {
 
             // when & then
             assertThrows(UsernameNotFoundException.class,
-                    () -> userService.refreshAccessToken(tokenRefreshRequestDTO));
+                    () -> authService.refreshAccessToken(tokenRefreshRequestDTO));
         }
     }
 
@@ -337,7 +337,7 @@ public class UserServiceTest {
             when(userMapper.findById(id)).thenReturn(fakeUser);
 
             // when
-            userService.logout(id);
+            authService.logout(id);
 
             // then
             verify(userMapper, times(1)).findById(id);
@@ -351,7 +351,7 @@ public class UserServiceTest {
             when(userMapper.findById(id)).thenReturn(null);
 
             // when & then
-            assertThrows(UsernameNotFoundException.class, () -> userService.logout(id));
+            assertThrows(UsernameNotFoundException.class, () -> authService.logout(id));
         }
     }
 }

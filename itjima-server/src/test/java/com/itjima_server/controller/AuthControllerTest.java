@@ -12,7 +12,7 @@ import com.itjima_server.dto.user.request.TokenRefreshRequestDTO;
 import com.itjima_server.dto.user.request.UserLoginRequestDTO;
 import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
 import com.itjima_server.dto.user.response.UserLoginResponseDTO;
-import com.itjima_server.service.UserService;
+import com.itjima_server.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -146,7 +146,7 @@ public class AuthControllerTest {
     class LoginApiTest {
 
         @Autowired
-        private UserService userService;
+        private AuthService authService;
 
         @BeforeEach
         void setUp() {
@@ -156,7 +156,7 @@ public class AuthControllerTest {
             userRegisterRequestDTO.setPassword("password123!");
             userRegisterRequestDTO.setPhone("01011111111");
 
-            userService.register(userRegisterRequestDTO);
+            authService.register(userRegisterRequestDTO);
 
             userLoginRequestDTO = new UserLoginRequestDTO();
             userLoginRequestDTO.setEmail("test@example.com");
@@ -257,7 +257,7 @@ public class AuthControllerTest {
     class RefreshAccessTokenApiTest {
 
         @Autowired
-        private UserService userService;
+        private AuthService authService;
 
         private UserLoginResponseDTO userLoginResponseDTO;
         private TokenRefreshRequestDTO tokenRefreshRequestDTO;
@@ -270,13 +270,13 @@ public class AuthControllerTest {
             userRegisterRequestDTO.setPassword("password123!");
             userRegisterRequestDTO.setPhone("01011111111");
 
-            userService.register(userRegisterRequestDTO);
+            authService.register(userRegisterRequestDTO);
 
             userLoginRequestDTO = new UserLoginRequestDTO();
             userLoginRequestDTO.setEmail("test@example.com");
             userLoginRequestDTO.setPassword("password123!");
 
-            userLoginResponseDTO = userService.login(userLoginRequestDTO);
+            userLoginResponseDTO = authService.login(userLoginRequestDTO);
             tokenRefreshRequestDTO = new TokenRefreshRequestDTO();
             tokenRefreshRequestDTO.setRefreshToken(userLoginResponseDTO.getRefreshToken());
         }
@@ -327,7 +327,7 @@ public class AuthControllerTest {
     class LogoutApiTest {
 
         @Autowired
-        private UserService userService;
+        private AuthService authService;
 
         private UserLoginResponseDTO userLoginResponseDTO;
 
@@ -339,13 +339,13 @@ public class AuthControllerTest {
             userRegisterRequestDTO.setPassword("password123!");
             userRegisterRequestDTO.setPhone("01011111111");
 
-            userService.register(userRegisterRequestDTO);
+            authService.register(userRegisterRequestDTO);
 
             userLoginRequestDTO = new UserLoginRequestDTO();
             userLoginRequestDTO.setEmail("test@example.com");
             userLoginRequestDTO.setPassword("password123!");
 
-            userLoginResponseDTO = userService.login(userLoginRequestDTO);
+            userLoginResponseDTO = authService.login(userLoginRequestDTO);
         }
 
         @Test
