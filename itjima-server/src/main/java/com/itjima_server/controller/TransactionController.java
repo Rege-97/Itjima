@@ -1,7 +1,6 @@
 package com.itjima_server.controller;
 
 import com.itjima_server.common.ApiResponseDTO;
-import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
 import com.itjima_server.dto.transaction.response.TransactionResponseDTO;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.TransactionService;
