@@ -27,4 +27,12 @@ public class TransactionController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "상환 요청 승인 성공", res));
     }
+
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<?> reject(@PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        TransactionResponseDTO res = transactionService.reject(id, user.getId());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "상환 요청 거절 성공", res));
+    }
 }
