@@ -1,10 +1,12 @@
 package com.itjima_server.service;
 
+import com.itjima_server.aop.Audit;
 import com.itjima_server.common.PagedResultDTO;
 import com.itjima_server.domain.agreement.Agreement;
 import com.itjima_server.domain.agreement.AgreementParty;
 import com.itjima_server.domain.agreement.AgreementPartyRole;
 import com.itjima_server.domain.agreement.AgreementStatus;
+import com.itjima_server.domain.audit.AuditLogAction;
 import com.itjima_server.domain.item.Item;
 import com.itjima_server.domain.item.ItemStatus;
 import com.itjima_server.domain.item.ItemType;
@@ -63,6 +65,7 @@ public class AgreementService {
      * @return 생성된 대여 응답 DTO
      */
     @Transactional(rollbackFor = Exception.class)
+    @Audit(action = AuditLogAction.AGREEMENT_CREATE)
     public AgreementResponseDTO create(Long userId, AgreementCreateRequestDTO req) {
         // 사용자 검증
         if (userId == req.getDebtorUserId()) {
@@ -142,6 +145,7 @@ public class AgreementService {
      * @return 승인 처리된 대여 응답 DTO
      */
     @Transactional(rollbackFor = Exception.class)
+    @Audit(action = AuditLogAction.AGREEMENT_ACCEPT)
     public AgreementResponseDTO accept(Long userId, Long agreementId) {
         // 대여 검증
         Agreement agreement = findByAgreementId(agreementId);
@@ -179,6 +183,7 @@ public class AgreementService {
      * @return 거절 처리된 대여 응답 DTO
      */
     @Transactional(rollbackFor = Exception.class)
+    @Audit(action = AuditLogAction.AGREEMENT_REJECT)
     public AgreementResponseDTO reject(Long userId, Long agreementId) {
         // 대여 검증
         Agreement agreement = findByAgreementId(agreementId);
@@ -210,6 +215,7 @@ public class AgreementService {
      * @return 취소 처리된 대여 응답 DTO
      */
     @Transactional(rollbackFor = Exception.class)
+    @Audit(action = AuditLogAction.AGREEMENT_CANCEL)
     public AgreementResponseDTO cancel(Long userId, Long agreementId) {
         // 대여 검증
         Agreement agreement = findByAgreementId(agreementId);
@@ -241,6 +247,7 @@ public class AgreementService {
      * @return 완료 처리된 대여 응답 DTO
      */
     @Transactional(rollbackFor = Exception.class)
+    @Audit(action = AuditLogAction.AGREEMENT_COMPLETE)
     public AgreementResponseDTO complete(Long userId, Long agreementId) {
         // 대여 검증
         Agreement agreement = findByAgreementId(agreementId);
@@ -333,6 +340,7 @@ public class AgreementService {
      * @return 요청 완료된 상환 응답 DTO
      */
     @Transactional(rollbackFor = Exception.class)
+    @Audit(action = AuditLogAction.TRANSACTION_CREATE)
     public TransactionResponseDTO createTransaction(Long userId, Long agreementId,
             BigDecimal amount) {
         // 대여 검증
