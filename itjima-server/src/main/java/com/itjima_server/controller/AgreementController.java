@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 대여 약정 관련 API 클래스
  *
  * @author Rege-97
- * @since 2025-08-25
+ * @since 2025-08-26
  */
 @RestController
 @RequestMapping("/api/agreements")
@@ -273,6 +273,33 @@ public class AgreementController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 상세 조회 성공", res));
     }
 
+    /**
+     * 금전 상환 요청 (채무자만 가능)
+     *
+     * @param id   대여 ID
+     * @param req  상환 요청 DTO
+     * @param user 로그인한 유저
+     * @return 상환 요청 완료 응답
+     */
+    @Operation(
+            summary = "금전 상환 요청",
+            description = "채무자가 채권자에게 금전 상환 요청 처리",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "대여 상세 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = TransactionResponseDTO.class))),
+                    @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "403", description = "권한 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
     @PostMapping("/{id}/transaction")
     public ResponseEntity<?> createTransaction(@PathVariable Long id,
             @Valid @RequestBody TransactionCreateRequestDTO req,

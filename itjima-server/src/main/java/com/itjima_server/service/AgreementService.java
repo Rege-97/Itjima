@@ -43,7 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 대여 관련 비즈니스 로직을 수행하는 서비스 클래스
  *
  * @author Rege-97
- * @since 2025-08-25
+ * @since 2025-08-26
  */
 @Service
 @RequiredArgsConstructor
@@ -325,8 +325,17 @@ public class AgreementService {
         return PagedResultDTO.from(agreements, hasNext, lastId);
     }
 
+    /**
+     * 금전 상환 요청 (채무자만 가능)
+     *
+     * @param userId      로그인한 사용자
+     * @param agreementId 대여 ID
+     * @param amount      상환 금액
+     * @return 요청 완료된 상환 응답 DTO
+     */
     @Transactional(rollbackFor = Exception.class)
-    public TransactionResponseDTO createTransaction(Long userId, Long agreementId, BigDecimal amount) {
+    public TransactionResponseDTO createTransaction(Long userId, Long agreementId,
+            BigDecimal amount) {
         // 대여 검증
         Agreement agreement = findByAgreementId(agreementId);
 
