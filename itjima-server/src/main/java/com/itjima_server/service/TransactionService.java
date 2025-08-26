@@ -1,9 +1,12 @@
 package com.itjima_server.service;
 
+import com.itjima_server.aop.Audit;
 import com.itjima_server.domain.agreement.Agreement;
 import com.itjima_server.domain.agreement.AgreementParty;
 import com.itjima_server.domain.agreement.AgreementPartyRole;
 import com.itjima_server.domain.agreement.AgreementStatus;
+import com.itjima_server.domain.audit.AuditLog;
+import com.itjima_server.domain.audit.AuditLogAction;
 import com.itjima_server.domain.item.ItemStatus;
 import com.itjima_server.domain.transaction.Transaction;
 import com.itjima_server.domain.transaction.TransactionStatus;
@@ -15,9 +18,11 @@ import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.transaction.NotFoundTransactionException;
 import com.itjima_server.mapper.AgreementMapper;
 import com.itjima_server.mapper.AgreementPartyMapper;
+import com.itjima_server.mapper.AuditLogMapper;
 import com.itjima_server.mapper.ItemMapper;
 import com.itjima_server.mapper.TransactionMapper;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,6 +42,7 @@ public class TransactionService {
     private final AgreementPartyMapper agreementPartyMapper;
     private final ItemMapper itemMapper;
     private final TransactionMapper transactionMapper;
+    private final AuditLogMapper auditLogMapper;
 
     /**
      * 상환 요청 승인 처리(채권자만 가능)
@@ -46,6 +52,7 @@ public class TransactionService {
      * @return 상환 승인 응답 DTO
      */
     @Transactional(rollbackFor = Exception.class)
+    @Audit(action = AuditLogAction.TRANSACTION_CONFIRM)
     public TransactionResponseDTO confirm(Long id, Long userId) {
         // 상환 요청 검증
         Transaction transaction = findByTransactionId(id);
@@ -73,6 +80,13 @@ public class TransactionService {
             checkUpdateResult(
                     itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.AVAILABLE),
                     "물품 상태 변경에 실패했습니다.");
+            AuditLog completeLog = AuditLog.builder()
+                    .agreementId(agreement.getId())
+                    .userId(userId)
+                    .action(AuditLogAction.AGREEMENT_COMPLETE)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            auditLogMapper.insert(completeLog);
         }
         return TransactionResponseDTO.from(transaction);
     }
@@ -85,6 +99,7 @@ public class TransactionService {
      * @return 상환 거절 응답 DTO
      */
     @Transactional(rollbackFor = Exception.class)
+    @Audit(action = AuditLogAction.TRANSACTION_REJECT)
     public TransactionResponseDTO reject(Long id, Long userId) {
         // 상환 요청 검증
         Transaction transaction = findByTransactionId(id);

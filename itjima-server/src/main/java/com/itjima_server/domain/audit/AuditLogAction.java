@@ -12,6 +12,7 @@ public enum AuditLogAction {
     AGREEMENT_REJECT("대여 거절"),
     AGREEMENT_CANCEL("대여 취소"),
     AGREEMENT_COMPLETE("대여 완료"),
+    TRANSACTION_CREATE("상환 요청 생성"),
     TRANSACTION_CONFIRM("상환 승인"),
     TRANSACTION_REJECT("상환 거절");
 
