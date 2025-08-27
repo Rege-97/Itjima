@@ -3,7 +3,8 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.itjima_server.mapper.AgreementMapper">
-  <insert id="insert" parameterType="com.itjima_server.domain.agreement.Agreement" useGeneratedKeys="true"
+  <insert id="insert" parameterType="com.itjima_server.domain.agreement.Agreement"
+    useGeneratedKeys="true"
     keyProperty="id">
     INSERT INTO AGREEMENTS (item_id, status, amount, due_at, terms)
     VALUES (#{itemId}, #{status}, #{amount}, #{dueAt}, #{terms})
@@ -57,26 +58,27 @@
            JOIN USERS debtor_user ON debtor_party.user_id = debtor_user.id
     WHERE a.id = #{id}
   </select>
-  <select id="findByUserId" resultType="com.itjima_server.dto.agreement.response.AgreementDetailDTO">
-    SELECT a.id               AS agreementId,
-    a.status                  AS agreementStatus,
-    a.amount                  AS amount,
-    a.due_at                  AS dueAt,
-    a.terms                   AS terms,
-    a.created_at              AS createdAt,
-    i.id                      AS itemId,
-    i.type                    AS itemType,
-    i.title                   AS itemTitle,
-    i.description             AS itemDescription,
-    i.status                  AS itemStatus,
-    i.file_url                AS itemFileUrl,
-    i.file_type               AS itemFileType,
-    creditor_user.id          AS creditorId,
-    creditor_user.name        AS creditorName,
+  <select id="findByUserId"
+    resultType="com.itjima_server.dto.agreement.response.AgreementDetailDTO">
+    SELECT a.id AS agreementId,
+    a.status AS agreementStatus,
+    a.amount AS amount,
+    a.due_at AS dueAt,
+    a.terms AS terms,
+    a.created_at AS createdAt,
+    i.id AS itemId,
+    i.type AS itemType,
+    i.title AS itemTitle,
+    i.description AS itemDescription,
+    i.status AS itemStatus,
+    i.file_url AS itemFileUrl,
+    i.file_type AS itemFileType,
+    creditor_user.id AS creditorId,
+    creditor_user.name AS creditorName,
     creditor_party.confirm_at AS creditorConfirmAt,
-    debtor_user.id            AS debtorId,
-    debtor_user.name          AS debtorName,
-    debtor_party.confirm_at   AS debtorConfirmAt
+    debtor_user.id AS debtorId,
+    debtor_user.name AS debtorName,
+    debtor_party.confirm_at AS debtorConfirmAt
     FROM AGREEMENTS a
     JOIN ITEMS i
     ON a.item_id = i.id
@@ -94,7 +96,7 @@
         AND debtor_user.id = #{userId}
       </if>
       <if test="role == null">
-      AND 1 = 0
+        AND 1 = 0
       </if>
       <if test="lastId != null">
         AND a.id &lt; #{lastId}
@@ -103,7 +105,8 @@
     ORDER by a.id DESC
     LIMIT #{sizePlusOne}
   </select>
-  <select id="findRecentPartnersByUserId" resultType="com.itjima_server.dto.user.response.RecentPartnerResponseDTO">
+  <select id="findRecentPartnersByUserId"
+    resultType="com.itjima_server.dto.user.response.RecentPartnerResponseDTO">
     SELECT
     partner_user.id AS id,
     partner_user.name AS name,
@@ -145,5 +148,11 @@
     </where>
     ORDER BY recent_partners.last_agreement_id DESC
     LIMIT #{sizePlusOne}
+  </select>
+  <select id="findOverdueAgreementIds" resultType="long">
+    SELECT id
+    FROM AGREEMENTS
+    WHERE status = 'ACCEPTED'
+      AND due_at &lt; NOW()
   </select>
 </mapper>

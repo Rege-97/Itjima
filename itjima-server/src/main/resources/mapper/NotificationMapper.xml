@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itjima_server.mapper.NotificationMapper">
+  <insert id="insert" parameterType="com.itjima_server.domain.notification.Notification"
+    useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO NOTIFICATIONS (agreement_id, user_id, type, message, read_at)
+    VALUES (#{agreementId}, #{userId}, #{type}, #{message}, #{readAt})
+  </insert>
+  <select id="findNotReadByUserId" resultType="com.itjima_server.domain.notification.Notification">
+    SELECT id, agreement_id, user_id, type, message, read_at, created_at
+    FROM NOTIFICATIONS
+    WHERE user_id = #{userId}
+    AND read_at IS NULL
+    <if test="lastId != null">
+      AND id &lt; #{lastId}
+    </if>
+    ORDER by id DESC
+    LIMIT #{sizePlusOne}
+  </select>
+  <select id="findById" resultType="com.itjima_server.domain.notification.Notification">
+    SELECT id, agreement_id, user_id, type, message, read_at, created_at
+    FROM NOTIFICATIONS
+    WHERE id = #{id}
+  </select>
+  <update id="updateReadAtById">
+    UPDATE NOTIFICATIONS
+    SET read_at = #{readAt}
+    WHERE id = #{id}
+  </update>
+</mapper>

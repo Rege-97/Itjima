@@ -10,6 +10,8 @@ import com.itjima_server.domain.audit.AuditLogAction;
 import com.itjima_server.domain.item.Item;
 import com.itjima_server.domain.item.ItemStatus;
 import com.itjima_server.domain.item.ItemType;
+import com.itjima_server.domain.notification.Schedule;
+import com.itjima_server.domain.notification.ScheduleType;
 import com.itjima_server.domain.transaction.Transaction;
 import com.itjima_server.domain.transaction.TransactionStatus;
 import com.itjima_server.domain.transaction.TransactionType;
@@ -31,6 +33,7 @@ import com.itjima_server.exception.user.NotFoundUserException;
 import com.itjima_server.mapper.AgreementMapper;
 import com.itjima_server.mapper.AgreementPartyMapper;
 import com.itjima_server.mapper.ItemMapper;
+import com.itjima_server.mapper.ScheduleMapper;
 import com.itjima_server.mapper.TransactionMapper;
 import com.itjima_server.mapper.UserMapper;
 import java.math.BigDecimal;
@@ -56,6 +59,7 @@ public class AgreementService {
     private final UserMapper userMapper;
     private final ItemMapper itemMapper;
     private final TransactionMapper transactionMapper;
+    private final ScheduleMapper scheduleMapper;
 
     /**
      * 대여 생성 처리
@@ -171,6 +175,32 @@ public class AgreementService {
         // 물품 상태 업데이트: ON_LOAN
         checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.ON_LOAN),
                 "물품 상태 변경에 실패했습니다.");
+
+        LocalDateTime dueAt = agreement.getDueAt();
+
+        scheduleMapper.insert(Schedule.builder()
+                .agreementId(agreementId)
+                .type(ScheduleType.D_MINUS_7)
+                .dueAt(dueAt.minusDays(7))
+                .build());
+
+        scheduleMapper.insert(Schedule.builder()
+                .agreementId(agreementId)
+                .type(ScheduleType.D_MINUS_3)
+                .dueAt(dueAt.minusDays(3))
+                .build());
+
+        scheduleMapper.insert(Schedule.builder()
+                .agreementId(agreementId)
+                .type(ScheduleType.D_MINUS_1)
+                .dueAt(dueAt.minusDays(1))
+                .build());
+
+        scheduleMapper.insert(Schedule.builder()
+                .agreementId(agreementId)
+                .type(ScheduleType.D_DAY)
+                .dueAt(dueAt)
+                .build());
 
         return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
     }
@@ -424,6 +454,28 @@ public class AgreementService {
         lastId = transactionList.get(transactionList.size() - 1).getId();
 
         return PagedResultDTO.from(transactions, hasNext, lastId);
+    }
+
+    /**
+     * 대여 연체 처리
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void processOverdueAgreements() {
+        List<Long> overdueIds = agreementMapper.findOverdueAgreementIds();
+
+        if (overdueIds == null || overdueIds.isEmpty()) {
+            return;
+        }
+
+        for (Long id : overdueIds) {
+            agreementMapper.updateStatusById(id, AgreementStatus.OVERDUE);
+
+            scheduleMapper.insert(Schedule.builder()
+                    .agreementId(id)
+                    .type(ScheduleType.OVERDUE)
+                    .dueAt(LocalDateTime.now())
+                    .build());
+        }
     }
 
     // ==========================

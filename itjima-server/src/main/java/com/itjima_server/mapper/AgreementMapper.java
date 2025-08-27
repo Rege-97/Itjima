@@ -23,7 +23,10 @@ public interface AgreementMapper {
             @Param("lastId") Long lastId,
             @Param("sizePlusOne") int sizePlusOne);
 
-    List<RecentPartnerResponseDTO> findRecentPartnersByUserId(@Param("userId") Long userId, @Param("lastId") Long lastId,
+    List<RecentPartnerResponseDTO> findRecentPartnersByUserId(@Param("userId") Long userId,
+            @Param("lastId") Long lastId,
             @Param("sizePlusOne") int sizePlusOne);
+
+    List<Long> findOverdueAgreementIds();
 }
 

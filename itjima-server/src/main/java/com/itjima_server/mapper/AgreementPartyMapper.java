@@ -13,5 +13,8 @@ public interface AgreementPartyMapper {
 
     List<AgreementParty> findByAgreementId(@Param("agreementId") Long agreementId);
 
-    int updateConfirmedAtById(@Param("id") Long id, @Param("confirmedAt") LocalDateTime confirmedAt);
+    int updateConfirmedAtById(@Param("id") Long id,
+            @Param("confirmedAt") LocalDateTime confirmedAt);
+
+    List<Long> findUserIdsByAgreementId(@Param("agreementId") Long agreementId);
 }
