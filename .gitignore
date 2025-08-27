@@ -1,5 +1,6 @@
 # Sensitive configuration files
 /itjima-server/src/main/resources/application-local.properties
+/itjima-server/src/main/resources/data.sql
 
 # --- OS 공통 ---
 .DS_Store
