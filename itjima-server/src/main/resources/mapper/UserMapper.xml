@@ -15,8 +15,10 @@
   </select>
   <insert parameterType="com.itjima_server.domain.user.User" id="insert" useGeneratedKeys="true"
     keyProperty="id">
-    INSERT INTO USERS (name, email, password, phone, provider)
-    VALUES (#{name}, #{email}, #{password}, #{phone}, #{provider})
+    INSERT INTO USERS (name, email, password, phone, provider, email_verified,
+                       email_verification_token, email_token_generated_at)
+    VALUES (#{name}, #{email}, #{password}, #{phone}, #{provider}, #{emailVerified},
+            #{emailVerificationToken}, #{emailTokenGeneratedAt})
   </insert>
 
   <select id="findById" resultType="com.itjima_server.domain.user.User">
@@ -28,7 +30,10 @@
            created_at,
            updated_at,
            provider,
-           provider_id
+           provider_id,
+           email_verified,
+           email_verification_token,
+           email_token_generated_at
     FROM USERS
     WHERE id = #{id}
   </select>
@@ -41,7 +46,10 @@
            created_at,
            updated_at,
            provider,
-           provider_id
+           provider_id,
+           email_verified,
+           email_verification_token,
+           email_token_generated_at
     FROM USERS
     WHERE email = #{email}
   </select>
@@ -55,4 +63,33 @@
     SET password = #{password}
     WHERE id = #{id}
   </update>
+  <update id="updateEmailVerification" parameterType="com.itjima_server.domain.user.User">
+    UPDATE USERS
+    SET email_verified           = #{emailVerified},
+        email_verification_token = #{emailVerificationToken},
+        email_token_generated_at = #{emailTokenGeneratedAt}
+
+    WHERE id = #{id}
+  </update>
+  <select id="findByEmailVerificationToken" resultType="com.itjima_server.domain.user.User">
+    SELECT id,
+           name,
+           email,
+           password,
+           phone,
+           created_at,
+           updated_at,
+           provider,
+           provider_id,
+           email_verified,
+           email_verification_token,
+           email_token_generated_at
+    FROM USERS
+    WHERE email_verification_token = #{emailVerificationToken}
+  </select>
+  <delete id="deleteById">
+    DELETE
+    FROM USERS
+    WHERE id = #{id}
+  </delete>
 </mapper>

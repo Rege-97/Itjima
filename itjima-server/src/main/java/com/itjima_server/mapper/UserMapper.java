@@ -20,4 +20,11 @@ public interface UserMapper {
     int updatePhoneById(@Param("id") Long id, @Param("phone") String phone);
 
     int updatePasswordById(@Param("id") Long id, @Param("password") String password);
+
+    int updateEmailVerification(User user);
+
+    User findByEmailVerificationToken(
+            @Param("emailVerificationToken") String emailVerificationToken);
+
+    int deleteById(@Param("id") Long id);
 }

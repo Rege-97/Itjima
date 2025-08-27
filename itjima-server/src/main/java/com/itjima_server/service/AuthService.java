@@ -9,14 +9,18 @@ import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
 import com.itjima_server.dto.user.response.TokenResponseDTO;
 import com.itjima_server.dto.user.response.UserLoginResponseDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
+import com.itjima_server.exception.common.InvalidStateException;
 import com.itjima_server.exception.user.DuplicateUserFieldException;
 import com.itjima_server.exception.user.InvalidRefreshTokenException;
 import com.itjima_server.exception.user.LoginFailedException;
+import com.itjima_server.exception.user.NotFoundUserException;
 import com.itjima_server.exception.user.NotInsertUserException;
 import com.itjima_server.mapper.RefreshTokenMapper;
 import com.itjima_server.mapper.UserMapper;
 import com.itjima_server.security.JwtTokenProvider;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,10 +37,16 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private static final int EMAIL_CODE_LENGTH = 6;
+    private static final int EMAIL_CODE_TTL_MINUTES = 3;
+    private static final String EMAIL_CODE_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private final UserMapper userMapper;
     private final RefreshTokenMapper refreshTokenMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final EmailService emailService;
 
     /**
      * 신규 사용자 회원가입 처리
@@ -56,6 +66,8 @@ public class AuthService {
             throw new DuplicateUserFieldException("이미 사용 중인 전화번호 입니다.");
         }
 
+        String verificationCode = generateVerificationCode();
+
         User user = User.builder()
                 .email(req.getEmail())
                 .name(req.getName())
@@ -63,14 +75,44 @@ public class AuthService {
                 .phone(req.getPhone())
                 .provider(Provider.LOCAL)
                 .createdAt(LocalDateTime.now())
+                .emailVerified(false)
+                .emailVerificationToken(verificationCode)
+                .emailTokenGeneratedAt(LocalDateTime.now())
                 .build();
 
         int result = userMapper.insert(user);
         if (result < 1) {
             throw new NotInsertUserException("회원가입이 정상적으로 되지 않았습니다.");
         }
+
+        emailService.sendVerificationEmail(user.getEmail(), verificationCode);
+
         return UserResponseDTO.from(user);
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void verifyEmail(String token) {
+        User user = userMapper.findByEmailVerificationToken(token);
+        if (user == null) {
+            throw new NotFoundUserException("유효하지 않은 인증 토큰입니다.");
+        }
+
+        LocalDateTime tokenGeneratedAt = user.getEmailTokenGeneratedAt();
+        if (tokenGeneratedAt == null) {
+            throw new InvalidStateException("이미 처리된 토큰이거나 토큰 생성 시간이 기록되지 않았습니다.");
+        }
+
+        if (tokenGeneratedAt.plusMinutes(EMAIL_CODE_TTL_MINUTES).isBefore(LocalDateTime.now())) {
+            userMapper.deleteById(user.getId());
+            throw new InvalidStateException("인증 시간이 만료되었습니다. 회원가입을 다시 시도해주세요.");
+        }
+
+        user.setEmailVerified(true);
+        user.setEmailVerificationToken(null);
+        user.setEmailTokenGeneratedAt(null);
+        userMapper.updateEmailVerification(user);
+    }
+
 
     /**
      * 로그인 로직
@@ -85,6 +127,10 @@ public class AuthService {
         User user = userMapper.findByEmail(req.getEmail());
         if (user == null || !passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new LoginFailedException("아이디 또는 비밀번호가 틀렸습니다.");
+        }
+
+        if (!user.isEmailVerified()) {
+            throw new LoginFailedException("이메일 인증이 필요합니다. 가입하신 이메일을 확인해주세요.");
         }
 
         String accessToken = jwtTokenProvider.generateAccessToken(user);
@@ -168,5 +214,14 @@ public class AuthService {
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다.");
         }
         refreshTokenMapper.deleteByUserId(user.getId());
+    }
+
+    private String generateVerificationCode() {
+        StringBuilder sb = new StringBuilder(EMAIL_CODE_LENGTH);
+        for (int i = 0; i < EMAIL_CODE_LENGTH; i++) {
+            int idx = SECURE_RANDOM.nextInt(EMAIL_CODE_POOL.length());
+            sb.append(EMAIL_CODE_POOL.charAt(idx));
+        }
+        return sb.toString();
     }
 }
