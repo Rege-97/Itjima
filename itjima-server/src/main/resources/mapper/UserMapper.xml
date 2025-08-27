@@ -92,4 +92,27 @@
     FROM USERS
     WHERE id = #{id}
   </delete>
+  <select id="findByProviderAndProviderId" resultType="com.itjima_server.domain.user.User">
+    SELECT id,
+           name,
+           email,
+           password,
+           phone,
+           created_at,
+           updated_at,
+           provider,
+           provider_id,
+           email_verified,
+           email_verification_token,
+           email_token_generated_at
+    FROM USERS
+    WHERE provider = #{provider}
+      AND provider_id = #{providerId}
+  </select>
+  <update id="updateProviderInfo" parameterType="com.itjima_server.domain.user.User">
+    UPDATE USERS
+    SET provider    = #{provider},
+        provider_id = #{providerId}
+    WHERE id = #{id}
+  </update>
 </mapper>

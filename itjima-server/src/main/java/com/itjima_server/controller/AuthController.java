@@ -124,6 +124,14 @@ public class AuthController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "로그인 성공", res));
     }
 
+    @Operation(summary = "카카오 소셜 로그인", description = "카카오로부터 받은 인증 코드로 로그인/회원가입을 처리합니다.")
+    @GetMapping("/kakao")
+    public ResponseEntity<?> kakaoLogin(@RequestParam String code) {
+        UserLoginResponseDTO res = authService.kakaoLogin(code);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "카카오 로그인 성공", res));
+    }
+
     /**
      * 액세스 토큰 재발급
      *

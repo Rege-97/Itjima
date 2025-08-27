@@ -6,6 +6,8 @@ import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.user.request.TokenRefreshRequestDTO;
 import com.itjima_server.dto.user.request.UserLoginRequestDTO;
 import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
+import com.itjima_server.dto.user.response.KakaoTokenResponseDTO;
+import com.itjima_server.dto.user.response.KakaoUserInfoDTO;
 import com.itjima_server.dto.user.response.TokenResponseDTO;
 import com.itjima_server.dto.user.response.UserLoginResponseDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
@@ -20,11 +22,21 @@ import com.itjima_server.mapper.UserMapper;
 import com.itjima_server.security.JwtTokenProvider;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * 인증 관련 비즈니스 로직을 담당하는 서비스 클래스
@@ -46,6 +58,20 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailService emailService;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
+    private String kakaoClientId;
+
+    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
+    private String kakaoRedirectUri;
+
+    @Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
+    private String kakaoTokenUri;
+
+    @Value("${spring.security.oauth2.client.provider.kakao.user-info-uri}")
+    private String kakaoUserInfoUri;
 
     /**
      * 신규 사용자 회원가입 처리
@@ -117,6 +143,13 @@ public class AuthService {
         userMapper.updateEmailVerification(user);
     }
 
+    public UserLoginResponseDTO kakaoLogin(String code) {
+        String kakaoAccessToken = getKakaoAccessToken(code);
+        KakaoUserInfoDTO userInfo = getKakaoUserInfo(kakaoAccessToken);
+        User user = findOrCreateUser(userInfo);
+        return issueJwtTokens(user);
+    }
+
 
     /**
      * 로그인 로직
@@ -137,34 +170,7 @@ public class AuthService {
             throw new LoginFailedException("이메일 인증이 필요합니다. 가입하신 이메일을 확인해주세요.");
         }
 
-        String accessToken = jwtTokenProvider.generateAccessToken(user);
-
-        String refreshTokenString = jwtTokenProvider.generateRefreshToken(user);
-
-        LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(
-                jwtTokenProvider.getRefreshExpirationMs() / 1000);
-
-        RefreshToken refreshToken = RefreshToken.builder()
-                .token(refreshTokenString)
-                .userId(user.getId())
-                .expiryDate(expiryDate)
-                .build();
-
-        if (refreshTokenMapper.existsByUserId(user.getId())) {
-            refreshTokenMapper.update(refreshToken);
-        } else {
-            refreshTokenMapper.insert(refreshToken);
-        }
-
-        return UserLoginResponseDTO.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .accessToken(accessToken)
-                .refreshToken(refreshTokenString)
-                .tokenType("Bearer")
-                .expiresIn(jwtTokenProvider.getAccessExpirationMs())
-                .build();
+        return issueJwtTokens(user);
     }
 
     /**
@@ -218,6 +224,134 @@ public class AuthService {
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다.");
         }
         refreshTokenMapper.deleteByUserId(user.getId());
+    }
+
+    // ==========================
+    // 내부 유틸리티 (카카오 로그인용)
+    // ==========================
+
+    private String getKakaoAccessToken(String code) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code");
+        params.add("client_id", kakaoClientId);
+        params.add("redirect_uri", kakaoRedirectUri);
+        params.add("code", code);
+
+        HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(params,
+                headers);
+
+        try {
+            ResponseEntity<KakaoTokenResponseDTO> response = restTemplate.exchange(
+                    kakaoTokenUri,
+                    HttpMethod.POST,
+                    kakaoTokenRequest,
+                    KakaoTokenResponseDTO.class
+            );
+
+            if (response.getBody() == null || response.getBody().getAccessToken() == null) {
+                throw new RuntimeException("카카오로부터 액세스 토큰을 받아오지 못했습니다.");
+            }
+            return response.getBody().getAccessToken();
+
+        } catch (RestClientException e) {
+            throw new RuntimeException("카카오 서버와 통신 중 오류가 발생했습니다.", e);
+        }
+    }
+
+    private KakaoUserInfoDTO getKakaoUserInfo(String accessToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + accessToken);
+        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        HttpEntity<MultiValueMap<String, String>> kakaoUserInfoRequest = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<KakaoUserInfoDTO> response = restTemplate.exchange(
+                    kakaoUserInfoUri,
+                    HttpMethod.POST,
+                    kakaoUserInfoRequest,
+                    KakaoUserInfoDTO.class
+            );
+
+            if (response.getBody() == null || response.getBody().getId() == null) {
+                throw new RuntimeException("카카오로부터 사용자 정보를 받아오지 못했습니다.");
+            }
+            return response.getBody();
+
+        } catch (RestClientException e) {
+            throw new RuntimeException("카카오 서버와 통신 중 오류가 발생했습니다.", e);
+        }
+    }
+
+    private User findOrCreateUser(KakaoUserInfoDTO userInfo) {
+        // 1. provider와 providerId로 먼저 사용자를 찾기
+        User user = userMapper.findByProviderAndProviderId(Provider.KAKAO, userInfo.getId());
+
+        if (user != null) {
+            // 2. 이미 카카오로 가입한 사용자는 바로 반환
+            return user;
+        }
+
+        // 3. 카카오 정보는 없지만, 동일한 이메일의 로컬 계정이 있는지 확인
+        String email = userInfo.getKakaoAccount().getEmail();
+        User existingUser = userMapper.findByEmail(email);
+
+        if (existingUser != null) {
+            // 4. 이미 이메일로 가입한 사용자가 있다면, 계정을 연동
+            existingUser.setProvider(Provider.KAKAO);
+            existingUser.setProviderId(userInfo.getId());
+            userMapper.updateProviderInfo(existingUser);
+            return existingUser;
+        } else {
+            // 5. 정말 처음 방문한 신규 사용자일 경우, 새로 가입
+            user = User.builder()
+                    .name(userInfo.getProperties().getNickname())
+                    .email(email)
+                    .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                    .provider(Provider.KAKAO)
+                    .providerId(userInfo.getId())
+                    .emailVerified(true) // 소셜 로그인은 이메일이 인증된 것으로 간주
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            userMapper.insert(user);
+            return user;
+        }
+    }
+
+    // ==========================
+    // 내부 유틸리티 (JWT 발급 공통)
+    // ==========================
+
+    private UserLoginResponseDTO issueJwtTokens(User user) {
+        String accessToken = jwtTokenProvider.generateAccessToken(user);
+        String refreshTokenString = jwtTokenProvider.generateRefreshToken(user);
+
+        LocalDateTime expiryDate = LocalDateTime.now()
+                .plusSeconds(jwtTokenProvider.getRefreshExpirationMs() / 1000);
+        RefreshToken refreshToken = RefreshToken.builder()
+                .token(refreshTokenString)
+                .userId(user.getId())
+                .expiryDate(expiryDate)
+                .build();
+
+        if (refreshTokenMapper.existsByUserId(user.getId())) {
+            refreshTokenMapper.update(refreshToken);
+        } else {
+            refreshTokenMapper.insert(refreshToken);
+        }
+
+        return UserLoginResponseDTO.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .accessToken(accessToken)
+                .refreshToken(refreshTokenString)
+                .tokenType("Bearer")
+                .expiresIn(jwtTokenProvider.getAccessExpirationMs())
+                .build();
     }
 
     private String generateVerificationCode() {
