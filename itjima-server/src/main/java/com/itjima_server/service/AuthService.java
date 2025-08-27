@@ -149,8 +149,7 @@ public class AuthService {
     /**
      * 카카오 로그인
      * <p>
-     * 인가 코드로 카카오 액세스 토큰 발급 → 사용자 정보 조회 → 기존 계정 연동 또는 신규 생성 →
-     * 자체 JWT(access/refresh) 발급까지 처리한다.
+     * 인가 코드로 카카오 액세스 토큰 발급 → 사용자 정보 조회 → 기존 계정 연동 또는 신규 생성 → 자체 JWT(access/refresh) 발급까지 처리한다.
      *
      * @param code 카카오 인가 코드(authorization_code)
      * @return 로그인 결과(JWT 포함)
@@ -238,6 +237,12 @@ public class AuthService {
         refreshTokenMapper.deleteByUserId(user.getId());
     }
 
+    /**
+     * 사용자의 이메일 찾기
+     *
+     * @param req 이메일을 찾기 위한 정보 DTO
+     * @return 찾은 마스킹된 이메일
+     */
     @Transactional(readOnly = true)
     public UserFindEmailResponseDTO findEmail(UserFindEmailRequestDTO req) {
         User user = userMapper.findByNameAndPhone(req.getName(), req.getPhone());
@@ -247,6 +252,11 @@ public class AuthService {
         return UserFindEmailResponseDTO.from(user.getEmail());
     }
 
+    /**
+     * 비밀번호 찾기(인증코드 발송)
+     *
+     * @param req 비밀번호를 찾기 위한 정보 DTO
+     */
     @Transactional(rollbackFor = Exception.class)
     public void sendPasswordResetCode(UserFindPasswordRequestDTO req) {
         User user = userMapper.findByNameAndPhoneAndEmail(req.getName(), req.getPhone(),
@@ -268,6 +278,12 @@ public class AuthService {
                 "비밀번호 변경 요청이 정상적으로 완료되지 않았습니다.");
     }
 
+    /**
+     * 비밀번호 재설정
+     *
+     * @param code     인증 코드
+     * @param password 새 비밀번호
+     */
     @Transactional(rollbackFor = Exception.class)
     public void passwordReset(String code, String password) {
         User user = userMapper.findByPasswordResetToken(code);
@@ -371,9 +387,8 @@ public class AuthService {
     /**
      * 카카오 사용자로 로컬 사용자 찾기/생성
      * <p>
-     * 1) provider/providerId로 기존 사용자를 조회하고, 없으면<br>
-     * 2) 동일 이메일의 로컬 계정을 찾아 연동하며, 그것도 없으면<br>
-     * 3) 신규 사용자를 생성한다.
+     * 1) provider/providerId로 기존 사용자를 조회하고, 없으면<br> 2) 동일 이메일의 로컬 계정을 찾아 연동하며, 그것도 없으면<br> 3) 신규
+     * 사용자를 생성한다.
      *
      * @param userInfo 카카오 사용자 정보
      * @return 로컬 DB의 User 엔티티

@@ -204,6 +204,23 @@ public class AuthController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "로그아웃 성공"));
     }
 
+    /**
+     * 이메일 찾기
+     *
+     * @param req 이메일을 찾기 위한 정보
+     * @return 마스킹된 이메일
+     */
+    @Operation(
+            summary = "이메일 찾기",
+            description = "사용자의 이메일 찾기"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "이메일 찾기 성공",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = UserFindEmailResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+    })
     @PostMapping("/find-email")
     public ResponseEntity<?> findEmail(@Valid @RequestBody UserFindEmailRequestDTO req) {
         UserFindEmailResponseDTO res = authService.findEmail(req);
@@ -211,6 +228,23 @@ public class AuthController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "이메일 찾기 성공", res));
     }
 
+    /**
+     * 비밀번호 찾기(인증코드 발송)
+     *
+     * @param req 비밀번호를 찾기 위한 정보
+     * @return 인증코드 발송 메세지
+     */
+    @Operation(
+            summary = "비밀번호 찾기(인증코드 발송)",
+            description = "사용자의 비밀번호 찾기(인증번호 발송)"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "인증코드 발송",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+    })
     @PostMapping("/password-reset/request")
     public ResponseEntity<?> findPassword(@Valid @RequestBody UserFindPasswordRequestDTO req) {
         authService.sendPasswordResetCode(req);
@@ -218,6 +252,25 @@ public class AuthController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "인증코드 발송 완료"));
     }
 
+    /**
+     * 비밀번호 재설정
+     *
+     * @param req 인증코드와 새 비밀번호
+     * @return 비밀번호 변경 완료 메세지
+     */
+    @Operation(
+            summary = "비밀번호 재설정",
+            description = "인증코드 검증 후 비밀번호 재설정"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "비밀번호 변경 완료",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+    })
     @PostMapping("/password-reset/confirm")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody UserPasswordResetRequestDTO req) {
         authService.passwordReset(req.getCode(), req.getPassword());
