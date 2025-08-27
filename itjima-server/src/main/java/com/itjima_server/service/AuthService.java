@@ -143,6 +143,15 @@ public class AuthService {
         userMapper.updateEmailVerification(user);
     }
 
+    /**
+     * 카카오 로그인
+     * <p>
+     * 인가 코드로 카카오 액세스 토큰 발급 → 사용자 정보 조회 → 기존 계정 연동 또는 신규 생성 →
+     * 자체 JWT(access/refresh) 발급까지 처리한다.
+     *
+     * @param code 카카오 인가 코드(authorization_code)
+     * @return 로그인 결과(JWT 포함)
+     */
     public UserLoginResponseDTO kakaoLogin(String code) {
         String kakaoAccessToken = getKakaoAccessToken(code);
         KakaoUserInfoDTO userInfo = getKakaoUserInfo(kakaoAccessToken);
@@ -230,6 +239,15 @@ public class AuthService {
     // 내부 유틸리티 (카카오 로그인용)
     // ==========================
 
+    /**
+     * 카카오 액세스 토큰 발급
+     * <p>
+     * 인가 코드로 카카오 토큰 엔드포인트에 요청하여 액세스 토큰을 획득한다.
+     *
+     * @param code 인가 코드(authorization_code)
+     * @return 카카오 액세스 토큰 문자열
+     * @throws RuntimeException 카카오 API 통신 실패 또는 유효한 토큰을 받지 못한 경우
+     */
     private String getKakaoAccessToken(String code) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
@@ -261,6 +279,15 @@ public class AuthService {
         }
     }
 
+    /**
+     * 카카오 사용자 정보 조회
+     * <p>
+     * 발급받은 액세스 토큰으로 사용자 정보 API를 호출하여 카카오 사용자 정보를 가져온다.
+     *
+     * @param accessToken 카카오 액세스 토큰
+     * @return 카카오 사용자 정보 DTO
+     * @throws RuntimeException 카카오 API 통신 실패 또는 유효한 사용자 정보를 받지 못한 경우
+     */
     private KakaoUserInfoDTO getKakaoUserInfo(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + accessToken);
@@ -286,6 +313,16 @@ public class AuthService {
         }
     }
 
+    /**
+     * 카카오 사용자로 로컬 사용자 찾기/생성
+     * <p>
+     * 1) provider/providerId로 기존 사용자를 조회하고, 없으면<br>
+     * 2) 동일 이메일의 로컬 계정을 찾아 연동하며, 그것도 없으면<br>
+     * 3) 신규 사용자를 생성한다.
+     *
+     * @param userInfo 카카오 사용자 정보
+     * @return 로컬 DB의 User 엔티티
+     */
     private User findOrCreateUser(KakaoUserInfoDTO userInfo) {
         // 1. provider와 providerId로 먼저 사용자를 찾기
         User user = userMapper.findByProviderAndProviderId(Provider.KAKAO, userInfo.getId());
@@ -325,6 +362,12 @@ public class AuthService {
     // 내부 유틸리티 (JWT 발급 공통)
     // ==========================
 
+    /**
+     * 액세스/리프레시 토큰 발급 및 리프레시 토큰 저장
+     *
+     * @param user 토큰을 발급할 사용자
+     * @return 로그인 응답 DTO(JWT 포함)
+     */
     private UserLoginResponseDTO issueJwtTokens(User user) {
         String accessToken = jwtTokenProvider.generateAccessToken(user);
         String refreshTokenString = jwtTokenProvider.generateRefreshToken(user);
@@ -354,6 +397,11 @@ public class AuthService {
                 .build();
     }
 
+    /**
+     * 6자리 영문 대문자/숫자 조합의 이메일 인증코드를 생성
+     *
+     * @return 인증코드 문자열
+     */
     private String generateVerificationCode() {
         StringBuilder sb = new StringBuilder(EMAIL_CODE_LENGTH);
         for (int i = 0; i < EMAIL_CODE_LENGTH; i++) {

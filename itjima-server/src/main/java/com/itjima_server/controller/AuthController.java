@@ -124,7 +124,25 @@ public class AuthController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "로그인 성공", res));
     }
 
-    @Operation(summary = "카카오 소셜 로그인", description = "카카오로부터 받은 인증 코드로 로그인/회원가입을 처리합니다.")
+    /**
+     * 카카오 로그인
+     *
+     * @param code 카카오에서 받은 인가 코드
+     * @return 로그인 결과 응답
+     */
+    @Operation(
+            summary = "카카오 소셜 로그인",
+            description = "카카오로부터 받은 인증 코드로 로그인/회원가입을 처리"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그인 성공",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = UserLoginResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "500", description = "카카오 서버 요청 오류",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+    })
     @GetMapping("/kakao")
     public ResponseEntity<?> kakaoLogin(@RequestParam String code) {
         UserLoginResponseDTO res = authService.kakaoLogin(code);
