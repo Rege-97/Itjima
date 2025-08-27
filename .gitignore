@@ -1,5 +1,5 @@
 # Sensitive configuration files
-application-local.properties
+itjima-server/src/main/resources/application-local.properties
 
 # --- OS 공통 ---
 .DS_Store
@@ -7,7 +7,7 @@ Thumbs.db
 *.swp
 *.swo
 
-# --- 환경/비밀 ---
+# --- 환경/비밀 ---git
 .env
 .env.*
 !.env.example
