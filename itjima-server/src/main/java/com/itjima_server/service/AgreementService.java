@@ -426,6 +426,19 @@ public class AgreementService {
         return PagedResultDTO.from(transactions, hasNext, lastId);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public void processOverdueAgreements() {
+        List<Long> overdueIds = agreementMapper.findOverdueAgreementIds();
+
+        if (overdueIds == null || overdueIds.isEmpty()) {
+            return;
+        }
+
+        for (Long id : overdueIds) {
+            agreementMapper.updateStatusById(id, AgreementStatus.OVERDUE);
+        }
+    }
+
     // ==========================
     // 내부 유틸리티
     // ==========================
