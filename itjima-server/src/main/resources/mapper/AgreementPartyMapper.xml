@@ -18,4 +18,9 @@
     SET confirm_at = #{confirmedAt}
     WHERE id = #{id}
   </update>
+  <select id="findUserIdsByAgreementId" resultType="long">
+    SELECT user_id
+    FROM AGREEMENT_PARTIES
+    WHERE agreement_id = #{agreementId}
+  </select>
 </mapper>

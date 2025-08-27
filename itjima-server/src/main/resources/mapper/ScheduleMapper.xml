@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itjima_server.mapper.ScheduleMapper">
+  <insert id="insert" parameterType="com.itjima_server.domain.notification.Schedule"
+    useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO SCHEDULES (agreement_id, type, due_at)
+    VALUES (#{agreementId}, #{type}, #{dueAt})
+  </insert>
+  <update id="updateNotifiedById">
+    UPDATE SCHEDULES
+    SET notified = 1
+    WHERE id = #{id}
+  </update>
+  <select id="findPendingSchedules" resultType="com.itjima_server.domain.notification.Schedule">
+    SELECT id,
+           agreement_id,
+           type,
+           due_at,
+           notified
+    FROM SCHEDULES
+    WHERE notified = false
+      AND due_at &lt;= NOW()
+  </select>
+</mapper>
