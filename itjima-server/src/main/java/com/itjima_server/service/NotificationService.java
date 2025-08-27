@@ -21,6 +21,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 알림 관련 비즈니스 로직을 수행하는 서비스 클래스
+ *
+ * @author Rege-97
+ * @since 2025-08-27
+ */
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
@@ -29,6 +35,9 @@ public class NotificationService {
     private final ScheduleMapper scheduleMapper;
     private final AgreementPartyMapper agreementPartyMapper;
 
+    /**
+     * 스케줄 기반 리마인드/연체 알림 생성
+     */
     @Transactional(rollbackFor = Exception.class)
     public void createReminders() {
         List<Schedule> pendingSchedules = scheduleMapper.findPendingSchedules();
@@ -63,6 +72,14 @@ public class NotificationService {
         }
     }
 
+    /**
+     * 읽지 않은 알림 목록 조회 (페이징)
+     *
+     * @param userId 로그인한 사용자 id
+     * @param lastId 조회할 마지막 id
+     * @param size   한 페이지에 보여줄 개수
+     * @return 알림 리스트 응답 DTO
+     */
     @Transactional(readOnly = true)
     public PagedResultDTO<?> getNotReadList(long userId, long lastId, int size) {
         int sizePlusOne = size + 1;
@@ -89,6 +106,13 @@ public class NotificationService {
         return PagedResultDTO.from(notifications, hasNext, lastId);
     }
 
+    /**
+     * 알림 읽음 처리
+     *
+     * @param userId 로그인한 사용자 ID
+     * @param id     읽음 처리할 알림 ID
+     * @return  읽음 처리된 알림 응답 DTO
+     */
     @Transactional(rollbackFor = Exception.class)
     public NotificationResponseDTO updateReadAt(Long userId, Long id) {
         Notification notification = notificationMapper.findById(id);

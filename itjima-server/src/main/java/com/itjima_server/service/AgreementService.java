@@ -456,6 +456,9 @@ public class AgreementService {
         return PagedResultDTO.from(transactions, hasNext, lastId);
     }
 
+    /**
+     * 대여 연체 처리
+     */
     @Transactional(rollbackFor = Exception.class)
     public void processOverdueAgreements() {
         List<Long> overdueIds = agreementMapper.findOverdueAgreementIds();
