@@ -103,4 +103,47 @@
     ORDER by a.id DESC
     LIMIT #{sizePlusOne}
   </select>
+  <select id="findRecentPartnersByUserId" resultType="com.itjima_server.dto.user.response.RecentPartnerResponseDTO">
+    SELECT
+    partner_user.id AS id,
+    partner_user.name AS name,
+    partner_user.email AS email,
+    partner_user.phone AS phone,
+    recent_partners.last_agreement_id AS lastAgreementId,
+    recent_partners.last_contact_at AS lastContactAt
+    FROM (
+    SELECT
+    partner_id,
+    MAX(agreement_id) AS last_agreement_id,
+    MAX(created_at) AS last_contact_at
+    FROM (
+    -- 내가 채권자일 때 상대방(채무자) 정보
+    SELECT p_debtor.user_id AS partner_id, a.id AS agreement_id, a.created_at
+    FROM AGREEMENTS a
+    JOIN AGREEMENT_PARTIES p_creditor ON a.id = p_creditor.agreement_id AND p_creditor.role =
+    'CREDITOR'
+    JOIN AGREEMENT_PARTIES p_debtor ON a.id = p_debtor.agreement_id AND p_debtor.role = 'DEBTOR'
+    WHERE p_creditor.user_id = #{userId}
+
+    UNION ALL
+
+    -- 내가 채무자일 때 상대방(채권자) 정보
+    SELECT p_creditor.user_id AS partner_id, a.id AS agreement_id, a.created_at
+    FROM AGREEMENTS a
+    JOIN AGREEMENT_PARTIES p_creditor ON a.id = p_creditor.agreement_id AND p_creditor.role =
+    'CREDITOR'
+    JOIN AGREEMENT_PARTIES p_debtor ON a.id = p_debtor.agreement_id AND p_debtor.role = 'DEBTOR'
+    WHERE p_debtor.user_id = #{userId}
+    ) all_partners
+    GROUP BY partner_id
+    ) AS recent_partners
+    JOIN USERS partner_user ON recent_partners.partner_id = partner_user.id
+    <where>
+      <if test="lastId != null">
+        AND recent_partners.last_agreement_id &lt; #{lastId}
+      </if>
+    </where>
+    ORDER BY recent_partners.last_agreement_id DESC
+    LIMIT #{sizePlusOne}
+  </select>
 </mapper>

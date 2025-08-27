@@ -21,7 +21,7 @@ import com.itjima_server.dto.user.response.UserLoginResponseDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
 import com.itjima_server.service.AgreementService;
 import com.itjima_server.service.ItemService;
-import com.itjima_server.service.UserService;
+import com.itjima_server.service.AuthService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +47,7 @@ public class TransactionControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private UserService userService;
+    private AuthService authService;
     @Autowired
     private ItemService itemService;
     @Autowired
@@ -68,24 +68,24 @@ public class TransactionControllerTest {
         reg1.setEmail("creditor_tx@example.com");
         reg1.setPassword("password123!");
         reg1.setPhone("01022223333");
-        UserResponseDTO creditor = userService.register(reg1);
+        UserResponseDTO creditor = authService.register(reg1);
 
         UserRegisterRequestDTO reg2 = new UserRegisterRequestDTO();
         reg2.setName("Debtor");
         reg2.setEmail("debtor_tx@example.com");
         reg2.setPassword("password123!");
         reg2.setPhone("01022224444");
-        UserResponseDTO debtor = userService.register(reg2);
+        UserResponseDTO debtor = authService.register(reg2);
 
         creditorId = creditor.getId();
         debtorId = debtor.getId();
 
         // 2) 로그인
         UserLoginResponseDTO creditorLogin =
-                userService.login(
+                authService.login(
                         new UserLoginRequestDTO("creditor_tx@example.com", "password123!"));
         UserLoginResponseDTO debtorLogin =
-                userService.login(new UserLoginRequestDTO("debtor_tx@example.com", "password123!"));
+                authService.login(new UserLoginRequestDTO("debtor_tx@example.com", "password123!"));
         creditorAccessToken = creditorLogin.getAccessToken();
         debtorAccessToken = debtorLogin.getAccessToken();
 

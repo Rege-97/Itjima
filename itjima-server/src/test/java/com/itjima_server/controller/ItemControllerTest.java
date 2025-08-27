@@ -17,7 +17,7 @@ import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;
 import com.itjima_server.dto.user.response.UserLoginResponseDTO;
 import com.itjima_server.service.ItemService;
-import com.itjima_server.service.UserService;
+import com.itjima_server.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -43,7 +43,7 @@ public class ItemControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private UserService userService;
+    private AuthService authService;
 
     @Autowired
     private ItemService itemService;
@@ -58,12 +58,12 @@ public class ItemControllerTest {
         userRegisterRequestDTO.setEmail("itemTest@example.com");
         userRegisterRequestDTO.setPassword("password123!");
         userRegisterRequestDTO.setPhone("01012345678");
-        userService.register(userRegisterRequestDTO);
+        authService.register(userRegisterRequestDTO);
 
         UserLoginRequestDTO userLoginRequestDTO = new UserLoginRequestDTO();
         userLoginRequestDTO.setEmail("itemTest@example.com");
         userLoginRequestDTO.setPassword("password123!");
-        UserLoginResponseDTO loginResponse = userService.login(userLoginRequestDTO);
+        UserLoginResponseDTO loginResponse = authService.login(userLoginRequestDTO);
         accessToken = loginResponse.getAccessToken();
         userId = loginResponse.getId();
     }
@@ -213,8 +213,8 @@ public class ItemControllerTest {
             otherUserDto.setEmail("other@example.com");
             otherUserDto.setPassword("password123!");
             otherUserDto.setPhone("01011112222");
-            userService.register(otherUserDto);
-            UserLoginResponseDTO otherLogin = userService.login(new UserLoginRequestDTO("other@example.com", "password123!"));
+            authService.register(otherUserDto);
+            UserLoginResponseDTO otherLogin = authService.login(new UserLoginRequestDTO("other@example.com", "password123!"));
             String otherAccessToken = otherLogin.getAccessToken();
 
             ItemUpdateRequestDTO req = new ItemUpdateRequestDTO();
@@ -334,8 +334,8 @@ public class ItemControllerTest {
             otherUserDto.setEmail("other@example.com");
             otherUserDto.setPassword("password123!");
             otherUserDto.setPhone("01011112222");
-            userService.register(otherUserDto);
-            UserLoginResponseDTO otherLogin = userService.login(new UserLoginRequestDTO("other@example.com", "password123!"));
+            authService.register(otherUserDto);
+            UserLoginResponseDTO otherLogin = authService.login(new UserLoginRequestDTO("other@example.com", "password123!"));
             String otherAccessToken = otherLogin.getAccessToken();
 
             // when

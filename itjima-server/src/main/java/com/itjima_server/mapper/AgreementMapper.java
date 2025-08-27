@@ -3,6 +3,7 @@ package com.itjima_server.mapper;
 import com.itjima_server.domain.agreement.Agreement;
 import com.itjima_server.domain.agreement.AgreementStatus;
 import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
+import com.itjima_server.dto.user.response.RecentPartnerResponseDTO;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -20,6 +21,9 @@ public interface AgreementMapper {
 
     List<AgreementDetailDTO> findByUserId(@Param("userId") Long userId, @Param("role") String role,
             @Param("lastId") Long lastId,
+            @Param("sizePlusOne") int sizePlusOne);
+
+    List<RecentPartnerResponseDTO> findRecentPartnersByUserId(@Param("userId") Long userId, @Param("lastId") Long lastId,
             @Param("sizePlusOne") int sizePlusOne);
 }
 

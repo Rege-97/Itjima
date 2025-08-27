@@ -45,4 +45,14 @@
     FROM USERS
     WHERE email = #{email}
   </select>
+  <update id="updatePhoneById">
+    UPDATE USERS
+    SET phone    = #{phone}
+    WHERE id = #{id}
+  </update>
+  <update id="updatePasswordById">
+    UPDATE USERS
+    SET password = #{password}
+    WHERE id = #{id}
+  </update>
 </mapper>

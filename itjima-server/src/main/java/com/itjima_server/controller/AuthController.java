@@ -8,7 +8,7 @@ import com.itjima_server.dto.user.response.TokenResponseDTO;
 import com.itjima_server.dto.user.response.UserLoginResponseDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
 import com.itjima_server.security.CustomUserDetails;
-import com.itjima_server.service.UserService;
+import com.itjima_server.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService userService;
+    private final AuthService authService;
 
 
     /**
@@ -63,7 +63,7 @@ public class AuthController {
     })
     @PostMapping("/signup")
     public ResponseEntity<?> register(@Valid @RequestBody UserRegisterRequestDTO req) {
-        UserResponseDTO res = userService.register(req);
+        UserResponseDTO res = authService.register(req);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponseDTO.success(HttpStatus.CREATED.value(), "회원 가입 성공", res));
     }
@@ -89,7 +89,7 @@ public class AuthController {
     })
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody UserLoginRequestDTO req) {
-        UserLoginResponseDTO res = userService.login(req);
+        UserLoginResponseDTO res = authService.login(req);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "로그인 성공", res));
     }
@@ -115,7 +115,7 @@ public class AuthController {
     })
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshAccessToken(@Valid @RequestBody TokenRefreshRequestDTO req) {
-        TokenResponseDTO res = userService.refreshAccessToken(req);
+        TokenResponseDTO res = authService.refreshAccessToken(req);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "토큰 재발급 성공", res));
     }
@@ -139,7 +139,7 @@ public class AuthController {
     })
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails user) {
-        userService.logout(user.getId());
+        authService.logout(user.getId());
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "로그아웃 성공"));
     }
