@@ -1,3 +1,6 @@
+# Sensitive configuration files
+application-local.properties
+
 # --- OS 공통 ---
 .DS_Store
 Thumbs.db
