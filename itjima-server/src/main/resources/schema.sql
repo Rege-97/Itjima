@@ -1,15 +1,18 @@
 -- 사용자 테이블
 CREATE TABLE IF NOT EXISTS `USERS`
 (
-    `id`          bigint       NOT NULL AUTO_INCREMENT COMMENT '사용자ID',
-    `name`        varchar(64)  NOT NULL COMMENT '이름',
-    `email`       varchar(256) NOT NULL COMMENT '이메일',
-    `password`    varchar(256) NOT NULL COMMENT '비밀번호',
-    `phone`       varchar(32)  NOT NULL COMMENT '전화번호',
-    `created_at`  datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '가입일',
-    `updated_at`  datetime     NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일',
-    `provider`    varchar(20)  NOT NULL DEFAULT 'LOCAL' COMMENT '가입경로',
-    `provider_id` varchar(255) NULL COMMENT 'SNS 고유ID',
+    `id`                       bigint       NOT NULL AUTO_INCREMENT COMMENT '사용자ID',
+    `name`                     varchar(64)  NOT NULL COMMENT '이름',
+    `email`                    varchar(256) NOT NULL COMMENT '이메일',
+    `password`                 varchar(256) NOT NULL COMMENT '비밀번호',
+    `phone`                    varchar(32)  NOT NULL COMMENT '전화번호',
+    `created_at`               datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '가입일',
+    `updated_at`               datetime     NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일',
+    `provider`                 varchar(20)  NOT NULL DEFAULT 'LOCAL' COMMENT '가입경로',
+    `provider_id`              varchar(255) NULL COMMENT 'SNS 고유ID',
+    `email_verified`           tinyint(1)   NOT NULL DEFAULT 0 COMMENT '이메일 인증 여부',
+    `email_verification_token` varchar(255) NULL COMMENT '이메일 인증 토큰',
+    `email_token_generated_at` datetime     NULL COMMENT '이메일 인증 토큰 생성 시간',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_email` (`email`),
     UNIQUE KEY `uk_phone` (`phone`)
@@ -28,20 +31,6 @@ CREATE TABLE IF NOT EXISTS `REFRESH_TOKENS`
     CONSTRAINT `fk_refresh_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `USERS` (`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='리프레시 토큰';
-
--- 주소록 테이블
-CREATE TABLE IF NOT EXISTS `CONTACTS`
-(
-    `id`         bigint   NOT NULL AUTO_INCREMENT COMMENT '주소록ID',
-    `owner_id`   bigint   NOT NULL COMMENT '소유한 유저ID',
-    `user_id`    bigint   NOT NULL COMMENT '저장된 유저ID',
-    `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '등록일',
-    PRIMARY KEY (`id`),
-    CONSTRAINT `fk_contacts_owner` FOREIGN KEY (`owner_id`) REFERENCES `USERS` (`id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_contacts_user` FOREIGN KEY (`user_id`) REFERENCES `USERS` (`id`) ON DELETE CASCADE,
-    UNIQUE KEY `uk_owner_user` (`owner_id`, `user_id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4 COMMENT ='주소록';
 
 -- 대여품목 테이블
 CREATE TABLE IF NOT EXISTS `ITEMS`

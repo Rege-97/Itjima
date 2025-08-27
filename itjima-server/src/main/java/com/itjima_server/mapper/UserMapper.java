@@ -1,5 +1,6 @@
 package com.itjima_server.mapper;
 
+import com.itjima_server.domain.user.Provider;
 import com.itjima_server.domain.user.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -20,4 +21,16 @@ public interface UserMapper {
     int updatePhoneById(@Param("id") Long id, @Param("phone") String phone);
 
     int updatePasswordById(@Param("id") Long id, @Param("password") String password);
+
+    int updateEmailVerification(User user);
+
+    User findByEmailVerificationToken(
+            @Param("emailVerificationToken") String emailVerificationToken);
+
+    int deleteById(@Param("id") Long id);
+
+    User findByProviderAndProviderId(@Param("provider") Provider provider,
+            @Param("providerId") String providerId);
+
+    int updateProviderInfo(User user);
 }

@@ -22,16 +22,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 인증/회원가입 API 클래스
  *
  * @author Rege-97
- * @since 2025-08-20
+ * @since 2025-08-27
  */
 @Tag(name = "Auth", description = "인증/회원가입 API")
 @RestController
@@ -69,6 +71,34 @@ public class AuthController {
     }
 
     /**
+     * 이메일 인증 처리
+     *
+     * @param token 인증할 인증번호
+     * @return 인증 완료 응답
+     */
+    @Operation(
+            summary = "이메일 인증",
+            description = "회원 가입 시 보내진 인증번호로 이메일 인증"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "인증 성공",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "404", description = "대상 없음",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+    })
+    @GetMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam(required = false) String token) {
+        authService.verifyEmail(token);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "이메일 인증 성공"));
+    }
+
+    /**
      * 회원 로그인
      *
      * @param req 로그인 요청 DTO
@@ -92,6 +122,32 @@ public class AuthController {
         UserLoginResponseDTO res = authService.login(req);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "로그인 성공", res));
+    }
+
+    /**
+     * 카카오 로그인
+     *
+     * @param code 카카오에서 받은 인가 코드
+     * @return 로그인 결과 응답
+     */
+    @Operation(
+            summary = "카카오 소셜 로그인",
+            description = "카카오로부터 받은 인증 코드로 로그인/회원가입을 처리"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그인 성공",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = UserLoginResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "500", description = "카카오 서버 요청 오류",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+    })
+    @GetMapping("/kakao")
+    public ResponseEntity<?> kakaoLogin(@RequestParam String code) {
+        UserLoginResponseDTO res = authService.kakaoLogin(code);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "카카오 로그인 성공", res));
     }
 
     /**

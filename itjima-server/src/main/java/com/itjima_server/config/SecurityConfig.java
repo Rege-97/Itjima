@@ -40,7 +40,8 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh")
+                        .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh",
+                                "/api/auth/verify-email","/api/auth/kakao")
                         .permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
                                 "/swagger-ui.html").permitAll()
