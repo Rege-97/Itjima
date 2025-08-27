@@ -2,9 +2,13 @@ package com.itjima_server.controller;
 
 import com.itjima_server.common.ApiResponseDTO;
 import com.itjima_server.dto.user.request.TokenRefreshRequestDTO;
+import com.itjima_server.dto.user.request.UserFindEmailRequestDTO;
+import com.itjima_server.dto.user.request.UserFindPasswordRequestDTO;
 import com.itjima_server.dto.user.request.UserLoginRequestDTO;
+import com.itjima_server.dto.user.request.UserPasswordResetRequestDTO;
 import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
 import com.itjima_server.dto.user.response.TokenResponseDTO;
+import com.itjima_server.dto.user.response.UserFindEmailResponseDTO;
 import com.itjima_server.dto.user.response.UserLoginResponseDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
 import com.itjima_server.security.CustomUserDetails;
@@ -33,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 인증/회원가입 API 클래스
  *
  * @author Rege-97
- * @since 2025-08-27
+ * @since 2025-08-28
  */
 @Tag(name = "Auth", description = "인증/회원가입 API")
 @RestController
@@ -198,5 +202,26 @@ public class AuthController {
         authService.logout(user.getId());
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "로그아웃 성공"));
+    }
+
+    @PostMapping("/find-email")
+    public ResponseEntity<?> findEmail(@Valid @RequestBody UserFindEmailRequestDTO req) {
+        UserFindEmailResponseDTO res = authService.findEmail(req);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "이메일 찾기 성공", res));
+    }
+
+    @PostMapping("/password-reset/request")
+    public ResponseEntity<?> findPassword(@Valid @RequestBody UserFindPasswordRequestDTO req) {
+        authService.sendPasswordResetCode(req);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "인증코드 발송 완료"));
+    }
+
+    @PostMapping("/password-reset/confirm")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody UserPasswordResetRequestDTO req) {
+        authService.passwordReset(req.getCode(), req.getPassword());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "비밀번호 변경 완료"));
     }
 }

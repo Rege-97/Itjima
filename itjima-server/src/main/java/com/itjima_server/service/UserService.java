@@ -8,7 +8,6 @@ import com.itjima_server.dto.user.response.UserResponseDTO;
 import com.itjima_server.exception.common.InvalidStateException;
 import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.user.DuplicateUserFieldException;
-import com.itjima_server.exception.user.LoginFailedException;
 import com.itjima_server.exception.user.NotFoundUserException;
 import com.itjima_server.mapper.AgreementMapper;
 import com.itjima_server.mapper.UserMapper;
@@ -30,6 +29,7 @@ public class UserService {
 
     private final AgreementMapper agreementMapper;
     private final UserMapper userMapper;
+    private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -81,7 +81,7 @@ public class UserService {
      */
     @Transactional(rollbackFor = Exception.class)
     public UserResponseDTO changeProfile(Long id, UserChangeProfileRequestDTO req) {
-        if(req == null) {
+        if (req == null) {
             throw new IllegalArgumentException("수정하거나 확인할 데이터가 없습니다.");
         }
 

@@ -4,18 +4,21 @@ import com.itjima_server.domain.user.Provider;
 import com.itjima_server.domain.user.RefreshToken;
 import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.user.request.TokenRefreshRequestDTO;
+import com.itjima_server.dto.user.request.UserFindEmailRequestDTO;
+import com.itjima_server.dto.user.request.UserFindPasswordRequestDTO;
 import com.itjima_server.dto.user.request.UserLoginRequestDTO;
 import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
 import com.itjima_server.dto.user.response.KakaoTokenResponseDTO;
 import com.itjima_server.dto.user.response.KakaoUserInfoDTO;
 import com.itjima_server.dto.user.response.TokenResponseDTO;
+import com.itjima_server.dto.user.response.UserFindEmailResponseDTO;
 import com.itjima_server.dto.user.response.UserLoginResponseDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
 import com.itjima_server.exception.common.InvalidStateException;
+import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.user.DuplicateUserFieldException;
 import com.itjima_server.exception.user.InvalidRefreshTokenException;
 import com.itjima_server.exception.user.LoginFailedException;
-import com.itjima_server.exception.user.NotFoundUserException;
 import com.itjima_server.exception.user.NotInsertUserException;
 import com.itjima_server.mapper.RefreshTokenMapper;
 import com.itjima_server.mapper.UserMapper;
@@ -42,14 +45,14 @@ import org.springframework.web.client.RestTemplate;
  * 인증 관련 비즈니스 로직을 담당하는 서비스 클래스
  *
  * @author Rege-97
- * @since 2025-08-27
+ * @since 2025-08-28
  */
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
     private static final int EMAIL_CODE_LENGTH = 6;
-    private static final int EMAIL_CODE_TTL_MINUTES = 3;
+    private static final int EMAIL_CODE_TTL_MINUTES = 5;
     private static final String EMAIL_CODE_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
@@ -124,7 +127,7 @@ public class AuthService {
     public void verifyEmail(String token) {
         User user = userMapper.findByEmailVerificationToken(token);
         if (user == null) {
-            throw new NotFoundUserException("유효하지 않은 인증 토큰입니다.");
+            throw new IllegalArgumentException("유효하지 않은 인증 토큰입니다.");
         }
 
         LocalDateTime tokenGeneratedAt = user.getEmailTokenGeneratedAt();
@@ -233,6 +236,58 @@ public class AuthService {
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다.");
         }
         refreshTokenMapper.deleteByUserId(user.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public UserFindEmailResponseDTO findEmail(UserFindEmailRequestDTO req) {
+        User user = userMapper.findByNameAndPhone(req.getName(), req.getPhone());
+        if (user == null) {
+            throw new IllegalArgumentException("입력하신 정보와 일치하는 사용자가 없습니다.");
+        }
+        return UserFindEmailResponseDTO.from(user.getEmail());
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void sendPasswordResetCode(UserFindPasswordRequestDTO req) {
+        User user = userMapper.findByNameAndPhoneAndEmail(req.getName(), req.getPhone(),
+                req.getEmail());
+        if (user == null) {
+            throw new IllegalArgumentException("입력하신 정보와 일치하는 사용자가 없습니다.");
+        }
+
+        String passwordResetCode = generateVerificationCode();
+
+        user.setPasswordResetToken(passwordResetCode);
+        user.setPasswordTokenGeneratedAt(LocalDateTime.now());
+
+        emailService.sendPasswordReset(user.getEmail(), passwordResetCode);
+
+        checkUpdateResult(
+                userMapper.updatePasswordResetById(user.getId(), user.getPasswordResetToken(),
+                        user.getPasswordTokenGeneratedAt(), null),
+                "비밀번호 변경 요청이 정상적으로 완료되지 않았습니다.");
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void passwordReset(String code, String password) {
+        User user = userMapper.findByPasswordResetToken(code);
+        if (user == null) {
+            throw new IllegalArgumentException("유효하지 않은 인증 토큰입니다.");
+        }
+
+        LocalDateTime tokenGeneratedAt = user.getPasswordTokenGeneratedAt();
+        if (tokenGeneratedAt == null) {
+            throw new InvalidStateException("이미 처리된 토큰이거나 토큰 생성 시간이 기록되지 않았습니다.");
+        }
+        if (tokenGeneratedAt.plusMinutes(EMAIL_CODE_TTL_MINUTES).isBefore(LocalDateTime.now())) {
+            throw new InvalidStateException("인증 시간이 만료되었습니다. 다시 시도해주세요.");
+        }
+        user.setPasswordResetToken(null);
+        user.setPasswordTokenGeneratedAt(null);
+        checkUpdateResult(
+                userMapper.updatePasswordResetById(user.getId(), user.getPasswordResetToken(),
+                        user.getPasswordTokenGeneratedAt(), passwordEncoder.encode(password)),
+                "비밀번호 변경 중 오류가 발생했습니다.");
     }
 
     // ==========================
@@ -409,5 +464,18 @@ public class AuthService {
             sb.append(EMAIL_CODE_POOL.charAt(idx));
         }
         return sb.toString();
+    }
+
+    /**
+     * UPDATE 실행 결과 검증 유틸리티
+     *
+     * @param result       실행된 row 수
+     * @param errorMessage 실패 시 예외 메시지
+     * @throws UpdateFailedException update 실패 시
+     */
+    private void checkUpdateResult(int result, String errorMessage) {
+        if (result < 1) {
+            throw new UpdateFailedException(errorMessage);
+        }
     }
 }

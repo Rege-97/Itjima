@@ -115,4 +115,66 @@
         provider_id = #{providerId}
     WHERE id = #{id}
   </update>
+  <select id="findByNameAndPhone" resultType="com.itjima_server.domain.user.User">
+    SELECT id,
+           name,
+           email,
+           password,
+           phone,
+           created_at,
+           updated_at,
+           provider,
+           provider_id,
+           email_verified,
+           email_verification_token,
+           email_token_generated_at
+    FROM USERS
+    WHERE name = #{name}
+      AND phone = #{phone}
+  </select>
+  <select id="findByNameAndPhoneAndEmail" resultType="com.itjima_server.domain.user.User">
+    SELECT id,
+           name,
+           email,
+           password,
+           phone,
+           created_at,
+           updated_at,
+           provider,
+           provider_id,
+           email_verified,
+           email_verification_token,
+           email_token_generated_at
+    FROM USERS
+    WHERE name = #{name}
+      AND phone = #{phone}
+      AND email = #{email}
+  </select>
+  <update id="updatePasswordResetById">
+    UPDATE USERS
+    SET password_reset_token = #{passwordResetToken},
+    password_token_generated_at = #{passwordTokenGeneratedAt}
+    <if test="password != null and password != ''">
+      ,password = #{password}
+    </if>
+    WHERE id = #{id}
+  </update>
+  <select id="findByPasswordResetToken" resultType="com.itjima_server.domain.user.User">
+    SELECT id,
+           name,
+           email,
+           password,
+           phone,
+           created_at,
+           updated_at,
+           provider,
+           provider_id,
+           email_verified,
+           email_verification_token,
+           email_token_generated_at,
+           password_reset_token,
+           password_token_generated_at
+    FROM USERS
+    WHERE password_reset_token = #{passwordResetToken}
+  </select>
 </mapper>
