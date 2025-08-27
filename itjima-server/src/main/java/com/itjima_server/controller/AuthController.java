@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 인증/회원가입 API 클래스
  *
  * @author Rege-97
- * @since 2025-08-20
+ * @since 2025-08-27
  */
 @Tag(name = "Auth", description = "인증/회원가입 API")
 @RestController
@@ -70,8 +70,29 @@ public class AuthController {
                 .body(ApiResponseDTO.success(HttpStatus.CREATED.value(), "회원 가입 성공", res));
     }
 
+    /**
+     * 이메일 인증 처리
+     *
+     * @param token 인증할 인증번호
+     * @return 인증 완료 응답
+     */
+    @Operation(
+            summary = "이메일 인증",
+            description = "회원 가입 시 보내진 인증번호로 이메일 인증"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "인증 성공",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "404", description = "대상 없음",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+    })
     @GetMapping("/verify-email")
-    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
+    public ResponseEntity<?> verifyEmail(@RequestParam(required = false) String token) {
         authService.verifyEmail(token);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "이메일 인증 성공"));

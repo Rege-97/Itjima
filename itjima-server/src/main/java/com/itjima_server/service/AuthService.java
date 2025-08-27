@@ -20,7 +20,6 @@ import com.itjima_server.mapper.UserMapper;
 import com.itjima_server.security.JwtTokenProvider;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 인증 관련 비즈니스 로직을 담당하는 서비스 클래스
  *
  * @author Rege-97
- * @since 2025-08-20
+ * @since 2025-08-27
  */
 @Service
 @RequiredArgsConstructor
@@ -90,6 +89,11 @@ public class AuthService {
         return UserResponseDTO.from(user);
     }
 
+    /**
+     * 이메일 인증 처리
+     *
+     * @param token 인증할 인증번호
+     */
     @Transactional(rollbackFor = Exception.class)
     public void verifyEmail(String token) {
         User user = userMapper.findByEmailVerificationToken(token);
