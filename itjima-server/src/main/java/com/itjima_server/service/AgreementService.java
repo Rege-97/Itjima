@@ -176,25 +176,33 @@ public class AgreementService {
         checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.ON_LOAN),
                 "물품 상태 변경에 실패했습니다.");
 
+        LocalDateTime now = LocalDateTime.now();
         LocalDateTime dueAt = agreement.getDueAt();
 
-        scheduleMapper.insert(Schedule.builder()
-                .agreementId(agreementId)
-                .type(ScheduleType.D_MINUS_7)
-                .dueAt(dueAt.minusDays(7))
-                .build());
+        if (dueAt.minusDays(7).isAfter(now)) {
+            scheduleMapper.insert(Schedule.builder()
+                    .agreementId(agreementId)
+                    .type(ScheduleType.D_MINUS_7)
+                    .dueAt(dueAt.minusDays(7))
+                    .build());
+        }
 
-        scheduleMapper.insert(Schedule.builder()
-                .agreementId(agreementId)
-                .type(ScheduleType.D_MINUS_3)
-                .dueAt(dueAt.minusDays(3))
-                .build());
+        if (dueAt.minusDays(3).isAfter(now)) {
+            scheduleMapper.insert(Schedule.builder()
+                    .agreementId(agreementId)
+                    .type(ScheduleType.D_MINUS_3)
+                    .dueAt(dueAt.minusDays(3))
+                    .build());
 
-        scheduleMapper.insert(Schedule.builder()
-                .agreementId(agreementId)
-                .type(ScheduleType.D_MINUS_1)
-                .dueAt(dueAt.minusDays(1))
-                .build());
+        }
+
+        if (dueAt.minusDays(1).isAfter(now)) {
+            scheduleMapper.insert(Schedule.builder()
+                    .agreementId(agreementId)
+                    .type(ScheduleType.D_MINUS_1)
+                    .dueAt(dueAt.minusDays(1))
+                    .build());
+        }
 
         scheduleMapper.insert(Schedule.builder()
                 .agreementId(agreementId)
