@@ -10,6 +10,7 @@ import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.user.DuplicateUserFieldException;
 import com.itjima_server.exception.user.NotFoundUserException;
 import com.itjima_server.mapper.AgreementMapper;
+import com.itjima_server.mapper.RefreshTokenMapper;
 import com.itjima_server.mapper.UserMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 사용자 관련 비즈니스 로직을 수행하는 서비스 클래스
  *
  * @author Rege-97
- * @since 2025-08-27
+ * @since 2025-08-28
  */
 @Service
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class UserService {
 
     private final AgreementMapper agreementMapper;
     private final UserMapper userMapper;
-    private final EmailService emailService;
+    private final RefreshTokenMapper refreshTokenMapper;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -110,6 +111,21 @@ public class UserService {
         }
 
         return UserResponseDTO.from(user);
+    }
+
+    /**
+     * 회원 탈퇴 처리
+     * @param id 로그인한 사용자 ID
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteUser(Long id) {
+        User user = userMapper.findById(id);
+        if (user == null) {
+            throw new NotFoundUserException("존재하지 않는 사용자입니다.");
+        }
+
+        refreshTokenMapper.deleteByUserId(id);
+        checkUpdateResult(userMapper.updateDeleteStatusById(id), "회원 탈퇴 중 오류가 발생했습니다.");
     }
 
     // ==========================
