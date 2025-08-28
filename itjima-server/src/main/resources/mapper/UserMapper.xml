@@ -49,7 +49,9 @@
            provider_id,
            email_verified,
            email_verification_token,
-           email_token_generated_at
+           email_token_generated_at,
+           password_reset_token,
+           password_token_generated_at
     FROM USERS
     WHERE email = #{email}
   </select>

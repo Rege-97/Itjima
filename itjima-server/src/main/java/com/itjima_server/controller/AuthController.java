@@ -1,6 +1,8 @@
 package com.itjima_server.controller;
 
 import com.itjima_server.common.ApiResponseDTO;
+import com.itjima_server.dto.user.request.ResendPasswordResetRequestDTO;
+import com.itjima_server.dto.user.request.ResendVerificationEmailRequestDTO;
 import com.itjima_server.dto.user.request.TokenRefreshRequestDTO;
 import com.itjima_server.dto.user.request.UserFindEmailRequestDTO;
 import com.itjima_server.dto.user.request.UserFindPasswordRequestDTO;
@@ -100,6 +102,35 @@ public class AuthController {
         authService.verifyEmail(token);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "이메일 인증 성공"));
+    }
+
+    /**
+     * 회원가입 이메일 인증 코드 재전송
+     *
+     * @param req 재전송 요청 DTO
+     * @return 성공 메시지
+     */
+    @Operation(
+            summary = "회원가입 인증 코드 재전송",
+            description = "회원 가입 시 보내진 인증번호 재전송"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "인증 번호 전송 성공",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "404", description = "대상 없음",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+    })
+    @PostMapping("/verify-email/resend")
+    public ResponseEntity<?> resendVerificationEmail(
+            @Valid @RequestBody ResendVerificationEmailRequestDTO req) {
+        authService.resendVerifyEmail(req.getEmail());
+        return ResponseEntity.ok(
+                ApiResponseDTO.success(HttpStatus.OK.value(), "인증 코드가 이메일로 재발송되었습니다."));
     }
 
     /**
@@ -276,5 +307,35 @@ public class AuthController {
         authService.passwordReset(req.getCode(), req.getPassword());
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "비밀번호 변경 완료"));
+    }
+
+
+    /**
+     * 비밀번호 재설정 인증 코드 재전송
+     *
+     * @param req 재전송 요청 DTO
+     * @return 성공 메시지
+     */
+    @Operation(
+            summary = "비밀번호 재설정 인증 코드 재전송",
+            description = "비밀번호 재설정 시 보내진 인증번호 재전송"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "인증 번호 전송 성공",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ApiResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "요청 검증 실패",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "404", description = "대상 없음",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+    })
+    @PostMapping("/password-reset/resend")
+    public ResponseEntity<?> resendPasswordReset(
+            @Valid @RequestBody ResendPasswordResetRequestDTO req) {
+        authService.resendPasswordReset(req.getEmail());
+        return ResponseEntity.ok(
+                ApiResponseDTO.success(HttpStatus.OK.value(), "인증 코드가 이메일로 재발송되었습니다."));
     }
 }

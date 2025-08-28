@@ -19,6 +19,7 @@ import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.user.DuplicateUserFieldException;
 import com.itjima_server.exception.user.InvalidRefreshTokenException;
 import com.itjima_server.exception.user.LoginFailedException;
+import com.itjima_server.exception.user.NotFoundUserException;
 import com.itjima_server.exception.user.NotInsertUserException;
 import com.itjima_server.mapper.RefreshTokenMapper;
 import com.itjima_server.mapper.UserMapper;
@@ -136,14 +137,36 @@ public class AuthService {
         }
 
         if (tokenGeneratedAt.plusMinutes(EMAIL_CODE_TTL_MINUTES).isBefore(LocalDateTime.now())) {
-            userMapper.deleteById(user.getId());
-            throw new InvalidStateException("인증 시간이 만료되었습니다. 회원가입을 다시 시도해주세요.");
+            throw new InvalidStateException("인증 시간이 만료되었습니다. 인증번호를 재전송하세요.");
         }
 
         user.setEmailVerified(true);
         user.setEmailVerificationToken(null);
         user.setEmailTokenGeneratedAt(null);
-        userMapper.updateEmailVerification(user);
+        checkUpdateResult(userMapper.updateEmailVerification(user), "인증코드를 발송 중 에러가 발생했습니다.");
+    }
+
+    /**
+     * 회원가입 인증번호 재발송
+     *
+     * @param email 발송할 이메일
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void resendVerifyEmail(String email) {
+        User user = userMapper.findByEmail(email);
+        if (user == null) {
+            throw new NotFoundUserException("존재하지 않는 사용자입니다.");
+        }
+        if (user.isEmailVerified()) {
+            throw new InvalidStateException("이미 인증된 계정입니다.");
+        }
+        String verificationCode = generateVerificationCode();
+        user.setEmailVerified(false);
+        user.setEmailVerificationToken(verificationCode);
+        user.setEmailTokenGeneratedAt(LocalDateTime.now());
+
+        checkUpdateResult(userMapper.updateEmailVerification(user), "인증코드를 발송 중 에러가 발생했습니다.");
+        emailService.sendVerificationEmail(user.getEmail(), verificationCode);
     }
 
     /**
@@ -304,6 +327,34 @@ public class AuthService {
                 userMapper.updatePasswordResetById(user.getId(), user.getPasswordResetToken(),
                         user.getPasswordTokenGeneratedAt(), passwordEncoder.encode(password)),
                 "비밀번호 변경 중 오류가 발생했습니다.");
+    }
+
+    /**
+     * 비밀번호 재설정 인증번호 재발송
+     *
+     * @param email 발송할 이메일
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void resendPasswordReset(String email) {
+        User user = userMapper.findByEmail(email);
+        if (user == null) {
+            throw new NotFoundUserException("존재하지 않는 사용자입니다.");
+        }
+
+        LocalDateTime tokenGeneratedAt = user.getPasswordTokenGeneratedAt();
+        if (tokenGeneratedAt == null) {
+            throw new InvalidStateException("이미 처리된 토큰이거나 토큰 생성 시간이 기록되지 않았습니다.");
+        }
+        String passwordResetCode = generateVerificationCode();
+        user.setPasswordResetToken(passwordResetCode);
+        user.setPasswordTokenGeneratedAt(LocalDateTime.now());
+
+        emailService.sendPasswordReset(user.getEmail(), passwordResetCode);
+
+        checkUpdateResult(
+                userMapper.updatePasswordResetById(user.getId(), user.getPasswordResetToken(),
+                        user.getPasswordTokenGeneratedAt(), null),
+                "비밀번호 변경 요청이 정상적으로 완료되지 않았습니다.");
     }
 
     // ==========================
