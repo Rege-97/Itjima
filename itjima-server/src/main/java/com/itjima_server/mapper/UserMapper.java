@@ -47,4 +47,6 @@ public interface UserMapper {
             @Param("password") String password);
 
     User findByPasswordResetToken(@Param("passwordResetToken") String passwordResetToken);
+
+    int updateDeleteStatusById(@Param("id") Long id);
 }

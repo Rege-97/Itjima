@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -96,8 +97,8 @@ public class UserController {
     /**
      * 로그인한 사용자의 전화번호 또는 비밀번호 변경
      *
-     * @param user  로그인한 유저
-     * @param req 변경할 데이터
+     * @param user 로그인한 유저
+     * @param req  변경할 데이터
      * @return 변경된 유저 프로필
      */
     @Operation(
@@ -123,5 +124,32 @@ public class UserController {
         UserResponseDTO res = userService.changeProfile(user.getId(), req);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "프로필 변경 성공", res));
+    }
+
+
+    /**
+     * 회원 탈퇴
+     *
+     * @param user 로그인한 유저
+     * @return 탈퇴 성공 메세지
+     */
+    @Operation(
+            summary = "회원 탈퇴",
+            description = "회원 탈퇴 처리",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "회원 탈퇴 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ApiResponseDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
+    @DeleteMapping("/me")
+    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal CustomUserDetails user) {
+        userService.deleteUser(user.getId());
+        return ResponseEntity.ok(
+                ApiResponseDTO.success(HttpStatus.OK.value(), "회원 탈퇴 성공"));
     }
 }

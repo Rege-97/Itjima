@@ -7,11 +7,13 @@
     SELECT COUNT(*) > 0
     FROM USERS
     WHERE email = #{email}
+      AND status = 'ACTIVE'
   </select>
   <select id="existsByPhone" resultType="boolean">
     SELECT COUNT(*) > 0
     FROM USERS
     WHERE phone = #{phone}
+      AND status = 'ACTIVE'
   </select>
   <insert parameterType="com.itjima_server.domain.user.User" id="insert" useGeneratedKeys="true"
     keyProperty="id">
@@ -36,6 +38,7 @@
            email_token_generated_at
     FROM USERS
     WHERE id = #{id}
+      AND status = 'ACTIVE'
   </select>
   <select id="findByEmail" resultType="com.itjima_server.domain.user.User">
     SELECT id,
@@ -54,6 +57,7 @@
            password_token_generated_at
     FROM USERS
     WHERE email = #{email}
+      AND status = 'ACTIVE'
   </select>
   <update id="updatePhoneById">
     UPDATE USERS
@@ -110,6 +114,7 @@
     FROM USERS
     WHERE provider = #{provider}
       AND provider_id = #{providerId}
+      AND status = 'ACTIVE'
   </select>
   <update id="updateProviderInfo" parameterType="com.itjima_server.domain.user.User">
     UPDATE USERS
@@ -133,6 +138,7 @@
     FROM USERS
     WHERE name = #{name}
       AND phone = #{phone}
+      AND status = 'ACTIVE'
   </select>
   <select id="findByNameAndPhoneAndEmail" resultType="com.itjima_server.domain.user.User">
     SELECT id,
@@ -151,6 +157,7 @@
     WHERE name = #{name}
       AND phone = #{phone}
       AND email = #{email}
+      AND status = 'ACTIVE'
   </select>
   <update id="updatePasswordResetById">
     UPDATE USERS
@@ -178,5 +185,12 @@
            password_token_generated_at
     FROM USERS
     WHERE password_reset_token = #{passwordResetToken}
+      AND status = 'ACTIVE'
   </select>
+  <update id="updateDeleteStatusById">
+    UPDATE USERS
+    SET status     = 'DELETED',
+        deleted_at = NOW()
+    WHERE id = #{id}
+  </update>
 </mapper>

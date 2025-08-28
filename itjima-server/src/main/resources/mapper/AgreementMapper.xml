@@ -155,4 +155,15 @@
     WHERE status = 'ACCEPTED'
       AND due_at &lt; NOW()
   </select>
+  <update id="updateDueAtAndStatusById">
+    UPDATE AGREEMENTS
+    SET status = #{status},
+        due_at = #{dueAt}
+    WHERE id = #{id}
+  </update>
+  <update id="updateTermsById">
+    UPDATE AGREEMENTS
+    SET terms = #{terms}
+    WHERE id = #{id}
+  </update>
 </mapper>

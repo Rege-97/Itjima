@@ -17,4 +17,6 @@ public interface AgreementPartyMapper {
             @Param("confirmedAt") LocalDateTime confirmedAt);
 
     List<Long> findUserIdsByAgreementId(@Param("agreementId") Long agreementId);
+
+    int resetDebtorConfirmation(@Param("agreementId") Long agreementId);
 }

@@ -40,7 +40,6 @@ public class JwtTokenProvider {
 
         Claims claims = Jwts.claims()
                 .subject(user.getEmail())
-                .add("id", user.getId())
                 .build();
 
         return Jwts.builder()

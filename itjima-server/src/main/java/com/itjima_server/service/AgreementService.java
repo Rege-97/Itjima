@@ -176,25 +176,33 @@ public class AgreementService {
         checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.ON_LOAN),
                 "물품 상태 변경에 실패했습니다.");
 
+        LocalDateTime now = LocalDateTime.now();
         LocalDateTime dueAt = agreement.getDueAt();
 
-        scheduleMapper.insert(Schedule.builder()
-                .agreementId(agreementId)
-                .type(ScheduleType.D_MINUS_7)
-                .dueAt(dueAt.minusDays(7))
-                .build());
+        if (dueAt.minusDays(7).isAfter(now)) {
+            scheduleMapper.insert(Schedule.builder()
+                    .agreementId(agreementId)
+                    .type(ScheduleType.D_MINUS_7)
+                    .dueAt(dueAt.minusDays(7))
+                    .build());
+        }
 
-        scheduleMapper.insert(Schedule.builder()
-                .agreementId(agreementId)
-                .type(ScheduleType.D_MINUS_3)
-                .dueAt(dueAt.minusDays(3))
-                .build());
+        if (dueAt.minusDays(3).isAfter(now)) {
+            scheduleMapper.insert(Schedule.builder()
+                    .agreementId(agreementId)
+                    .type(ScheduleType.D_MINUS_3)
+                    .dueAt(dueAt.minusDays(3))
+                    .build());
 
-        scheduleMapper.insert(Schedule.builder()
-                .agreementId(agreementId)
-                .type(ScheduleType.D_MINUS_1)
-                .dueAt(dueAt.minusDays(1))
-                .build());
+        }
+
+        if (dueAt.minusDays(1).isAfter(now)) {
+            scheduleMapper.insert(Schedule.builder()
+                    .agreementId(agreementId)
+                    .type(ScheduleType.D_MINUS_1)
+                    .dueAt(dueAt.minusDays(1))
+                    .build());
+        }
 
         scheduleMapper.insert(Schedule.builder()
                 .agreementId(agreementId)
@@ -476,6 +484,72 @@ public class AgreementService {
                     .dueAt(LocalDateTime.now())
                     .build());
         }
+    }
+
+    /**
+     * 대여 기간 연장
+     *
+     * @param id     대여 ID
+     * @param userId 로그인한 사용자 ID
+     * @param dueAt  연장할 기간
+     * @return 변경한 대여 정보 DTO
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public AgreementResponseDTO agreementExtend(Long id, Long userId, LocalDateTime dueAt) {
+        Agreement agreement = findByAgreementId(id);
+
+        List<AgreementParty> agreementPartyList = verifyCanRespond(userId, agreement,
+                AgreementPartyRole.CREDITOR,
+                List.of(AgreementStatus.ACCEPTED, AgreementStatus.OVERDUE));
+
+        AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
+        AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
+
+        if (agreement.getStatus() == AgreementStatus.OVERDUE) {
+            agreement.setStatus(AgreementStatus.ACCEPTED);
+        }
+
+        agreement.setDueAt(dueAt);
+
+        checkUpdateResult(
+                agreementMapper.updateDueAtAndStatusById(agreement.getId(), agreement.getStatus(),
+                        agreement.getDueAt()), "대여 연장 중 에러가 발생했습니다.");
+
+        return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
+    }
+
+    /**
+     * 대여 내용 수정
+     *
+     * @param id     대여 ID
+     * @param userId 로그인한 사용자 ID
+     * @param terms  수정할 대여 내용
+     * @return 수정된 대여 응답 DTO
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public AgreementResponseDTO updateAgreementTerms(Long id, Long userId, String terms) {
+        Agreement agreement = findByAgreementId(id);
+
+        List<AgreementParty> agreementPartyList = verifyCanRespond(userId, agreement,
+                AgreementPartyRole.CREDITOR,
+                List.of(AgreementStatus.PENDING, AgreementStatus.ACCEPTED,
+                        AgreementStatus.OVERDUE));
+
+        AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
+        AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
+
+        agreement.setTerms(terms);
+
+        checkUpdateResult(agreementMapper.updateTermsById(agreement.getId(), terms),
+                "대여 수정 중 에러가 발생했습니다.");
+
+        checkUpdateResult(agreementPartyMapper.resetDebtorConfirmation(agreement.getId()),
+                "채무자 동의 초기화에 실패했습니다.");
+
+        agreement.setStatus(AgreementStatus.PENDING);
+        agreementPartyDebtor.setConfirmAt(null);
+
+        return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
     }
 
     // ==========================
