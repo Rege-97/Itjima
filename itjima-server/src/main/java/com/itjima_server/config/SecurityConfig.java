@@ -41,7 +41,8 @@ public class SecurityConfig {
                         UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh",
-                                "/api/auth/verify-email","/api/auth/kakao")
+                                "/api/auth/verify-email", "/api/auth/kakao", "/api/auth/find-email",
+                                "/api/auth/password-reset/request", "/api/auth/password-reset/confirm")
                         .permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
                                 "/swagger-ui.html").permitAll()

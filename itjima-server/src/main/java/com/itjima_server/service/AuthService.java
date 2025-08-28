@@ -4,14 +4,18 @@ import com.itjima_server.domain.user.Provider;
 import com.itjima_server.domain.user.RefreshToken;
 import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.user.request.TokenRefreshRequestDTO;
+import com.itjima_server.dto.user.request.UserFindEmailRequestDTO;
+import com.itjima_server.dto.user.request.UserFindPasswordRequestDTO;
 import com.itjima_server.dto.user.request.UserLoginRequestDTO;
 import com.itjima_server.dto.user.request.UserRegisterRequestDTO;
 import com.itjima_server.dto.user.response.KakaoTokenResponseDTO;
 import com.itjima_server.dto.user.response.KakaoUserInfoDTO;
 import com.itjima_server.dto.user.response.TokenResponseDTO;
+import com.itjima_server.dto.user.response.UserFindEmailResponseDTO;
 import com.itjima_server.dto.user.response.UserLoginResponseDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
 import com.itjima_server.exception.common.InvalidStateException;
+import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.user.DuplicateUserFieldException;
 import com.itjima_server.exception.user.InvalidRefreshTokenException;
 import com.itjima_server.exception.user.LoginFailedException;
@@ -42,14 +46,14 @@ import org.springframework.web.client.RestTemplate;
  * 인증 관련 비즈니스 로직을 담당하는 서비스 클래스
  *
  * @author Rege-97
- * @since 2025-08-27
+ * @since 2025-08-28
  */
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
     private static final int EMAIL_CODE_LENGTH = 6;
-    private static final int EMAIL_CODE_TTL_MINUTES = 3;
+    private static final int EMAIL_CODE_TTL_MINUTES = 5;
     private static final String EMAIL_CODE_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
@@ -124,7 +128,7 @@ public class AuthService {
     public void verifyEmail(String token) {
         User user = userMapper.findByEmailVerificationToken(token);
         if (user == null) {
-            throw new NotFoundUserException("유효하지 않은 인증 토큰입니다.");
+            throw new IllegalArgumentException("유효하지 않은 인증 토큰입니다.");
         }
 
         LocalDateTime tokenGeneratedAt = user.getEmailTokenGeneratedAt();
@@ -133,21 +137,42 @@ public class AuthService {
         }
 
         if (tokenGeneratedAt.plusMinutes(EMAIL_CODE_TTL_MINUTES).isBefore(LocalDateTime.now())) {
-            userMapper.deleteById(user.getId());
-            throw new InvalidStateException("인증 시간이 만료되었습니다. 회원가입을 다시 시도해주세요.");
+            throw new InvalidStateException("인증 시간이 만료되었습니다. 인증번호를 재전송하세요.");
         }
 
         user.setEmailVerified(true);
         user.setEmailVerificationToken(null);
         user.setEmailTokenGeneratedAt(null);
-        userMapper.updateEmailVerification(user);
+        checkUpdateResult(userMapper.updateEmailVerification(user), "인증코드를 발송 중 에러가 발생했습니다.");
+    }
+
+    /**
+     * 회원가입 인증번호 재발송
+     *
+     * @param email 발송할 이메일
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void resendVerifyEmail(String email) {
+        User user = userMapper.findByEmail(email);
+        if (user == null) {
+            throw new NotFoundUserException("존재하지 않는 사용자입니다.");
+        }
+        if (user.isEmailVerified()) {
+            throw new InvalidStateException("이미 인증된 계정입니다.");
+        }
+        String verificationCode = generateVerificationCode();
+        user.setEmailVerified(false);
+        user.setEmailVerificationToken(verificationCode);
+        user.setEmailTokenGeneratedAt(LocalDateTime.now());
+
+        checkUpdateResult(userMapper.updateEmailVerification(user), "인증코드를 발송 중 에러가 발생했습니다.");
+        emailService.sendVerificationEmail(user.getEmail(), verificationCode);
     }
 
     /**
      * 카카오 로그인
      * <p>
-     * 인가 코드로 카카오 액세스 토큰 발급 → 사용자 정보 조회 → 기존 계정 연동 또는 신규 생성 →
-     * 자체 JWT(access/refresh) 발급까지 처리한다.
+     * 인가 코드로 카카오 액세스 토큰 발급 → 사용자 정보 조회 → 기존 계정 연동 또는 신규 생성 → 자체 JWT(access/refresh) 발급까지 처리한다.
      *
      * @param code 카카오 인가 코드(authorization_code)
      * @return 로그인 결과(JWT 포함)
@@ -235,6 +260,103 @@ public class AuthService {
         refreshTokenMapper.deleteByUserId(user.getId());
     }
 
+    /**
+     * 사용자의 이메일 찾기
+     *
+     * @param req 이메일을 찾기 위한 정보 DTO
+     * @return 찾은 마스킹된 이메일
+     */
+    @Transactional(readOnly = true)
+    public UserFindEmailResponseDTO findEmail(UserFindEmailRequestDTO req) {
+        User user = userMapper.findByNameAndPhone(req.getName(), req.getPhone());
+        if (user == null) {
+            throw new IllegalArgumentException("입력하신 정보와 일치하는 사용자가 없습니다.");
+        }
+        return UserFindEmailResponseDTO.from(user.getEmail());
+    }
+
+    /**
+     * 비밀번호 찾기(인증코드 발송)
+     *
+     * @param req 비밀번호를 찾기 위한 정보 DTO
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void sendPasswordResetCode(UserFindPasswordRequestDTO req) {
+        User user = userMapper.findByNameAndPhoneAndEmail(req.getName(), req.getPhone(),
+                req.getEmail());
+        if (user == null) {
+            throw new IllegalArgumentException("입력하신 정보와 일치하는 사용자가 없습니다.");
+        }
+
+        String passwordResetCode = generateVerificationCode();
+
+        user.setPasswordResetToken(passwordResetCode);
+        user.setPasswordTokenGeneratedAt(LocalDateTime.now());
+
+        emailService.sendPasswordReset(user.getEmail(), passwordResetCode);
+
+        checkUpdateResult(
+                userMapper.updatePasswordResetById(user.getId(), user.getPasswordResetToken(),
+                        user.getPasswordTokenGeneratedAt(), null),
+                "비밀번호 변경 요청이 정상적으로 완료되지 않았습니다.");
+    }
+
+    /**
+     * 비밀번호 재설정
+     *
+     * @param code     인증 코드
+     * @param password 새 비밀번호
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void passwordReset(String code, String password) {
+        User user = userMapper.findByPasswordResetToken(code);
+        if (user == null) {
+            throw new IllegalArgumentException("유효하지 않은 인증 토큰입니다.");
+        }
+
+        LocalDateTime tokenGeneratedAt = user.getPasswordTokenGeneratedAt();
+        if (tokenGeneratedAt == null) {
+            throw new InvalidStateException("이미 처리된 토큰이거나 토큰 생성 시간이 기록되지 않았습니다.");
+        }
+        if (tokenGeneratedAt.plusMinutes(EMAIL_CODE_TTL_MINUTES).isBefore(LocalDateTime.now())) {
+            throw new InvalidStateException("인증 시간이 만료되었습니다. 다시 시도해주세요.");
+        }
+        user.setPasswordResetToken(null);
+        user.setPasswordTokenGeneratedAt(null);
+        checkUpdateResult(
+                userMapper.updatePasswordResetById(user.getId(), user.getPasswordResetToken(),
+                        user.getPasswordTokenGeneratedAt(), passwordEncoder.encode(password)),
+                "비밀번호 변경 중 오류가 발생했습니다.");
+    }
+
+    /**
+     * 비밀번호 재설정 인증번호 재발송
+     *
+     * @param email 발송할 이메일
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void resendPasswordReset(String email) {
+        User user = userMapper.findByEmail(email);
+        if (user == null) {
+            throw new NotFoundUserException("존재하지 않는 사용자입니다.");
+        }
+
+        LocalDateTime tokenGeneratedAt = user.getPasswordTokenGeneratedAt();
+        if (tokenGeneratedAt == null) {
+            throw new InvalidStateException("이미 처리된 토큰이거나 토큰 생성 시간이 기록되지 않았습니다.");
+        }
+        String passwordResetCode = generateVerificationCode();
+        user.setPasswordResetToken(passwordResetCode);
+        user.setPasswordTokenGeneratedAt(LocalDateTime.now());
+
+        emailService.sendPasswordReset(user.getEmail(), passwordResetCode);
+
+        checkUpdateResult(
+                userMapper.updatePasswordResetById(user.getId(), user.getPasswordResetToken(),
+                        user.getPasswordTokenGeneratedAt(), null),
+                "비밀번호 변경 요청이 정상적으로 완료되지 않았습니다.");
+    }
+
     // ==========================
     // 내부 유틸리티 (카카오 로그인용)
     // ==========================
@@ -316,9 +438,8 @@ public class AuthService {
     /**
      * 카카오 사용자로 로컬 사용자 찾기/생성
      * <p>
-     * 1) provider/providerId로 기존 사용자를 조회하고, 없으면<br>
-     * 2) 동일 이메일의 로컬 계정을 찾아 연동하며, 그것도 없으면<br>
-     * 3) 신규 사용자를 생성한다.
+     * 1) provider/providerId로 기존 사용자를 조회하고, 없으면<br> 2) 동일 이메일의 로컬 계정을 찾아 연동하며, 그것도 없으면<br> 3) 신규
+     * 사용자를 생성한다.
      *
      * @param userInfo 카카오 사용자 정보
      * @return 로컬 DB의 User 엔티티
@@ -409,5 +530,18 @@ public class AuthService {
             sb.append(EMAIL_CODE_POOL.charAt(idx));
         }
         return sb.toString();
+    }
+
+    /**
+     * UPDATE 실행 결과 검증 유틸리티
+     *
+     * @param result       실행된 row 수
+     * @param errorMessage 실패 시 예외 메시지
+     * @throws UpdateFailedException update 실패 시
+     */
+    private void checkUpdateResult(int result, String errorMessage) {
+        if (result < 1) {
+            throw new UpdateFailedException(errorMessage);
+        }
     }
 }

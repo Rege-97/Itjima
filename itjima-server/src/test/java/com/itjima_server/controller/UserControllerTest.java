@@ -209,7 +209,7 @@ class UserControllerTest {
         @DisplayName("성공 - 비밀번호만 변경")
         void change_password_only_success() throws Exception {
             UserChangeProfileRequestDTO req = new UserChangeProfileRequestDTO();
-            req.setPassword("NewPass123!");
+            req.setNewPassword("NewPass123!");
 
             ResultActions ra = mockMvc.perform(
                     patch("/api/users/me")
@@ -229,7 +229,7 @@ class UserControllerTest {
         void change_both_success() throws Exception {
             UserChangeProfileRequestDTO req = new UserChangeProfileRequestDTO();
             req.setPhone("01066665555");
-            req.setPassword("Mix1234!");
+            req.setNewPassword("Mix1234!");
 
             ResultActions ra = mockMvc.perform(
                     patch("/api/users/me")

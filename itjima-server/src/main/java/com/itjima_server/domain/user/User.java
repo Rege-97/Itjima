@@ -21,4 +21,6 @@ public class User {
     private boolean emailVerified;
     private String emailVerificationToken;
     private LocalDateTime emailTokenGeneratedAt;
+    private String passwordResetToken;
+    private LocalDateTime passwordTokenGeneratedAt;
 }

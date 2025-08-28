@@ -5,6 +5,7 @@ import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.user.request.UserChangeProfileRequestDTO;
 import com.itjima_server.dto.user.response.RecentPartnerResponseDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
+import com.itjima_server.exception.common.InvalidStateException;
 import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.user.DuplicateUserFieldException;
 import com.itjima_server.exception.user.NotFoundUserException;
@@ -28,6 +29,7 @@ public class UserService {
 
     private final AgreementMapper agreementMapper;
     private final UserMapper userMapper;
+    private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -79,10 +81,18 @@ public class UserService {
      */
     @Transactional(rollbackFor = Exception.class)
     public UserResponseDTO changeProfile(Long id, UserChangeProfileRequestDTO req) {
+        if (req == null) {
+            throw new IllegalArgumentException("수정하거나 확인할 데이터가 없습니다.");
+        }
+
+        if (req.getPhone() == null && req.getNewPassword() == null) {
+            throw new IllegalArgumentException("수정할 데이터가 없습니다.");
+        }
+
         User user = findById(id);
 
-        if (req == null || (req.getPassword() == null && req.getPhone() == null)) {
-            throw new IllegalArgumentException("수정할 데이터가 없습니다.");
+        if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
+            throw new InvalidStateException("현재 비밀번호가 일치하지 않습니다.");
         }
 
         if (req.getPhone() != null) {
@@ -93,8 +103,8 @@ public class UserService {
             checkUpdateResult(userMapper.updatePhoneById(id, req.getPhone()), "전화번호 변경에 실패했습니다.");
         }
 
-        if (req.getPassword() != null) {
-            String newPassword = passwordEncoder.encode(req.getPassword());
+        if (req.getNewPassword() != null) {
+            String newPassword = passwordEncoder.encode(req.getNewPassword());
             user.setPassword(newPassword);
             checkUpdateResult(userMapper.updatePasswordById(id, newPassword), "비밀번호 변경에 실패했습니다.");
         }
