@@ -478,6 +478,56 @@ public class AgreementService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public AgreementResponseDTO agreementExtend(Long id, Long userId, LocalDateTime dueAt) {
+        Agreement agreement = findByAgreementId(id);
+
+        List<AgreementParty> agreementPartyList = verifyCanRespond(userId, agreement,
+                AgreementPartyRole.CREDITOR,
+                List.of(AgreementStatus.ACCEPTED, AgreementStatus.OVERDUE));
+
+        AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
+        AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
+
+        if (agreement.getStatus() == AgreementStatus.OVERDUE) {
+            agreement.setStatus(AgreementStatus.ACCEPTED);
+        }
+
+        agreement.setDueAt(dueAt);
+
+        checkUpdateResult(
+                agreementMapper.updateDueAtAndStatusById(agreement.getId(), agreement.getStatus(),
+                        agreement.getDueAt()), "대여 연장 중 에러가 발생했습니다.");
+
+        return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public AgreementResponseDTO updateAgreementTerms(Long id, Long userId, String terms) {
+        Agreement agreement = findByAgreementId(id);
+
+        List<AgreementParty> agreementPartyList = verifyCanRespond(userId, agreement,
+                AgreementPartyRole.CREDITOR,
+                List.of(AgreementStatus.PENDING, AgreementStatus.ACCEPTED,
+                        AgreementStatus.OVERDUE));
+
+        AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
+        AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
+
+        agreement.setTerms(terms);
+
+        checkUpdateResult(agreementMapper.updateTermsById(agreement.getId(), terms),
+                "대여 수정 중 에러가 발생했습니다.");
+
+        checkUpdateResult(agreementPartyMapper.resetDebtorConfirmation(agreement.getId()),
+                "채무자 동의 초기화에 실패했습니다.");
+
+        agreement.setStatus(AgreementStatus.PENDING);
+        agreementPartyDebtor.setConfirmAt(null);
+
+        return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
+    }
+
     // ==========================
     // 내부 유틸리티
     // ==========================

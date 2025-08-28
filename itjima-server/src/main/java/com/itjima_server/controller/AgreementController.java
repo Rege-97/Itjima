@@ -4,6 +4,8 @@ import com.itjima_server.common.ApiResponseDTO;
 import com.itjima_server.common.PagedResultDTO;
 import com.itjima_server.domain.agreement.AgreementPartyRole;
 import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
+import com.itjima_server.dto.agreement.request.AgreementExtendRequestDTO;
+import com.itjima_server.dto.agreement.request.AgreementUpdateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
 import com.itjima_server.dto.agreement.swagger.AgreementPagedResponse;
@@ -25,6 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -349,5 +352,25 @@ public class AgreementController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 목록 조회 성공", res));
     }
 
+
+    @PutMapping("/{id}/extend")
+    public ResponseEntity<?> extendAgreement(@PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails user,
+            @Valid @RequestBody AgreementExtendRequestDTO req) {
+        AgreementResponseDTO res = agreementService.agreementExtend(id, user.getId(),
+                req.getDueAt());
+        return ResponseEntity.ok(
+                ApiResponseDTO.success(HttpStatus.OK.value(), "대여 기간 연장 성공", res));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> updateAgreement(@PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails user,
+            @Valid @RequestBody AgreementUpdateRequestDTO req) {
+        AgreementResponseDTO res = agreementService.updateAgreementTerms(id, user.getId(),
+                req.getTerms());
+        return ResponseEntity.ok(
+                ApiResponseDTO.success(HttpStatus.OK.value(), "대여 내용이 수정 요청", res));
+    }
 
 }

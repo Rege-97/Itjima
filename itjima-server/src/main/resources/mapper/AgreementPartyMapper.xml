@@ -23,4 +23,9 @@
     FROM AGREEMENT_PARTIES
     WHERE agreement_id = #{agreementId}
   </select>
+  <update id="resetDebtorConfirmation">
+    UPDATE AGREEMENT_PARTIES
+    SET confirm_at = NULL
+    WHERE agreement_id = #{agreementId} AND role = 'DEBTOR'
+  </update>
 </mapper>
