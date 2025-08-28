@@ -179,4 +179,10 @@
     FROM USERS
     WHERE password_reset_token = #{passwordResetToken}
   </select>
+  <update id="updateDeleteStatusById">
+    UPDATE USERS
+    SET status     = 'DELETED',
+        deleted_at = NOW()
+    WHERE id = #{id}
+  </update>
 </mapper>

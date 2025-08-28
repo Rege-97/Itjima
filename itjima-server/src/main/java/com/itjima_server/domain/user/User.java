@@ -18,6 +18,8 @@ public class User {
     private LocalDateTime updatedAt;
     private Provider provider;
     private String providerId;
+    private UserStatus status;
+    private LocalDateTime deletedAt;
     private boolean emailVerified;
     private String emailVerificationToken;
     private LocalDateTime emailTokenGeneratedAt;

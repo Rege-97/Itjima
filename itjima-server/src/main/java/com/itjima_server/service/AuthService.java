@@ -357,6 +357,17 @@ public class AuthService {
                 "비밀번호 변경 요청이 정상적으로 완료되지 않았습니다.");
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteUser(Long id) {
+        User user = userMapper.findById(id);
+        if (user == null) {
+            throw new NotFoundUserException("존재하지 않는 사용자입니다.");
+        }
+
+        refreshTokenMapper.deleteByUserId(id);
+        checkUpdateResult(userMapper.updateDeleteStatusById(id), "회원 탈퇴 중 오류가 발생했습니다.");
+    }
+
     // ==========================
     // 내부 유틸리티 (카카오 로그인용)
     // ==========================
