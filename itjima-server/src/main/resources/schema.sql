@@ -1,5 +1,5 @@
 -- 사용자 테이블
-CREATE TABLE `USERS`
+CREATE TABLE IF NOT EXISTS `USERS`
 (
     `id`                          bigint       NOT NULL AUTO_INCREMENT COMMENT '사용자ID',
     `name`                        varchar(64)  NOT NULL COMMENT '이름',
