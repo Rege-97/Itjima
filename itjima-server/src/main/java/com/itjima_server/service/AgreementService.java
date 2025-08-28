@@ -478,6 +478,14 @@ public class AgreementService {
         }
     }
 
+    /**
+     * 대여 기간 연장
+     *
+     * @param id     대여 ID
+     * @param userId 로그인한 사용자 ID
+     * @param dueAt  연장할 기간
+     * @return 변경한 대여 정보 DTO
+     */
     @Transactional(rollbackFor = Exception.class)
     public AgreementResponseDTO agreementExtend(Long id, Long userId, LocalDateTime dueAt) {
         Agreement agreement = findByAgreementId(id);
@@ -502,6 +510,14 @@ public class AgreementService {
         return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
     }
 
+    /**
+     * 대여 내용 수정
+     *
+     * @param id     대여 ID
+     * @param userId 로그인한 사용자 ID
+     * @param terms  수정할 대여 내용
+     * @return 수정된 대여 응답 DTO
+     */
     @Transactional(rollbackFor = Exception.class)
     public AgreementResponseDTO updateAgreementTerms(Long id, Long userId, String terms) {
         Agreement agreement = findByAgreementId(id);

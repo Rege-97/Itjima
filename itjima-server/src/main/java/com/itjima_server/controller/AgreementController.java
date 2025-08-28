@@ -352,7 +352,31 @@ public class AgreementController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 목록 조회 성공", res));
     }
 
-
+    /**
+     * 대여 기간 연장
+     *
+     * @param id   대여 ID
+     * @param user 로그인한 사용자
+     * @param req  연장할 기간 요청
+     * @return 변경한 대여 정보
+     */
+    @Operation(
+            summary = "대여 기간 연장",
+            description = "채권자의 대여기간 연장",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "대여 기간 연장 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = AgreementResponseDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "403", description = "권한 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
     @PutMapping("/{id}/extend")
     public ResponseEntity<?> extendAgreement(@PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails user,
@@ -363,6 +387,31 @@ public class AgreementController {
                 ApiResponseDTO.success(HttpStatus.OK.value(), "대여 기간 연장 성공", res));
     }
 
+    /**
+     * 대여 내용 수정
+     *
+     * @param id   대여 ID
+     * @param user 로그인한 사용자
+     * @param req  수정할 대여 내용 요청
+     * @return 수정된 대여 응답
+     */
+    @Operation(
+            summary = "대여 내용 수정",
+            description = "채권자의 대여 내용 수정 요청 처리",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "대여 내용 수정 요청 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = AgreementResponseDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "403", description = "권한 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "409", description = "요청 불가 상태",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateAgreement(@PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails user,
@@ -370,7 +419,7 @@ public class AgreementController {
         AgreementResponseDTO res = agreementService.updateAgreementTerms(id, user.getId(),
                 req.getTerms());
         return ResponseEntity.ok(
-                ApiResponseDTO.success(HttpStatus.OK.value(), "대여 내용이 수정 요청", res));
+                ApiResponseDTO.success(HttpStatus.OK.value(), "대여 내용 수정 요청 성공", res));
     }
 
 }
