@@ -2,7 +2,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import { View } from "react-native";
-import { Text } from 'react-native-paper'; 
+import { ActivityIndicator, Text } from "react-native-paper";
+import LoginScreen from "../screens/LoginScreen";
+import { useAuth } from "../contexts/AuthContext";
 const Stack = createNativeStackNavigator();
 
 const PlaceholderScreen = ({ route }: any) => {
@@ -15,12 +17,20 @@ const PlaceholderScreen = ({ route }: any) => {
 };
 
 const AppNavigator = () => {
-  const isLoggedIn = false;
+  const { authToken, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator animating={true} size="large" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {isLoggedIn ? (
+        {authToken ? (
           <Stack.Screen
             name="Main"
             component={PlaceholderScreen}
@@ -30,7 +40,7 @@ const AppNavigator = () => {
           <>
             <Stack.Screen
               name="Login"
-              component={PlaceholderScreen}
+              component={LoginScreen}
               options={{ title: "로그인" }}
             />
             <Stack.Screen

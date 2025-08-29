@@ -33,9 +33,13 @@
            updated_at,
            provider,
            provider_id,
+           status,
+           deleted_at,
            email_verified,
            email_verification_token,
-           email_token_generated_at
+           email_token_generated_at,
+           password_reset_token,
+           password_token_generated_at
     FROM USERS
     WHERE id = #{id}
       AND status = 'ACTIVE'
@@ -50,6 +54,8 @@
            updated_at,
            provider,
            provider_id,
+           status,
+           deleted_at,
            email_verified,
            email_verification_token,
            email_token_generated_at,
@@ -61,7 +67,7 @@
   </select>
   <update id="updatePhoneById">
     UPDATE USERS
-    SET phone    = #{phone}
+    SET phone = #{phone}
     WHERE id = #{id}
   </update>
   <update id="updatePasswordById">
@@ -87,9 +93,13 @@
            updated_at,
            provider,
            provider_id,
+           status,
+           deleted_at,
            email_verified,
            email_verification_token,
-           email_token_generated_at
+           email_token_generated_at,
+           password_reset_token,
+           password_token_generated_at
     FROM USERS
     WHERE email_verification_token = #{emailVerificationToken}
   </select>
@@ -108,9 +118,13 @@
            updated_at,
            provider,
            provider_id,
+           status,
+           deleted_at,
            email_verified,
            email_verification_token,
-           email_token_generated_at
+           email_token_generated_at,
+           password_reset_token,
+           password_token_generated_at
     FROM USERS
     WHERE provider = #{provider}
       AND provider_id = #{providerId}
@@ -132,9 +146,13 @@
            updated_at,
            provider,
            provider_id,
+           status,
+           deleted_at,
            email_verified,
            email_verification_token,
-           email_token_generated_at
+           email_token_generated_at,
+           password_reset_token,
+           password_token_generated_at
     FROM USERS
     WHERE name = #{name}
       AND phone = #{phone}
@@ -150,9 +168,13 @@
            updated_at,
            provider,
            provider_id,
+           status,
+           deleted_at,
            email_verified,
            email_verification_token,
-           email_token_generated_at
+           email_token_generated_at,
+           password_reset_token,
+           password_token_generated_at
     FROM USERS
     WHERE name = #{name}
       AND phone = #{phone}
@@ -178,6 +200,8 @@
            updated_at,
            provider,
            provider_id,
+           status,
+           deleted_at,
            email_verified,
            email_verification_token,
            email_token_generated_at,
