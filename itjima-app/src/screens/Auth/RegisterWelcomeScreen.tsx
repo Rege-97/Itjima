@@ -23,6 +23,7 @@ const RegisterWelcomeScreen = ({ navigation }: any) => {
 };
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: "#fff",
     flex: 1,
     padding: 20,
     justifyContent: "center",

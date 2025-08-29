@@ -5,10 +5,10 @@ import { View } from "react-native";
 import { ActivityIndicator, Button, Text } from "react-native-paper";
 import LoginScreen from "../screens/Auth/LoginScreen";
 import { useAuth } from "../contexts/AuthContext";
-import RegisterScreen from "../screens/Auth/RegisterFormScreen";
 import RegisterFormScreen from "../screens/Auth/RegisterFormScreen";
 import RegisterWelcomeScreen from "../screens/Auth/RegisterWelcomeScreen";
 import VerifyEmailScreen from "../screens/Auth/VerifyEmailScreen";
+import KakaoLoginScreen from "../screens/Auth/KakaoLoginScreen";
 const Stack = createNativeStackNavigator();
 
 const PlaceholderScreen = ({ route }: any) => {
@@ -69,6 +69,11 @@ const AppNavigator = () => {
               name="VerifyEmail"
               component={VerifyEmailScreen}
               options={{ title: '이메일 인증' }}
+            />
+            <Stack.Screen
+              name="KakaoLogin"
+              component={KakaoLoginScreen}
+              options={{ title: '카카오 로그인' }} // 모달로 띄우는 것이 좋습니다.
             />
           </>
         )}

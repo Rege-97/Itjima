@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { Button, Text, TextInput } from "react-native-paper";
 import {
   Alert,
+  Image,
   Keyboard,
   StyleSheet,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
@@ -12,7 +14,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const LoginScreen = ({ navigation }: any) => {
-  const { login } = useAuth();
+  const { login, kakaoLoginWithCode } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -58,25 +60,26 @@ const LoginScreen = ({ navigation }: any) => {
         keyboardShouldPersistTaps="handled"
       >
         <Text variant="headlineMedium" style={styles.title}>
-          로그인
+          잊지마
         </Text>
+        <Text style={styles.label}>이메일 주소</Text>
         <TextInput
-          label="이메일"
           value={email}
           onChangeText={setEmail}
           style={styles.input}
           keyboardType="email-address"
           autoCapitalize="none"
           textContentType="emailAddress"
-          left={<TextInput.Icon icon="email-outline" />}
+          placeholder="예) itjima@itjima.co.kr"
+          placeholderTextColor="#888"
         />
+        <Text style={styles.label}>비밀번호</Text>
         <TextInput
-          label="비밀번호"
           value={password}
           onChangeText={setPassword}
+          style={styles.input}
           textContentType="password"
           secureTextEntry={!showPw}
-          left={<TextInput.Icon icon="lock-outline" />}
           right={
             <TextInput.Icon
               icon={showPw ? "eye-off-outline" : "eye-outline"}
@@ -85,16 +88,39 @@ const LoginScreen = ({ navigation }: any) => {
             />
           }
         />
-        <Button mode="contained" onPress={handleLogin} style={styles.button}>
+        <Button
+          mode="contained"
+          onPress={handleLogin}
+          style={styles.button}
+          labelStyle={{ fontSize: 18 }}
+        >
           로그인
         </Button>
-        <Button
-          mode="text"
-          onPress={() => navigation.navigate("RegisterWelcome")}
-          style={styles.button}
+        <TouchableOpacity
+          onPress={() => navigation.navigate("KakaoLogin")}
+          style={styles.kakaoButton}
         >
-          회원가입
-        </Button>
+          <Image
+            source={require("../../assets/images/kakao_login_large_wide.png")}
+            style={styles.kakaoImage}
+          />
+        </TouchableOpacity>
+
+        <View style={styles.textContainer}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("RegisterWelcome")}
+          >
+            <Text style={styles.text}>이메일 가입</Text>
+          </TouchableOpacity>
+          <View style={styles.divider} />
+          <TouchableOpacity>
+            <Text style={styles.text}>이메일 찾기</Text>
+          </TouchableOpacity>
+          <View style={styles.divider} />
+          <TouchableOpacity>
+            <Text style={styles.text}>비밀번호 찾기</Text>
+          </TouchableOpacity>
+        </View>
       </KeyboardAwareScrollView>
     </TouchableWithoutFeedback>
   );
@@ -102,6 +128,7 @@ const LoginScreen = ({ navigation }: any) => {
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: "#fff",
     flex: 1,
     padding: 20,
     justifyContent: "center",
@@ -110,12 +137,54 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 24,
   },
+  label: {
+    marginLeft: 15,
+    marginTop: 30,
+    fontWeight: "bold",
+  },
   input: {
-    textAlign: "center",
-    marginBottom: 16,
+    marginLeft: 15,
+    marginRight: 15,
+    height: 40,
+    backgroundColor: "transparent",
   },
   button: {
-    margin: 20,
+    marginLeft: 15,
+    marginRight: 15,
+    marginTop: 25,
+    borderRadius: 30,
+    height: 50,
+    justifyContent: "center",
+  },
+  kakaoButton: {
+    marginLeft: 15,
+    marginRight: 15,
+    marginTop: 10,
+    borderRadius: 30,
+     overflow: "hidden"
+  },
+  kakaoImage: {
+    width: "100%",
+    height: 50,
+    resizeMode: "cover",
+  },
+  textContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    marginTop: 20,
+    paddingLeft: 30,
+    paddingRight: 30,
+  },
+  text: {
+    fontSize: 13,
+    color: "#555",
+  },
+  divider: {
+    width: 1,
+    height: 12,
+    backgroundColor: "#ccc", // 세로 구분선
+    marginHorizontal: 8,
   },
 });
 

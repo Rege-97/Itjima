@@ -112,6 +112,7 @@ const VerifyEmailScreen = ({ route, navigation }: any) => {
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: "#fff",
     flex: 1,
     padding: 20,
     justifyContent: "center",
@@ -127,6 +128,8 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 16,
     textAlign: "center",
+    height: 40,
+    backgroundColor: "transparent",
   },
   button: {
     marginTop: 8,

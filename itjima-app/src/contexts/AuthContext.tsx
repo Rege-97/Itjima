@@ -6,13 +6,14 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { loginApi } from "../utils/auth";
+import { loginApi, kakaoLoginApi } from "../utils/auth";
 
 interface AuthContextType {
   authToken: string | null;
   isLoading: boolean;
   login: (params: any) => Promise<void>;
   logout: () => void;
+  kakaoLoginWithCode: (code: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,11 +58,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await AsyncStorage.removeItem("authToken");
   };
 
+  const kakaoLoginWithCode = async (code: string) => {
+    const serverResponse = await kakaoLoginApi(code);
+    const { accessToken } = serverResponse.data.data;
+    setAuthToken(accessToken);
+    await AsyncStorage.setItem("authToken", accessToken);
+  };
+
   const value = {
     authToken,
     isLoading,
     login,
     logout,
+    kakaoLoginWithCode,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

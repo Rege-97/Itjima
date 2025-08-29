@@ -138,6 +138,7 @@ const RegisterFormScreen = ({ navigation }: any) => {
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: "#fff", 
     flexGrow: 1,
     padding: 20,
     justifyContent: "center",
@@ -148,6 +149,8 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 16,
+        height: 40,
+    backgroundColor: "transparent",
   },
   button: {
     marginTop: 8,

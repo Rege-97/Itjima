@@ -14,10 +14,14 @@ export const registerApi = (params: any) => {
   return apiClient.post("/signup", params);
 };
 
-export const verifyEmailApi = (token : string) =>{
-    return apiClient.get(`/verify-email?token=${token}`);
-}
+export const verifyEmailApi = (token: string) => {
+  return apiClient.get(`/verify-email?token=${token}`);
+};
 
 export const resendVerificationEmailApi = (email: string) => {
-  return apiClient.post('/verify-email/resend', { email });
+  return apiClient.post("/verify-email/resend", { email });
+};
+
+export const kakaoLoginApi = (code: string) => {
+  return apiClient.get(`/kakao?code=${code}`);
 };
