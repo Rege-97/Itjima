@@ -27,10 +27,22 @@ const LoginScreen = ({ navigation }: any) => {
     try {
       await login({ email, password });
     } catch (error: any) {
-      console.error("로그인 실패", error.response?.data || error.message);
-      const message =
+      const errorMessage =
         error.response?.data?.message || "로그인 중 오류가 발생했습니다.";
-      Alert.alert("로그인 실패", message);
+      if (errorMessage.includes("이메일 인증이 필요합니다")) {
+        Alert.alert(
+          "인증 필요",
+          "이메일 인증을 완료해야 로그인할 수 있습니다. 인증 화면으로 이동합니다.",
+          [
+            {
+              text: "확인",
+              onPress: () => navigation.navigate("VerifyEmail", { email, password }),
+            },
+          ]
+        );
+      } else {
+        Alert.alert("로그인 실패", errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -60,12 +72,12 @@ const LoginScreen = ({ navigation }: any) => {
           secureTextEntry={!showPw}
           left={<TextInput.Icon icon="lock-outline" />}
           right={
-                      <TextInput.Icon
-                        icon={showPw ? "eye-off-outline" : "eye-outline"}
-                        onPress={() => setShowPw((v) => !v)}
-                        forceTextInputFocus={false}
-                      />
-                    }
+            <TextInput.Icon
+              icon={showPw ? "eye-off-outline" : "eye-outline"}
+              onPress={() => setShowPw((v) => !v)}
+              forceTextInputFocus={false}
+            />
+          }
         />
         <Button mode="contained" onPress={handleLogin} style={styles.button}>
           로그인

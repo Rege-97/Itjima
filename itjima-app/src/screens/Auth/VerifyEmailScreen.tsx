@@ -7,12 +7,19 @@ import {
   View,
 } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
-import { verifyEmailApi } from "../../utils/auth";
+import {
+  loginApi,
+  resendVerificationEmailApi,
+  verifyEmailApi,
+} from "../../utils/auth";
+import { useAuth } from "../../contexts/AuthContext";
 
 const VerifyEmailScreen = ({ route, navigation }: any) => {
-  const { email } = route.params;
+  const { login } = useAuth();
+  const { email, password } = route.params;
   const [token, setToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   const handleVerify = async () => {
     if (!token) {
@@ -26,17 +33,41 @@ const VerifyEmailScreen = ({ route, navigation }: any) => {
 
     try {
       await verifyEmailApi(token);
-      Alert.alert(
-        "인증 성공",
-        "이메일 인증이 완료되었습니다. 로그인 페이지로 이동합니다.",
-        [{ text: "확인", onPress: () => navigation.navigate("Login") }]
-      );
+
+      if (password) {
+        Alert.alert("인증 성공", "자동으로 로그인합니다.");
+        await login({ email, password });
+      } else {
+        Alert.alert(
+          "인증 성공",
+          "이메일 인증이 완료되었습니다. 로그인 페이지로 이동합니다.",
+          [{ text: "확인", onPress: () => navigation.navigate("Login") }]
+        );
+      }
     } catch (error: any) {
       const message =
         error.response?.data?.message || "알 수 없는 오류가 발생했습니다.";
       Alert.alert("인증 실패", message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (isResending) return;
+    setIsResending(true);
+    try {
+      await resendVerificationEmailApi(email);
+      Alert.alert(
+        "재전송 완료",
+        "인증번호를 다시 발송했습니다. 이메일을 확인해주세요."
+      );
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || "알 수 없는 오류가 발생했습니다.";
+      Alert.alert("재전송 실패", message);
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -64,6 +95,15 @@ const VerifyEmailScreen = ({ route, navigation }: any) => {
           style={styles.button}
         >
           인증 확인
+        </Button>
+        <Button
+          mode="text"
+          onPress={handleResend}
+          style={styles.button}
+          loading={isResending}
+          disabled={isLoading || isResending}
+        >
+          인증번호 재전송
         </Button>
       </View>
     </TouchableWithoutFeedback>

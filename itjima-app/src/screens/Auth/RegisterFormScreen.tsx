@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
 import { registerApi } from "../../utils/auth";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const RegisterFormScreen = ({ navigation }: any) => {
   const [name, setName] = useState("");
@@ -54,7 +55,11 @@ const RegisterFormScreen = ({ navigation }: any) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.container}
+        enableOnAndroid
+        keyboardShouldPersistTaps="handled"
+      >
         <Text variant="headlineMedium" style={styles.title}>
           회원가입
         </Text>
@@ -126,7 +131,7 @@ const RegisterFormScreen = ({ navigation }: any) => {
         >
           가입하기
         </Button>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </TouchableWithoutFeedback>
   );
 };
