@@ -78,7 +78,7 @@ const VerifyEmailScreen = ({ route, navigation }: any) => {
           이메일 인증
         </Text>
         <Text style={styles.subtitle}>
-          {email} 주소로 발송된 6자리 인증번호를 입력해주세요.
+          {email} 주소로 발송된 6자리 인증번호를 5분 안에 입력해주세요.
         </Text>
         <TextInput
           label="인증번호"

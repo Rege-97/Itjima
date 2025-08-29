@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { loginApi } from "../../utils/auth";
 import { useAuth } from "../../contexts/AuthContext";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const LoginScreen = ({ navigation }: any) => {
   const { login } = useAuth();
@@ -36,7 +37,8 @@ const LoginScreen = ({ navigation }: any) => {
           [
             {
               text: "확인",
-              onPress: () => navigation.navigate("VerifyEmail", { email, password }),
+              onPress: () =>
+                navigation.navigate("VerifyEmail", { email, password }),
             },
           ]
         );
@@ -50,7 +52,11 @@ const LoginScreen = ({ navigation }: any) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.container}
+        enableOnAndroid
+        keyboardShouldPersistTaps="handled"
+      >
         <Text variant="headlineMedium" style={styles.title}>
           로그인
         </Text>
@@ -89,7 +95,7 @@ const LoginScreen = ({ navigation }: any) => {
         >
           회원가입
         </Button>
-      </View>
+      </KeyboardAwareScrollView>
     </TouchableWithoutFeedback>
   );
 };
