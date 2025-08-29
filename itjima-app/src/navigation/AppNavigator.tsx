@@ -8,6 +8,7 @@ import { useAuth } from "../contexts/AuthContext";
 import RegisterScreen from "../screens/Auth/RegisterFormScreen";
 import RegisterFormScreen from "../screens/Auth/RegisterFormScreen";
 import RegisterWelcomeScreen from "../screens/Auth/RegisterWelcomeScreen";
+import VerifyEmailScreen from "../screens/Auth/VerifyEmailScreen";
 const Stack = createNativeStackNavigator();
 
 const PlaceholderScreen = ({ route }: any) => {
@@ -63,6 +64,11 @@ const AppNavigator = () => {
               name="RegisterForm"
               component={RegisterFormScreen}
               options={{ title: "정보 입력" }}
+            />
+            <Stack.Screen
+              name="VerifyEmail"
+              component={VerifyEmailScreen}
+              options={{ title: '이메일 인증' }}
             />
           </>
         )}

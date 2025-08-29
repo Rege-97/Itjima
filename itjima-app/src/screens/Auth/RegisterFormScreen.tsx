@@ -35,8 +35,13 @@ const RegisterFormScreen = ({ navigation }: any) => {
       await registerApi({ name, email, password, phone });
       Alert.alert(
         "회원가입 성공",
-        "가입하신 이메일로 발송된 인증코드를 확인해주세요. 로그인 페이지로 이동합니다.",
-        [{ text: "확인", onPress: () => navigation.navigate("Login") }]
+        "가입하신 이메일로 인증번호를 발송했습니다. 다음 화면에서 인증을 완료해주세요.",
+        [
+          {
+            text: "확인",
+            onPress: () => navigation.navigate("VerifyEmail", { email }),
+          },
+        ]
       );
     } catch (error: any) {
       const message =
@@ -50,7 +55,9 @@ const RegisterFormScreen = ({ navigation }: any) => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text variant="headlineMedium" style={styles.title}>회원가입</Text>
+        <Text variant="headlineMedium" style={styles.title}>
+          회원가입
+        </Text>
         <TextInput
           label="이름을 입력해주세요"
           value={name}
@@ -128,10 +135,10 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   title: {
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 24,
   },
   input: {

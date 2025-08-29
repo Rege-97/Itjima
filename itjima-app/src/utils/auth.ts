@@ -13,3 +13,7 @@ export const loginApi = (params: any) => {
 export const registerApi = (params: any) => {
   return apiClient.post("/signup", params);
 };
+
+export const verifyEmailApi = (token : string) =>{
+    return apiClient.get(`/verify-email?token=${token}`);
+}
