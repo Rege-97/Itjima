@@ -19,3 +19,11 @@ export const resendVerificationEmailApi = (email: string) => {
 export const kakaoLoginApi = (code: string) => {
   return publicApi.get(`/auth/kakao?code=${code}`);
 };
+
+export const refreshApi = async () => {
+  const refreshToken = await AsyncStorage.getItem("refreshToken");
+  if(!refreshToken){
+    return Promise.reject("No refresh token available");
+  }
+  return publicApi.post("/auth/refresh", { refreshToken });
+};

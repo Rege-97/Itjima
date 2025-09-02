@@ -48,21 +48,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = async (params: any) => {
     const response = await loginApi(params);
-    const { accessToken } = response.data.data;
+    const { accessToken, refreshToken } = response.data.data;
     setAuthToken(accessToken);
     await AsyncStorage.setItem("authToken", accessToken);
+    await AsyncStorage.setItem("refreshToken", refreshToken);
   };
 
   const logout = async () => {
     setAuthToken(null);
     await AsyncStorage.removeItem("authToken");
+    await AsyncStorage.removeItem("refreshToken");
   };
 
   const kakaoLoginWithCode = async (code: string) => {
     const serverResponse = await kakaoLoginApi(code);
-    const { accessToken } = serverResponse.data.data;
+    const { accessToken, refreshToken } = serverResponse.data.data;
     setAuthToken(accessToken);
     await AsyncStorage.setItem("authToken", accessToken);
+    await AsyncStorage.setItem("refreshToken", refreshToken);
   };
 
   const value = {
