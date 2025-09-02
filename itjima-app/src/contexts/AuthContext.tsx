@@ -6,7 +6,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { loginApi, kakaoLoginApi } from "../utils/auth";
+import { loginApi, kakaoLoginApi } from "../api/auth";
 
 interface AuthContextType {
   authToken: string | null;

@@ -11,7 +11,7 @@ import {
   loginApi,
   resendVerificationEmailApi,
   verifyEmailApi,
-} from "../../utils/auth";
+} from "../../api/auth";
 import { useAuth } from "../../contexts/AuthContext";
 
 const VerifyEmailScreen = ({ route, navigation }: any) => {
