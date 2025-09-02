@@ -5,6 +5,7 @@ import com.itjima_server.common.PagedResultDTO;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
 import com.itjima_server.dto.item.response.ItemCountResponseDTO;
+import com.itjima_server.dto.item.response.ItemDetailResponseDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;
 import com.itjima_server.dto.item.swagger.ItemPagedResponse;
 import com.itjima_server.dto.item.swagger.ItemSummaryPagedResponse;
@@ -202,11 +203,11 @@ public class ItemController {
     /**
      * 화면 렌더링용 대여 물품 리스트 조회
      *
-     * @param user   로그인한 사용자
+     * @param user    로그인한 사용자
      * @param keyword 물품명 검색 필터
-     * @param lastId 조회할 마지막 id
-     * @param status 상태 필터
-     * @param size   한 페이지에 보여줄 개수
+     * @param lastId  조회할 마지막 id
+     * @param status  상태 필터
+     * @param size    한 페이지에 보여줄 개수
      * @return 대여 물품 리스트 응답 DTO
      */
     @Operation(
@@ -254,5 +255,35 @@ public class ItemController {
         ItemCountResponseDTO res = itemService.getCount(user.getId());
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 개수 조회 성공", res));
+    }
+
+    /**
+     * 렌더링용 대여 물품 상세 조회
+     *
+     * @param id   조회할 물품 id
+     * @param user 로그인한 사용자
+     * @return 조회된 물품 응답 DTO
+     */
+    @Operation(
+            summary = "렌더링용 물품 상세 조회",
+            description = "렌더링용 물품 식별자로 상세 조회",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "물품 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ItemDetailResponseDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "403", description = "권한 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 물품 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<?> getDetail(@PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        ItemDetailResponseDTO res = itemService.getDetail(id, user.getId());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 조회 성공", res));
     }
 }

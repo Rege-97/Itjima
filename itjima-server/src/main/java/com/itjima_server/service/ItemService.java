@@ -7,6 +7,7 @@ import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
 import com.itjima_server.dto.item.response.ItemCountDTO;
 import com.itjima_server.dto.item.response.ItemCountResponseDTO;
+import com.itjima_server.dto.item.response.ItemDetailResponseDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;
 import com.itjima_server.dto.item.response.ItemSummaryResponseDTO;
 import com.itjima_server.exception.common.NotAuthorException;
@@ -255,5 +256,25 @@ public class ItemService {
                 .itemLoanCount(itemLoanCount)
                 .itemAvailableCount(itemAvailableCount)
                 .build();
+    }
+
+    /**
+     * 렌더링용 대여 물품 상세 조회
+     *
+     * @param id     조회할 물품 id
+     * @param userId 로그인한 사용자 id
+     * @return 조회된 물품 응답 DTO
+     */
+    public ItemDetailResponseDTO getDetail(Long id, Long userId) {
+        if (!itemMapper.existsByIdAndUserId(id, userId)) {
+            throw new NotAuthorException("로그인한 사용자의 물품이 아닙니다.");
+        }
+
+        ItemDetailResponseDTO item = itemMapper.findDetailById(id);
+        if (item == null) {
+            throw new NotFoundItemException("해당 물품을 찾을 수 없습니다.");
+        }
+
+        return item;
     }
 }

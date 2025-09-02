@@ -3,6 +3,7 @@ package com.itjima_server.mapper;
 import com.itjima_server.domain.item.Item;
 import com.itjima_server.domain.item.ItemStatus;
 import com.itjima_server.dto.item.response.ItemCountDTO;
+import com.itjima_server.dto.item.response.ItemDetailResponseDTO;
 import com.itjima_server.dto.item.response.ItemSummaryResponseDTO;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -29,4 +30,8 @@ public interface ItemMapper {
             @Param("lastId") Long lastId, @Param("sizePlusOne") int sizePlusOne);
 
     List<ItemCountDTO> countStatusByUserId(@Param("userId") Long userId);
+
+    ItemDetailResponseDTO findDetailById(@Param("id") Long id);
+
+    boolean existsByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
 }
