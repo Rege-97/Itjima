@@ -92,7 +92,7 @@ const handleSearchSubmit = () => {
   useFocusEffect(
     useCallback(() => {
       fetchInitialItems(activeFilter, searchQuery);
-    }, [activeFilter, searchQuery])
+    }, [activeFilter])
   );
   const onRefresh = () => {
     if (isRefreshing) return;
@@ -136,7 +136,7 @@ const handleSearchSubmit = () => {
         }
         data={items}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <ItemCard item={item} />}
+        renderItem={({ item }) => <ItemCard item={item} navigation={navigation} />}
         contentContainerStyle={{ padding: 8 }}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />

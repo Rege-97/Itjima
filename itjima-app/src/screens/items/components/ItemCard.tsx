@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Divider, Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -14,9 +14,12 @@ const StatusBadge = ({ status }: { status: string }) => {
       label = "사용가능";
       break;
     case "ON_LOAN":
-    case "PENDING_APPROVAL":
-      backgroundColor = "#F44336";
+            backgroundColor = "#F44336";
       label = "대여중";
+      break;
+    case "PENDING_APPROVAL":
+      backgroundColor = "#5c36f4ff";
+      label = "대여요청";
       break;
   }
 
@@ -27,8 +30,9 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-  const ItemCard = ({ item }: { item: any }) => {
+  const ItemCard = ({ item,navigation }: { item: any, navigation: any }) => {
   return (
+    <TouchableOpacity onPress={() => navigation.navigate("MyItemDetail", { itemId: item.id })}>
     <View style={styles.listItem}>
       <View style={styles.headerRow}>
         <Image
@@ -54,6 +58,7 @@ const StatusBadge = ({ status }: { status: string }) => {
       </View>
       <Divider style={styles.divider} />
     </View>
+    </TouchableOpacity>
   );
 };
 

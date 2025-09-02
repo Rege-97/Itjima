@@ -1,4 +1,5 @@
-import { privateApi } from ".";
+import { privateApi } from "./core";
+
 
 export const getMyItemsApi = (lastId?: number, status?: string, keyword?: string) => {
   let url = "/items/summary?";
@@ -24,4 +25,8 @@ export const createItemApi = (params: {
 
 export const getItemCountApi = () => {
   return privateApi.get("/items/count");
+};
+
+export const getItemDetailApi = (itemId: number) => {
+  return privateApi.get(`/items/${itemId}/detail`);
 };

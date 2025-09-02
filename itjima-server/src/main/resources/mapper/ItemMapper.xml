@@ -108,4 +108,41 @@
     AND type = 'OBJECT'
     GROUP BY status
   </select>
+  <select id="findDetailById" resultType="com.itjima_server.dto.item.response.ItemDetailResponseDTO">
+    SELECT i.id,
+           i.title,
+           i.description,
+           i.status,
+           i.file_url,
+           i.created_at,
+           current_lender.name           AS currentDebtorName,
+           current_party.confirm_at      AS currentStartAt,
+           current_agreement.due_at      AS currentDueAt,
+           IFNULL(stats.rental_count, 0) AS rentalCount,
+           IFNULL(stats.total_days, 0)   AS totalRentalDays,
+           IFNULL(stats.avg_days, 0)     AS avgRentalDays
+    FROM ITEMS i
+           LEFT JOIN (SELECT a.item_id,
+                             COUNT(*)                                          AS rental_count,
+                             SUM(DATEDIFF(a.due_at, ap.confirm_at) + 1)        AS total_days,
+                             ROUND(AVG(DATEDIFF(a.due_at, ap.confirm_at) + 1)) AS avg_days
+                      FROM AGREEMENTS a
+                             JOIN AGREEMENT_PARTIES ap
+                                  ON a.id = ap.agreement_id AND ap.role = 'DEBTOR'
+                      WHERE a.status = 'COMPLETED'
+                      GROUP BY a.item_id) stats ON i.id = stats.item_id
+           LEFT JOIN AGREEMENTS current_agreement ON i.id = current_agreement.item_id
+      AND current_agreement.status IN ('ACCEPTED', 'OVERDUE')
+           LEFT JOIN AGREEMENT_PARTIES current_party
+                     ON current_agreement.id = current_party.agreement_id
+                       AND current_party.role = 'DEBTOR'
+           LEFT JOIN USERS current_lender ON current_party.user_id = current_lender.id
+    WHERE i.id = #{id}
+  </select>
+  <select id="existsByIdAndUserId" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM ITEMS
+    WHERE id = #{id}
+      AND user_id = #{userId}
+  </select>
 </mapper>

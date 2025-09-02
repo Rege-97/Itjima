@@ -5,6 +5,8 @@ import { View } from "react-native";
 import { Button, Text } from "react-native-paper";
 import MyItemsScreen from "../screens/items/MyItemsScreen";
 import { useAuth } from "../contexts/AuthContext";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import MyItemDetailScreen from "../screens/items/MyItemDetailScreen";
 
 const HomeScreen = () => (
   <View>
@@ -37,6 +39,19 @@ const LogoutScreen = () => {
         로그아웃
       </Button>
     </View>
+  );
+};
+
+const MyItemsStack = createNativeStackNavigator();
+
+const MyItemsStackNavigator = () => {
+  return (
+    <MyItemsStack.Navigator
+    initialRouteName="MyItemsList"
+    screenOptions={{headerShown: false}}>
+      <MyItemsStack.Screen name="MyItemsList" component={MyItemsScreen} />
+      <MyItemsStack.Screen name="MyItemDetail" component={MyItemDetailScreen} />
+    </MyItemsStack.Navigator>
   );
 };
 
@@ -92,7 +107,7 @@ const MainTabNavigator = () => {
       />
       <Tab.Screen
         name="MyItems"
-        component={MyItemsScreen}
+        component={MyItemsStackNavigator}
         options={{
           title: "물품",
           tabBarIcon: ({ color, size }) => (

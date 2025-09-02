@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { publicApi } from ".";
+import { publicApi } from "./core";
 
 export const loginApi = (params: any) => {
   return publicApi.post("/auth/login", params);
