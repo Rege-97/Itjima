@@ -202,6 +202,7 @@ public class ItemService {
         boolean hasNext = false;
         if (itemSummaries.size() == sizePlusOne) {
             hasNext = true;
+            itemSummaries.remove(size);
         }
         List<ItemSummaryResponseDTO> itemSummariesSummaries = new ArrayList<>();
 

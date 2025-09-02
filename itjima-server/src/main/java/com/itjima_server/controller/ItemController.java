@@ -219,7 +219,7 @@ public class ItemController {
     )
     @GetMapping("/summary")
     public ResponseEntity<?> getSummaries(@RequestParam(required = false) Long lastId,
-            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal CustomUserDetails user) {
         PagedResultDTO<?> res = itemService.getSummaries(user.getId(), lastId, size);
         return ResponseEntity.status(HttpStatus.OK)

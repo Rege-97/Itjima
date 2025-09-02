@@ -1,7 +1,8 @@
 import { privateApi } from ".";
 
-export const getMyItemApi = () => {
-  return privateApi.get("/items");
+export const getMyItemsApi = (lastId?:number) => {
+    const url = lastId ? `/items/summary?lastId=${lastId}` : "/items/summary";
+  return privateApi.get(url);
 };
 
 export const createItemApi = (params: {
