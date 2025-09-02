@@ -3,91 +3,21 @@ import { getItemCountApi, getMyItemsApi } from "../../api/items";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   FlatList,
-  Image,
   RefreshControl,
   SafeAreaView,
   StyleSheet,
-  TouchableOpacity,
   View,
 } from "react-native";
 import {
   ActivityIndicator,
-  Divider,
   FAB,
   Searchbar,
   Text,
 } from "react-native-paper";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { SearchBar } from "react-native-screens";
+import SummaryBox from "./components/SummaryBox";
+import ItemCard from "./components/ItemCard";
 
-interface SummaryBoxProps {
-  counts: {
-    itemAllCount?: number;
-    itemLoanCount?: number;
-    itemAvailableCount?: number;
-  };
-  activeFilter: string | null;
-  onFilterPress: (status: string | null) => void;
-}
 
-const SummaryBox = ({
-  counts,
-  activeFilter,
-  onFilterPress,
-}: SummaryBoxProps) => {
-  const total = counts.itemAllCount || 0;
-  const onLoan = counts.itemLoanCount || 0;
-  const available = counts.itemAvailableCount || 0;
-
-  return (
-    <View style={styles.summaryContainer}>
-      <TouchableOpacity
-        onPress={() => onFilterPress(null)}
-        style={styles.summaryItem}
-      >
-        <Text style={styles.summaryLabel}>총 물건</Text>
-        <Text
-          style={[
-            styles.summaryValue,
-            activeFilter === null && styles.activeFilter,
-          ]}
-        >
-          {total}개
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => onFilterPress("ON_LOAN")}
-        style={styles.summaryItem}
-      >
-        <Text style={styles.summaryLabel}>대여중</Text>
-        <Text
-          style={[
-            styles.summaryValue,
-            { color: "#F44336" },
-            activeFilter === "ON_LOAN" && styles.activeFilter,
-          ]}
-        >
-          {onLoan}개
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => onFilterPress("AVAILABLE")}
-        style={styles.summaryItem}
-      >
-        <Text style={styles.summaryLabel}>대여가능</Text>
-        <Text
-          style={[
-            styles.summaryValue,
-            { color: "#4CAF50" },
-            activeFilter === "AVAILABLE" && styles.activeFilter,
-          ]}
-        >
-          {available}개
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
 
 const MyItemsScreen = ({ navigation }: any) => {
   const [items, setItems] = useState<any[]>([]);
@@ -162,40 +92,12 @@ const handleSearchSubmit = () => {
   useFocusEffect(
     useCallback(() => {
       fetchInitialItems(activeFilter, searchQuery);
-    }, [])
+    }, [activeFilter, searchQuery])
   );
   const onRefresh = () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
     fetchInitialItems(activeFilter, searchQuery);
-  };
-
-  const getItemStatusBadge = (status: string) => {
-    let backgroundColor = "#ccc";
-    let textColor = "#fff";
-
-    switch (status) {
-      case "AVAILABLE":
-        backgroundColor = "#4CAF50";
-        break;
-      case "ON_LOAN":
-        backgroundColor = "#F44336";
-        break;
-      case "PENDING_APPROVAL":
-        backgroundColor = "#F44336";
-        break;
-    }
-    return (
-      <SafeAreaView style={[styles.statusBadge, { backgroundColor }]}>
-        <Text style={[styles.statusBadgeText, { color: textColor }]}>
-          {status === "AVAILABLE"
-            ? "사용가능"
-            : status === "ON_LOAN" || status === "PENDING_APPROVAL"
-            ? "대여중"
-            : status}
-        </Text>
-      </SafeAreaView>
-    );
   };
 
   if (isLoading) {
@@ -234,46 +136,7 @@ const handleSearchSubmit = () => {
         }
         data={items}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.listItem}>
-            <View style={styles.headerRow}>
-              <Image
-                source={{
-                  uri: item.fileUrl || "https://via.placeholder.com/150",
-                }}
-                style={styles.squareAvatar}
-              />
-              <View style={styles.rightCol}>
-                <View style={styles.titleRow}>
-                  <Text style={styles.title} numberOfLines={1}>
-                    {item.title}
-                  </Text>
-                  {getItemStatusBadge(item.status)}
-                </View>
-                <Text style={styles.subtitle} numberOfLines={2}>
-                  {item.description}
-                </Text>
-
-                <View style={styles.statsRow}>
-                  <View style={styles.statItem}>
-                    <MaterialCommunityIcons
-                      name="account-supervisor-outline"
-                      size={15}
-                      color="#555"
-                    />
-                    <Text style={styles.statText}>{item.loanCount}회 대여</Text>
-                  </View>
-
-                  <Text style={styles.lastLoanText}>
-                    마지막 대여: {item.lastDebtorName || "없음"}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <Divider style={styles.divider} />
-          </View>
-        )}
+        renderItem={({ item }) => <ItemCard item={item} />}
         contentContainerStyle={{ padding: 8 }}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
@@ -299,117 +162,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-  listItem: {
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    backgroundColor: "#fff",
-  },
-
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-  },
-  squareAvatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 8,
-    backgroundColor: "#eee",
-    marginRight: 20,
-  },
-  rightCol: {
-    flex: 1,
-    justifyContent: "flex-start",
-    height: 120,
-    paddingVertical: 4,
-  },
-
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginRight: 8,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: "#7c7c7c",
-    marginTop: 6,
-    marginBottom: 40,
-    marginLeft: 1,
-  },
-
-  statsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 8,
-    paddingRight: 8,
-  },
-  statItem: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  statText: {
-    marginLeft: 4,
-    color: "#747474",
-    fontSize: 12,
-  },
-  lastLoanText: {
-    color: "#747474",
-    fontSize: 12,
-  },
-
-  divider: {
-    marginTop: 14,
-  },
-
-  statusBadge: {
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    width: 60,
-    height: 24,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  statusBadgeText: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-
+  
   fab: {
     position: "absolute",
     right: 16,
     bottom: 16,
     backgroundColor: "#6200ee",
-  },
-  summaryContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    padding: 16,
-    backgroundColor: "#f7f7f7",
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-    marginBottom: 8,
-  },
-  summaryItem: {
-    alignItems: "center",
-  },
-  summaryLabel: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 4,
-  },
-  summaryValue: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  activeFilter: {
-    textDecorationLine: "underline",
   },
   searchbar: {
     backgroundColor: "#ffffffff",
