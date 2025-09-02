@@ -92,4 +92,10 @@
     ORDER by i.id DESC
     LIMIT #{sizePlusOne}
   </select>
+  <select id="countStatusByUserId" resultType="com.itjima_server.dto.item.response.ItemCountDTO">
+    SELECT status, COUNT(*) AS 'count'
+    FROM ITEMS
+    WHERE user_id = #{userId}
+    GROUP BY status
+  </select>
 </mapper>

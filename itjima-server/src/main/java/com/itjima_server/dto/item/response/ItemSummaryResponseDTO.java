@@ -5,13 +5,11 @@ import com.itjima_server.domain.item.ItemStatus;
 import com.itjima_server.domain.item.ItemType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @Schema(description = "물품 응답 DTO")
 public class ItemSummaryResponseDTO {
 

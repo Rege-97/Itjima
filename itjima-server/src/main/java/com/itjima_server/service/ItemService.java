@@ -5,6 +5,8 @@ import com.itjima_server.domain.item.Item;
 import com.itjima_server.domain.item.ItemStatus;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
+import com.itjima_server.dto.item.response.ItemCountDTO;
+import com.itjima_server.dto.item.response.ItemCountResponseDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;
 import com.itjima_server.dto.item.response.ItemSummaryResponseDTO;
 import com.itjima_server.exception.common.NotAuthorException;
@@ -213,5 +215,43 @@ public class ItemService {
         lastId = itemSummariesSummaries.get(itemSummariesSummaries.size() - 1).getId();
 
         return PagedResultDTO.from(itemSummariesSummaries, hasNext, lastId);
+    }
+
+    /**
+     * 물품 상태별 개수 조회
+     *
+     * @param userId 로그인한 사용자 ID
+     * @return 상태별 개수 DTO
+     */
+    public ItemCountResponseDTO getCount(Long userId) {
+        List<ItemCountDTO> countList = itemMapper.countStatusByUserId(userId);
+
+        if (countList == null || countList.isEmpty()) {
+            return ItemCountResponseDTO.builder()
+                    .itemAvailableCount(0)
+                    .itemAllCount(0)
+                    .itemLoanCount(0)
+                    .build();
+        }
+
+        int itemLoanCount = 0;
+        int itemAvailableCount = 0;
+
+        for (ItemCountDTO count : countList) {
+            if (count.getStatus() == ItemStatus.AVAILABLE) {
+                itemAvailableCount = count.getCount();
+            } else if (count.getStatus() == ItemStatus.ON_LOAN) {
+                itemLoanCount += count.getCount();
+            } else if (count.getStatus() == ItemStatus.PENDING_APPROVAL) {
+                itemLoanCount += count.getCount();
+            }
+        }
+        int itemAllCount = itemLoanCount + itemAvailableCount;
+
+        return ItemCountResponseDTO.builder()
+                .itemAllCount(itemAllCount)
+                .itemLoanCount(itemLoanCount)
+                .itemAvailableCount(itemAvailableCount)
+                .build();
     }
 }

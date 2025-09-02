@@ -4,6 +4,7 @@ import com.itjima_server.common.ApiResponseDTO;
 import com.itjima_server.common.PagedResultDTO;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
+import com.itjima_server.dto.item.response.ItemCountResponseDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;
 import com.itjima_server.dto.item.swagger.ItemPagedResponse;
 import com.itjima_server.dto.item.swagger.ItemSummaryPagedResponse;
@@ -224,5 +225,29 @@ public class ItemController {
         PagedResultDTO<?> res = itemService.getSummaries(user.getId(), lastId, size);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 목록 조회 성공", res));
+    }
+
+    /**
+     * 물품 상태별 개수 조회
+     *
+     * @param user 로그인한 사용자
+     * @return 상태별 개수
+     */
+    @Operation(
+            summary = "물품 상태별 개수 조회",
+            description = "총 물건, 대여중, 대여 가능 상태별 조회",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "물품 개수 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ItemSummaryPagedResponse.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
+    @GetMapping("/count")
+    public ResponseEntity<?> getCount(@AuthenticationPrincipal CustomUserDetails user) {
+        ItemCountResponseDTO res = itemService.getCount(user.getId());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 개수 조회 성공", res));
     }
 }
