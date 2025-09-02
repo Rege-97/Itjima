@@ -1,7 +1,13 @@
 import { privateApi } from ".";
 
-export const getMyItemsApi = (lastId?:number) => {
-    const url = lastId ? `/items/summary?lastId=${lastId}` : "/items/summary";
+export const getMyItemsApi = (lastId?: number, status?: string) => {
+  let url = "/items/summary?";
+  if (lastId) {
+    url += `lastId=${lastId}&`;
+  }
+  if (status) {
+    url += `status=${status}&`;
+  }
   return privateApi.get(url);
 };
 
@@ -11,4 +17,8 @@ export const createItemApi = (params: {
   description: string;
 }) => {
   return privateApi.post("/items", params);
+};
+
+export const getItemCountApi = () => {
+  return privateApi.get("/items/count");
 };
