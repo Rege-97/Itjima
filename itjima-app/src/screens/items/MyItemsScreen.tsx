@@ -5,6 +5,7 @@ import {
   FlatList,
   Image,
   RefreshControl,
+  SafeAreaView,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -185,7 +186,7 @@ const handleSearchSubmit = () => {
         break;
     }
     return (
-      <View style={[styles.statusBadge, { backgroundColor }]}>
+      <SafeAreaView style={[styles.statusBadge, { backgroundColor }]}>
         <Text style={[styles.statusBadgeText, { color: textColor }]}>
           {status === "AVAILABLE"
             ? "사용가능"
@@ -193,7 +194,7 @@ const handleSearchSubmit = () => {
             ? "대여중"
             : status}
         </Text>
-      </View>
+      </SafeAreaView>
     );
   };
 
@@ -206,7 +207,10 @@ const handleSearchSubmit = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+        <View>
+            <Text style={{fontSize:24, fontWeight:"bold", margin:16}}>내 물품</Text>
+        </View>
       <FlatList
         ListHeaderComponent={
           <>
@@ -285,8 +289,8 @@ const handleSearchSubmit = () => {
         }
       />
 
-      <FAB icon="plus" style={styles.fab} onPress={() => {}} />
-    </View>
+      <FAB icon="plus" color="#fff" style={styles.fab} onPress={() => {}} label="물품 추가" />
+    </SafeAreaView>
   );
 };
 
@@ -367,6 +371,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     width: 60,
+    height: 24,
+    justifyContent: "center",
     alignItems: "center",
   },
   statusBadgeText: {
@@ -379,6 +385,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     bottom: 16,
+    backgroundColor: "#6200ee",
   },
   summaryContainer: {
     flexDirection: "row",
