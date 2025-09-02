@@ -41,6 +41,7 @@
     type,
     title,
     description,
+    status,
     file_url,
     file_type,
     created_at

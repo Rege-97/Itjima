@@ -9,24 +9,8 @@ import RegisterFormScreen from "../screens/Auth/RegisterFormScreen";
 import RegisterWelcomeScreen from "../screens/Auth/RegisterWelcomeScreen";
 import VerifyEmailScreen from "../screens/Auth/VerifyEmailScreen";
 import KakaoLoginScreen from "../screens/Auth/KakaoLoginScreen";
+import MainTabNavigator from "./MainTabNavigator";
 const Stack = createNativeStackNavigator();
-
-const PlaceholderScreen = ({ route }: any) => {
-  const { name } = route; 
-  const {logout} = useAuth();
-
-  const handleLogout = async()=>{
-    await logout();
-  }
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text variant="headlineLarge">{name} Screen</Text>
-      <Button onPress={handleLogout}>
-        로그아웃
-      </Button>
-    </View>
-  );
-};
 
 const AppNavigator = () => {
   const { authToken, isLoading } = useAuth();
@@ -45,7 +29,7 @@ const AppNavigator = () => {
         {authToken ? (
           <Stack.Screen
             name="Main"
-            component={PlaceholderScreen}
+            component={MainTabNavigator}
             options={{ headerShown: false }}
           />
         ) : (
@@ -68,12 +52,12 @@ const AppNavigator = () => {
             <Stack.Screen
               name="VerifyEmail"
               component={VerifyEmailScreen}
-              options={{ title: '이메일 인증' }}
+              options={{ title: "이메일 인증" }}
             />
             <Stack.Screen
               name="KakaoLogin"
               component={KakaoLoginScreen}
-              options={{ title: '카카오 로그인' }} // 모달로 띄우는 것이 좋습니다.
+              options={{ title: "카카오 로그인" }} // 모달로 띄우는 것이 좋습니다.
             />
           </>
         )}
