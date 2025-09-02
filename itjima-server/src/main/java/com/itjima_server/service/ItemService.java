@@ -6,6 +6,7 @@ import com.itjima_server.domain.item.ItemStatus;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;
+import com.itjima_server.dto.item.response.ItemSummaryResponseDTO;
 import com.itjima_server.exception.common.NotAuthorException;
 import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.item.NotFoundItemException;
@@ -181,5 +182,35 @@ public class ItemService {
         }
 
         return ItemResponseDTO.from(item);
+    }
+
+    /**
+     * 화면 렌더링용 물품 리스트
+     *
+     * @param userId 로그인한 사용자 id
+     * @param lastId 조회할 마지막 id
+     * @param size   한 페이지에 보여줄 개수
+     * @return 대여 물품 리스트 응답 DTO
+     */
+    public PagedResultDTO<?> getSummaries(Long userId, Long lastId, int size) {
+        int sizePlusOne = size + 1;
+        List<ItemSummaryResponseDTO> itemSummaries = itemMapper.findItemSummariesByUserId(userId,
+                lastId, sizePlusOne);
+        if (itemSummaries == null || itemSummaries.isEmpty()) {
+            return PagedResultDTO.from(null, false, null);
+        }
+        boolean hasNext = false;
+        if (itemSummaries.size() == sizePlusOne) {
+            hasNext = true;
+        }
+        List<ItemSummaryResponseDTO> itemSummariesSummaries = new ArrayList<>();
+
+        for (ItemSummaryResponseDTO summary : itemSummaries) {
+            itemSummariesSummaries.add(summary);
+        }
+
+        lastId = itemSummariesSummaries.get(itemSummariesSummaries.size() - 1).getId();
+
+        return PagedResultDTO.from(itemSummariesSummaries, hasNext, lastId);
     }
 }

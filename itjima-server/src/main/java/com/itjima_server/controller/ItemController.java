@@ -6,6 +6,7 @@ import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;
 import com.itjima_server.dto.item.swagger.ItemPagedResponse;
+import com.itjima_server.dto.item.swagger.ItemSummaryPagedResponse;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.ItemService;
 import com.itjima_server.util.FileResult;
@@ -195,5 +196,33 @@ public class ItemController {
         ItemResponseDTO res = itemService.get(id, user.getId());
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 조회 성공", res));
+    }
+
+    /**
+     * 화면 렌더링용 대여 물품 리스트 조회
+     *
+     * @param user   로그인한 사용자
+     * @param lastId 조회할 마지막 id
+     * @param size   한 페이지에 보여줄 개수
+     * @return 대여 물품 리스트 응답 DTO
+     */
+    @Operation(
+            summary = "화면 렌더링용 물품 목록 조회(커서 기반)",
+            description = "lastId와 size로 커서 기반 페이지네이션",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "물품 목록 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ItemSummaryPagedResponse.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
+    @GetMapping("/summary")
+    public ResponseEntity<?> getSummaries(@RequestParam(required = false) Long lastId,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        PagedResultDTO<?> res = itemService.getSummaries(user.getId(), lastId, size);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 목록 조회 성공", res));
     }
 }

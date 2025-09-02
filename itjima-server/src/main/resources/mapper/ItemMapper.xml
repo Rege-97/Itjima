@@ -59,4 +59,37 @@
     SET status = #{status}
     WHERE id = #{id}
   </update>
+  <select id="findItemSummariesByUserId" resultType="com.itjima_server.dto.item.response.ItemSummaryResponseDTO">
+    SELECT i.id,
+    i.user_id,
+    i.type,
+    i.title,
+    i.description,
+    i.status,
+    i.file_url,
+    i.file_type,
+    IFNULL(agg_summary.loanCount, 0) AS loanCount,
+    agg_summary.lastDebtorName,
+    i.created_at
+    FROM ITEMS i
+    LEFT JOIN (SELECT ra.item_id,
+    COUNT(*) AS loanCount,
+    MAX(CASE WHEN ra.rn = 1 THEN ra.debtorName END) AS lastDebtorName
+    FROM (SELECT a.item_id,
+    u.name AS debtorName,
+    ROW_NUMBER() OVER (PARTITION BY a.item_id ORDER BY a.created_at DESC) AS rn
+    FROM AGREEMENTS a
+    JOIN AGREEMENT_PARTIES ap
+    ON a.id = ap.agreement_id AND ap.role = 'DEBTOR'
+    JOIN USERS u ON ap.user_id = u.id
+    WHERE a.status = 'COMPLETED') ra
+    GROUP BY ra.item_id) agg_summary ON i.id = agg_summary.item_id
+    WHERE i.user_id = #{userId}
+    AND i.type='OBJECT'
+    <if test="lastId != null">
+      AND i.id &lt; #{lastId}
+    </if>
+    ORDER by i.id DESC
+    LIMIT #{sizePlusOne}
+  </select>
 </mapper>
