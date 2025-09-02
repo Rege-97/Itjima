@@ -89,6 +89,12 @@
     <if test="lastId != null">
       AND i.id &lt; #{lastId}
     </if>
+    <if test="status != null and status == 'AVAILABLE'">
+      AND i.status = 'AVAILABLE'
+    </if>
+    <if test="status != null and status == 'ON_LOAN'">
+      AND i.status IN ('ON_LOAN','PENDING_APPROVAL')
+    </if>
     ORDER by i.id DESC
     LIMIT #{sizePlusOne}
   </select>
@@ -96,6 +102,7 @@
     SELECT status, COUNT(*) AS 'count'
     FROM ITEMS
     WHERE user_id = #{userId}
+    AND type = 'OBJECT'
     GROUP BY status
   </select>
 </mapper>

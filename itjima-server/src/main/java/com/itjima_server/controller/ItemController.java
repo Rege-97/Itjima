@@ -204,6 +204,7 @@ public class ItemController {
      *
      * @param user   로그인한 사용자
      * @param lastId 조회할 마지막 id
+     * @param status 상태 필터
      * @param size   한 페이지에 보여줄 개수
      * @return 대여 물품 리스트 응답 DTO
      */
@@ -220,9 +221,10 @@ public class ItemController {
     )
     @GetMapping("/summary")
     public ResponseEntity<?> getSummaries(@RequestParam(required = false) Long lastId,
+            @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal CustomUserDetails user) {
-        PagedResultDTO<?> res = itemService.getSummaries(user.getId(), lastId, size);
+        PagedResultDTO<?> res = itemService.getSummaries(user.getId(), status, lastId, size);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 목록 조회 성공", res));
     }
@@ -239,7 +241,7 @@ public class ItemController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "물품 개수 조회 성공",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = ItemSummaryPagedResponse.class))),
+                                    schema = @Schema(implementation = ItemCountResponseDTO.class))),
                     @ApiResponse(responseCode = "401", description = "인증 필요",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
             }
