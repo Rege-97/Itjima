@@ -9,8 +9,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { ActivityIndicator, Divider, FAB, Text } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Divider,
+  FAB,
+  Searchbar,
+  Text,
+} from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { SearchBar } from "react-native-screens";
 
 interface SummaryBoxProps {
   counts: {
@@ -22,7 +29,11 @@ interface SummaryBoxProps {
   onFilterPress: (status: string | null) => void;
 }
 
-const SummaryBox = ({ counts, activeFilter, onFilterPress }: SummaryBoxProps) => {
+const SummaryBox = ({
+  counts,
+  activeFilter,
+  onFilterPress,
+}: SummaryBoxProps) => {
   const total = counts.itemAllCount || 0;
   const onLoan = counts.itemLoanCount || 0;
   const available = counts.itemAvailableCount || 0;
@@ -62,7 +73,7 @@ const SummaryBox = ({ counts, activeFilter, onFilterPress }: SummaryBoxProps) =>
         onPress={() => onFilterPress("AVAILABLE")}
         style={styles.summaryItem}
       >
-        <Text style={styles.summaryLabel}>사용가능</Text>
+        <Text style={styles.summaryLabel}>대여가능</Text>
         <Text
           style={[
             styles.summaryValue,
@@ -86,13 +97,17 @@ const MyItemsScreen = ({ navigation }: any) => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [counts, setCounts] = useState<any>({});
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const fetchInitialItems = async (filter: string | null) => {
+  const fetchInitialItems = async (
+    filter: string | null,
+    keyword: string | null
+  ) => {
     setIsLoading(true);
     setHasNext(true);
     try {
       const [itemsResponse, countsResponse] = await Promise.all([
-        getMyItemsApi(undefined, filter || undefined),
+        getMyItemsApi(undefined, filter!, keyword!),
         getItemCountApi(),
       ]);
 
@@ -109,9 +124,17 @@ const MyItemsScreen = ({ navigation }: any) => {
     }
   };
 
-const handleFilterPress = (status: string | null) => {
+ const handleSearchChange = (query: string) => {
+  setSearchQuery(query);
+};
+
+const handleSearchSubmit = () => {
+  fetchInitialItems(activeFilter, searchQuery);
+};
+
+  const handleFilterPress = (status: string | null) => {
     setActiveFilter(status);
-    fetchInitialItems(status);
+    fetchInitialItems(status, searchQuery);
   };
 
   const fetchMoreItems = async () => {
@@ -119,7 +142,11 @@ const handleFilterPress = (status: string | null) => {
 
     setIsLoadingMore(true);
     try {
-      const response = await getMyItemsApi(lastId!, activeFilter || undefined);
+      const response = await getMyItemsApi(
+        lastId!,
+        activeFilter!,
+        searchQuery!
+      );
       const fetchedData = response.data.data;
       setItems((prevItems) => [...prevItems, ...(fetchedData.items || [])]);
       setLastId(fetchedData.lastId);
@@ -133,13 +160,13 @@ const handleFilterPress = (status: string | null) => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchInitialItems(activeFilter);
+      fetchInitialItems(activeFilter, searchQuery);
     }, [])
   );
   const onRefresh = () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
-    fetchInitialItems(activeFilter);
+    fetchInitialItems(activeFilter, searchQuery);
   };
 
   const getItemStatusBadge = (status: string) => {
@@ -153,7 +180,7 @@ const handleFilterPress = (status: string | null) => {
       case "ON_LOAN":
         backgroundColor = "#F44336";
         break;
-        case "PENDING_APPROVAL":
+      case "PENDING_APPROVAL":
         backgroundColor = "#F44336";
         break;
     }
@@ -172,9 +199,9 @@ const handleFilterPress = (status: string | null) => {
 
   if (isLoading) {
     return (
-     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <ActivityIndicator animating={true} size="large" />
-    </View>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator animating={true} size="large" />
+      </View>
     );
   }
 
@@ -182,11 +209,24 @@ const handleFilterPress = (status: string | null) => {
     <View style={styles.container}>
       <FlatList
         ListHeaderComponent={
-          <SummaryBox
-            counts={counts}
-            activeFilter={activeFilter}
-            onFilterPress={handleFilterPress}
-          />
+          <>
+           <Searchbar
+              placeholder="물품명으로 검색"
+              value={searchQuery}
+              onChangeText={handleSearchChange}
+              onSubmitEditing={handleSearchSubmit}
+              onClearIconPress={() => {
+                setSearchQuery("");
+                fetchInitialItems(activeFilter, "");
+              }}
+              style={styles.searchbar}
+            />
+            <SummaryBox
+              counts={counts}
+              activeFilter={activeFilter}
+              onFilterPress={handleFilterPress}
+            />
+          </>
         }
         data={items}
         keyExtractor={(item) => item.id.toString()}
@@ -319,7 +359,7 @@ const styles = StyleSheet.create({
   },
 
   divider: {
-    marginTop:14,
+    marginTop: 14,
   },
 
   statusBadge: {
@@ -341,28 +381,32 @@ const styles = StyleSheet.create({
     bottom: 16,
   },
   summaryContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     padding: 16,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: "#f7f7f7",
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
     marginBottom: 8,
   },
   summaryItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   summaryLabel: {
     fontSize: 14,
-    color: '#555',
+    color: "#555",
     marginBottom: 4,
   },
   summaryValue: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   activeFilter: {
-    textDecorationLine: 'underline',
+    textDecorationLine: "underline",
+  },
+  searchbar: {
+    backgroundColor: "#ffffffff",
+    borderRadius: 0,
   },
 });
 

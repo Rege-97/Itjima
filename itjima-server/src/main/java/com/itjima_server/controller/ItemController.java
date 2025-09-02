@@ -203,6 +203,7 @@ public class ItemController {
      * 화면 렌더링용 대여 물품 리스트 조회
      *
      * @param user   로그인한 사용자
+     * @param keyword 물품명 검색 필터
      * @param lastId 조회할 마지막 id
      * @param status 상태 필터
      * @param size   한 페이지에 보여줄 개수
@@ -221,10 +222,12 @@ public class ItemController {
     )
     @GetMapping("/summary")
     public ResponseEntity<?> getSummaries(@RequestParam(required = false) Long lastId,
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal CustomUserDetails user) {
-        PagedResultDTO<?> res = itemService.getSummaries(user.getId(), status, lastId, size);
+        PagedResultDTO<?> res = itemService.getSummaries(user.getId(), keyword, status, lastId,
+                size);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 목록 조회 성공", res));
     }

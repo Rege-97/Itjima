@@ -189,16 +189,18 @@ public class ItemService {
     /**
      * 화면 렌더링용 물품 리스트
      *
-     * @param userId 로그인한 사용자 id
-     * @param status 상태 필터
-     * @param lastId 조회할 마지막 id
-     * @param size   한 페이지에 보여줄 개수
+     * @param userId  로그인한 사용자 id
+     * @param keyword 물품명 검색 필터
+     * @param status  상태 필터
+     * @param lastId  조회할 마지막 id
+     * @param size    한 페이지에 보여줄 개수
      * @return 대여 물품 리스트 응답 DTO
      */
-    public PagedResultDTO<?> getSummaries(Long userId, String status, Long lastId, int size) {
+    public PagedResultDTO<?> getSummaries(Long userId, String keyword, String status, Long lastId,
+            int size) {
         int sizePlusOne = size + 1;
         List<ItemSummaryResponseDTO> itemSummaries = itemMapper.findItemSummariesByUserId(userId,
-                status, lastId, sizePlusOne);
+                keyword, status, lastId, sizePlusOne);
         if (itemSummaries == null || itemSummaries.isEmpty()) {
             return PagedResultDTO.from(null, false, null);
         }

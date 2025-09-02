@@ -25,8 +25,8 @@ public interface ItemMapper {
     int updateStatusById(@Param("id") Long id, @Param("status") ItemStatus status);
 
     List<ItemSummaryResponseDTO> findItemSummariesByUserId(@Param("userId") Long userId,
-            @Param("status") String status, @Param("lastId") Long lastId,
-            @Param("sizePlusOne") int sizePlusOne);
+            @Param("keyword") String keyword, @Param("status") String status,
+            @Param("lastId") Long lastId, @Param("sizePlusOne") int sizePlusOne);
 
     List<ItemCountDTO> countStatusByUserId(@Param("userId") Long userId);
 }

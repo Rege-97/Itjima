@@ -95,6 +95,9 @@
     <if test="status != null and status == 'ON_LOAN'">
       AND i.status IN ('ON_LOAN','PENDING_APPROVAL')
     </if>
+    <if test="keyword != null and keyword !=''">
+      AND i.title LIKE CONCAT('%', #{keyword}, '%')
+    </if>
     ORDER by i.id DESC
     LIMIT #{sizePlusOne}
   </select>

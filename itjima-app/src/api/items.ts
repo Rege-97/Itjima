@@ -1,12 +1,15 @@
 import { privateApi } from ".";
 
-export const getMyItemsApi = (lastId?: number, status?: string) => {
+export const getMyItemsApi = (lastId?: number, status?: string, keyword?: string) => {
   let url = "/items/summary?";
   if (lastId) {
     url += `lastId=${lastId}&`;
   }
   if (status) {
     url += `status=${status}&`;
+  }
+  if (keyword) {
+    url += `keyword=${keyword}&`;
   }
   return privateApi.get(url);
 };
