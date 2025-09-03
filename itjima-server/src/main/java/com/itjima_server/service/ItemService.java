@@ -5,6 +5,7 @@ import com.itjima_server.domain.item.Item;
 import com.itjima_server.domain.item.ItemStatus;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
+import com.itjima_server.dto.item.response.ItemAgreementHistoryResponseDTO;
 import com.itjima_server.dto.item.response.ItemCountDTO;
 import com.itjima_server.dto.item.response.ItemCountResponseDTO;
 import com.itjima_server.dto.item.response.ItemDetailResponseDTO;
@@ -14,6 +15,7 @@ import com.itjima_server.exception.common.NotAuthorException;
 import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.item.NotFoundItemException;
 import com.itjima_server.exception.item.NotInsertItemException;
+import com.itjima_server.mapper.AgreementMapper;
 import com.itjima_server.mapper.ItemMapper;
 import com.itjima_server.util.FileResult;
 import com.itjima_server.util.FileUtil;
@@ -30,7 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
  * 대여 물품 관련 비즈니스 로직을 수행하는 서비스 클래스
  *
  * @author Rege-97
- * @since 2025-08-22
+ * @since 2025-09-03
  */
 @Service
 @RequiredArgsConstructor
@@ -40,6 +42,7 @@ public class ItemService {
     private String uploadDir;
 
     private final ItemMapper itemMapper;
+    private final AgreementMapper agreementMapper;
 
     /**
      * 대여물품 등록 처리
@@ -210,14 +213,9 @@ public class ItemService {
             hasNext = true;
             itemSummaries.remove(size);
         }
-        List<ItemSummaryResponseDTO> itemSummariesSummaries = new ArrayList<>();
 
-        for (ItemSummaryResponseDTO summary : itemSummaries) {
-            itemSummariesSummaries.add(summary);
-        }
-
-        lastId = itemSummariesSummaries.get(itemSummariesSummaries.size() - 1).getId();
-        return PagedResultDTO.from(itemSummariesSummaries, hasNext, lastId);
+        lastId = itemSummaries.get(itemSummaries.size() - 1).getId();
+        return PagedResultDTO.from(itemSummaries, hasNext, lastId);
     }
 
     /**
@@ -276,5 +274,29 @@ public class ItemService {
         }
 
         return item;
+    }
+
+    public PagedResultDTO<?> getAgreementHistory(Long id, Long userId, Long lastId,
+            int size) {
+        if (!itemMapper.existsByIdAndUserId(id, userId)) {
+            throw new NotAuthorException("로그인한 사용자의 물품이 아닙니다.");
+        }
+
+        int sizePlusOne = size + 1;
+        List<ItemAgreementHistoryResponseDTO> itemAgreementHistories = agreementMapper.findHistoryByItemId(
+                id, lastId, sizePlusOne);
+
+        if (itemAgreementHistories == null || itemAgreementHistories.isEmpty()) {
+            return PagedResultDTO.from(null, false, null);
+        }
+
+        boolean hasNext = false;
+        if (itemAgreementHistories.size() == sizePlusOne) {
+            hasNext = true;
+            itemAgreementHistories.remove(size);
+        }
+
+        lastId = itemAgreementHistories.get(itemAgreementHistories.size() - 1).getId();
+        return PagedResultDTO.from(itemAgreementHistories, hasNext, lastId);
     }
 }
