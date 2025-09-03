@@ -30,3 +30,11 @@ export const getItemCountApi = () => {
 export const getItemDetailApi = (itemId: number) => {
   return privateApi.get(`/items/${itemId}/detail`);
 };
+
+export const getItemAgreementHistoryApi = (itemId: number,lastId?:number) => {
+    let url = `/items/${itemId}/agreements?`;
+  if (lastId) {
+    url += `lastId=${lastId}&`;
+  }
+  return privateApi.get(url);
+};

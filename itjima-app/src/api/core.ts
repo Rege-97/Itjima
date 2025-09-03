@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
-const API_BASE_URL = "http://172.30.1.60:8080/api/";
+const API_BASE_URL = "http://172.30.1.27:8080/api/";
 
 // 인증이 필요 없는 API 호출용
 export const publicApi = axios.create({

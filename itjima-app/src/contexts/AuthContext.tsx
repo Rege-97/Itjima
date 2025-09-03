@@ -1,12 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
-  Children,
   createContext,
   useContext,
   useEffect,
   useState,
 } from "react";
 import { loginApi, kakaoLoginApi } from "../api/auth";
+import "../api/index";
+
 
 interface AuthContextType {
   authToken: string | null;
