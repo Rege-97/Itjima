@@ -6,7 +6,7 @@ import { Button, Text } from "react-native-paper";
 import MyItemsScreen from "../screens/items/MyItemsScreen";
 import { useAuth } from "../contexts/AuthContext";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import MyItemDetailScreen from "../screens/items/MyItemDetailScreen";
+import MyItemDetailScreen from "../screens/items/MyItemDetailScreen/MyItemDetailScreen";
 
 const HomeScreen = () => (
   <View>
