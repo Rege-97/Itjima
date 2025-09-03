@@ -3,7 +3,6 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Divider, Text } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const StatusBadge = ({ status }: { status: string }) => {
   let backgroundColor = "#ccc";

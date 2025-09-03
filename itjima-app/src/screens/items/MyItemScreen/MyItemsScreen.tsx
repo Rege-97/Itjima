@@ -1,17 +1,17 @@
-import React, { useCallback, useState } from "react";
-import { getItemCountApi, getMyItemsApi } from "../../../api/items";
-import { useFocusEffect } from "@react-navigation/native";
+import React, { useState } from "react";
 import {
   FlatList,
   RefreshControl,
   SafeAreaView,
   StyleSheet,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { ActivityIndicator, FAB, Searchbar, Text } from "react-native-paper";
-import SummaryBox from "./components/SummaryBox";
 import ItemCard from "./components/ItemCard";
+import SummaryBox from "./components/SummaryBox";
 import { useItem } from "./hooks/useItem";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const MyItemsScreen = ({ navigation }: any) => {
   const {
@@ -32,6 +32,8 @@ const MyItemsScreen = ({ navigation }: any) => {
     onRefresh,
   } = useItem(navigation);
 
+  const [viewSearch, setViewSearch] = useState(false);
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -42,25 +44,39 @@ const MyItemsScreen = ({ navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View>
+      <View style={{ justifyContent: "space-between", flexDirection: "row" }}>
         <Text style={{ fontSize: 24, fontWeight: "bold", margin: 16 }}>
           내 물품
         </Text>
+        <TouchableOpacity
+          style={{ justifyContent: "center", marginRight: 10 }}
+          onPress={() => {
+            if (viewSearch) {
+              setViewSearch(false);
+            } else {
+              setViewSearch(true);
+            }
+          }}
+        >
+          <MaterialIcons name="search" size={30} />
+        </TouchableOpacity>
       </View>
       <FlatList
         ListHeaderComponent={
           <>
-            <Searchbar
-              placeholder="물품명으로 검색"
-              value={searchQuery}
-              onChangeText={handleSearchChange}
-              onSubmitEditing={handleSearchSubmit}
-              onClearIconPress={() => {
-                setSearchQuery("");
-                fetchInitialItems(activeFilter, "");
-              }}
-              style={styles.searchbar}
-            />
+            {viewSearch && (
+              <Searchbar
+                placeholder="물품명으로 검색"
+                value={searchQuery}
+                onChangeText={handleSearchChange}
+                onSubmitEditing={handleSearchSubmit}
+                onClearIconPress={() => {
+                  setSearchQuery("");
+                  fetchInitialItems(activeFilter, "");
+                }}
+                style={styles.searchbar}
+              />
+            )}
             <SummaryBox
               counts={counts}
               activeFilter={activeFilter}
