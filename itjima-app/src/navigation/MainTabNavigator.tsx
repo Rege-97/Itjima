@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React from "react";
 import { View } from "react-native";
 import { Button, Text } from "react-native-paper";
-import MyItemsScreen from "../screens/items/MyItemsScreen";
+import MyItemsScreen from "../screens/items/MyItemScreen/MyItemsScreen";
 import { useAuth } from "../contexts/AuthContext";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MyItemDetailScreen from "../screens/items/MyItemDetailScreen/MyItemDetailScreen";

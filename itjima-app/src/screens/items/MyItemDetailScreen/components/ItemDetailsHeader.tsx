@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Dimensions, Image, StyleSheet, View } from "react-native";
 import { Divider, Text } from "react-native-paper";
-import StatisticsCard from "../../components/StatisticsCard";
+import StatisticsCard from "../../MyItemScreen/components/StatisticsCard";
 
 const { width } = Dimensions.get("window");
 
