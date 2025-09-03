@@ -7,6 +7,7 @@ import MyItemsScreen from "../screens/items/MyItemScreen/MyItemsScreen";
 import { useAuth } from "../contexts/AuthContext";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MyItemDetailScreen from "../screens/items/MyItemDetailScreen/MyItemDetailScreen";
+import MyItemEditScreen from "../screens/items/MyItemEditScreen/MyItemEditScreen";
 
 const HomeScreen = () => (
   <View>
@@ -47,10 +48,12 @@ const MyItemsStack = createNativeStackNavigator();
 const MyItemsStackNavigator = () => {
   return (
     <MyItemsStack.Navigator
-    initialRouteName="MyItemsList"
-    screenOptions={{headerShown: false}}>
+      initialRouteName="MyItemsList"
+      screenOptions={{ headerShown: false }}
+    >
       <MyItemsStack.Screen name="MyItemsList" component={MyItemsScreen} />
       <MyItemsStack.Screen name="MyItemDetail" component={MyItemDetailScreen} />
+      <MyItemsStack.Screen name="MyItemEdit" component={MyItemEditScreen} />
     </MyItemsStack.Navigator>
   );
 };
@@ -139,11 +142,7 @@ const MainTabNavigator = () => {
         options={{
           title: "로그아웃",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="logout"
-              color={color}
-              size={size}
-            />
+            <MaterialCommunityIcons name="logout" color={color} size={size} />
           ),
         }}
       />

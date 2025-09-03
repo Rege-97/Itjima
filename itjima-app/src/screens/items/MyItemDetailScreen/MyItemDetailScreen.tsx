@@ -1,11 +1,6 @@
 import React from "react";
-import {
-  FlatList,
-  SafeAreaView,
-  StyleSheet,
-  View
-} from "react-native";
-import { ActivityIndicator, Button, Text } from "react-native-paper";
+import { FlatList, SafeAreaView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Appbar, Button, Text } from "react-native-paper";
 import { AgreementHistoryCard } from "./components/AgreementHistoryCard";
 import { ItemDetailsHeader } from "./components/ItemDetailsHeader";
 import { useItemDetails } from "./hooks/useItemDetails";
@@ -61,17 +56,27 @@ const MyItemDetailScreen = ({ route, navigation }: any) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <FlatList
-        data={agreementHistory}
-        renderItem={({ item }) => <AgreementHistoryCard item={item} />}
-        keyExtractor={(item) => item.id.toString()}
-        onEndReached={fetchMoreData}
-        onEndReachedThreshold={0.5}
-        ListHeaderComponent={<ItemDetailsHeader item={item} />}
-        ListFooterComponent={renderListFooter()}
-      />
-    </SafeAreaView>
+    <>
+      <Appbar.Header>
+        <Appbar.BackAction onPress={() => navigation.goBack()} />
+        <Appbar.Content title="" />
+        <Appbar.Action
+          icon="pencil"
+          onPress={() => navigation.navigate("MyItemEdit", { item: item })}
+        />
+      </Appbar.Header>
+      <SafeAreaView style={styles.container}>
+        <FlatList
+          data={agreementHistory}
+          renderItem={({ item }) => <AgreementHistoryCard item={item} />}
+          keyExtractor={(item) => item.id.toString()}
+          onEndReached={fetchMoreData}
+          onEndReachedThreshold={0.5}
+          ListHeaderComponent={<ItemDetailsHeader item={item} />}
+          ListFooterComponent={renderListFooter()}
+        />
+      </SafeAreaView>
+    </>
   );
 };
 

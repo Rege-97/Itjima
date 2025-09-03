@@ -14,7 +14,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/uploads/**") // 웹에서 접근할 URL 경로
-                .addResourceLocations("file:" + uploadDir); // 서버의 실제 물리적 경로, "file:" 접두사 필수!
+                .addResourceLocations("file:" + uploadDir + "/"); // 서버의 실제 물리적 경로, "file:" 접두사 필수!
     }
 
 }

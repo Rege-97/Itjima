@@ -51,8 +51,9 @@ export const ItemDetailsHeader = ({ item }: { item: any }) => {
     <View>
       <Image
         source={{
-          uri:
-            item.fileUrl || "https://via.placeholder.com/400x300?text=No+Image",
+          uri: item?.fileUrl
+            ? "http://172.30.1.27:8080" + item.fileUrl
+            : "https://via.placeholder.com/150",
         }}
         style={styles.headerImage}
       />

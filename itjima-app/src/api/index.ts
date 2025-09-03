@@ -16,6 +16,7 @@ privateApi.interceptors.response.use(
         const { accessToken } = data.data;
         await AsyncStorage.setItem("authToken", accessToken);
         privateApi.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return privateApi(originalRequest);
       } catch (error) {
         await AsyncStorage.multiRemove(['authToken', 'refreshToken']);

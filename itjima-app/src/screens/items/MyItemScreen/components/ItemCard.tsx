@@ -36,7 +36,11 @@ const StatusBadge = ({ status }: { status: string }) => {
     <View style={styles.listItem}>
       <View style={styles.headerRow}>
         <Image
-          source={{ uri: item.fileUrl || "https://via.placeholder.com/150" }}
+          source={{
+    uri: item?.fileUrl
+      ? "http://172.30.1.27:8080" + item.fileUrl
+      : "https://via.placeholder.com/150"
+  }}
           style={styles.squareAvatar}
         />
         <View style={styles.rightCol}>
