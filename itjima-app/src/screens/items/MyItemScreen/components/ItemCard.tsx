@@ -1,3 +1,4 @@
+import { IMG_BASE_URL } from "@env";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -14,7 +15,7 @@ const StatusBadge = ({ status }: { status: string }) => {
       label = "사용가능";
       break;
     case "ON_LOAN":
-            backgroundColor = "#F44336";
+      backgroundColor = "#F44336";
       label = "대여중";
       break;
     case "PENDING_APPROVAL":
@@ -30,44 +31,54 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-  const ItemCard = ({ item,navigation }: { item: any, navigation: any }) => {
+const ItemCard = ({ item, navigation }: { item: any; navigation: any }) => {
   return (
-    <TouchableOpacity onPress={() => navigation.navigate("MyItemDetail", { itemId: item.id })}>
-    <View style={styles.listItem}>
-      <View style={styles.headerRow}>
-        <Image
-          source={{
-    uri: item?.fileUrl
-      ? "http://172.30.1.27:8080" + item.fileUrl
-      : "https://via.placeholder.com/150"
-  }}
-          style={styles.squareAvatar}
-        />
-        <View style={styles.rightCol}>
-          <View style={styles.titleRow}>
-            <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
-            <StatusBadge status={item.status} />
-          </View>
-          <Text style={styles.subtitle} numberOfLines={2}>{item.description}</Text>
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <MaterialCommunityIcons name="account-supervisor-outline" size={15} color="#555" />
-              <Text style={styles.statText}>{item.loanCount}회 대여</Text>
+    <TouchableOpacity
+      onPress={() => navigation.navigate("MyItemDetail", { itemId: item.id })}
+    >
+      <View style={styles.listItem}>
+        <View style={styles.headerRow}>
+          <Image
+            source={{
+              uri: item?.fileUrl
+                ? IMG_BASE_URL + item.fileUrl
+                : "https://via.placeholder.com/150",
+            }}
+            style={styles.squareAvatar}
+          />
+          <View style={styles.rightCol}>
+            <View style={styles.titleRow}>
+              <Text style={styles.title} numberOfLines={1}>
+                {item.title}
+              </Text>
+              <StatusBadge status={item.status} />
             </View>
-            <Text style={styles.lastLoanText}>
-              마지막 대여: {item.lastDebtorName || "없음"}
+            <Text style={styles.subtitle} numberOfLines={2}>
+              {item.description}
             </Text>
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <MaterialCommunityIcons
+                  name="account-supervisor-outline"
+                  size={15}
+                  color="#555"
+                />
+                <Text style={styles.statText}>{item.loanCount}회 대여</Text>
+              </View>
+              <Text style={styles.lastLoanText}>
+                마지막 대여: {item.lastDebtorName || "없음"}
+              </Text>
+            </View>
           </View>
         </View>
+        <Divider style={styles.divider} />
       </View>
-      <Divider style={styles.divider} />
-    </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-    listItem: {
+  listItem: {
     paddingVertical: 8,
     paddingHorizontal: 4,
     backgroundColor: "#fff",
@@ -148,7 +159,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
   },
-
-})
+});
 
 export default React.memo(ItemCard);

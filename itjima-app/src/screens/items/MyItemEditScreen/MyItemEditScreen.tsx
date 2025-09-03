@@ -12,6 +12,7 @@ import { Appbar, Button, Text, TextInput } from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
 import { updateItemApi, updateItemImageApi } from "../../../api/items";
 import * as ImageManipulator from "expo-image-manipulator";
+import { IMG_BASE_URL } from "@env";
 
 const MAX_DIM = 1280;
 
@@ -118,7 +119,7 @@ const MyItemEditScreen = ({ route, navigation }: any) => {
                 uri: image?.uri
                   ? image.uri
                   : item?.fileUrl
-                  ? "http://172.30.1.27:8080" + item.fileUrl
+                  ? IMG_BASE_URL + item.fileUrl
                   : "https://via.placeholder.com/400x300",
               }}
               style={styles.image}
