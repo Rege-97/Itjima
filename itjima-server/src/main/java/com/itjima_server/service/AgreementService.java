@@ -299,8 +299,7 @@ public class AgreementService {
 
         // 상태 업데이트: COMPLETED
         agreement.setStatus(AgreementStatus.COMPLETED);
-        checkUpdateResult(agreementMapper.updateStatusById(agreementId, agreement.getStatus()),
-                "대여 상태 변경에 실패했습니다.");
+        checkUpdateResult(agreementMapper.updateCompleted(agreementId), "대여 상태 변경에 실패했습니다.");
 
         // 물품 상태 업데이트: AVAILABLE
         checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.AVAILABLE),

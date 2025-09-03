@@ -313,7 +313,7 @@ public class ItemController {
     @GetMapping("/{id}/agreements")
     public ResponseEntity<?> getAgreementHistory(@PathVariable Long id,
             @RequestParam(required = false) Long lastId,
-            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal CustomUserDetails user) {
         PagedResultDTO<?> res = itemService.getAgreementHistory(id, user.getId(), lastId, size);
         return ResponseEntity.status(HttpStatus.OK)

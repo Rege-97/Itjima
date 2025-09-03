@@ -19,6 +19,8 @@ public interface AgreementMapper {
 
     int updateStatusById(@Param("id") Long id, @Param("status") AgreementStatus status);
 
+    int updateCompleted(@Param("id") Long id);
+
     AgreementDetailDTO findDetailById(@Param("id") Long id);
 
     List<AgreementDetailDTO> findByUserId(@Param("userId") Long userId, @Param("role") String role,

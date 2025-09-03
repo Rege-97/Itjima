@@ -279,6 +279,8 @@ public class ItemService {
     public PagedResultDTO<?> getAgreementHistory(Long id, Long userId, Long lastId,
             int size) {
         if (!itemMapper.existsByIdAndUserId(id, userId)) {
+
+
             throw new NotAuthorException("로그인한 사용자의 물품이 아닙니다.");
         }
 

@@ -17,4 +17,5 @@ public class Agreement {
     private String terms;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime returnDate;
 }

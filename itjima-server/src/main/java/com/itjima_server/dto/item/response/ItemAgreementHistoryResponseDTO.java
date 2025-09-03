@@ -25,6 +25,10 @@ public class ItemAgreementHistoryResponseDTO {
     @Schema(description = "대여 반납 예정일", example = "2023-01-15 10:00:00", nullable = true)
     private LocalDateTime dueDate;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Schema(description = "실제 반납일", example = "2023-01-15 10:00:00", nullable = true)
+    private LocalDateTime returnDate;
+
     @Schema(description = "대여 상태", example = "COMPLETED")
     private String status;
 
@@ -33,4 +37,7 @@ public class ItemAgreementHistoryResponseDTO {
 
     @Schema(description = "총 대여일", example = "7")
     private int rentalDays;
+
+    @Schema(description = "연체 반납 여부", example = "true")
+    private boolean overdueReturn;
 }
