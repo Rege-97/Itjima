@@ -7,6 +7,8 @@ import React, {
 } from "react";
 import { loginApi, kakaoLoginApi } from "../api/auth";
 import "../api/index";
+import { privateApi } from "../api/core";
+import { setLogoutHandler } from "../utils/session";
 
 
 interface AuthContextType {
@@ -32,19 +34,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadToken = async () => {
+    (async () => {
       try {
         const token = await AsyncStorage.getItem("authToken");
         if (token) {
           setAuthToken(token);
+          (privateApi.defaults.headers as any).Authorization = `Bearer ${token}`;
         }
-      } catch (error) {
-        console.error("저장소에서 토큰을 불러오는 데 실패했습니다", error);
       } finally {
         setIsLoading(false);
       }
-    };
-    loadToken();
+    })();
+
+    setLogoutHandler(async () => {
+      await logout();
+    });
   }, []);
 
   const login = async (params: any) => {
