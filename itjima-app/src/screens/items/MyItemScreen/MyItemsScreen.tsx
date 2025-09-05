@@ -108,7 +108,7 @@ const MyItemsScreen = ({ navigation }: any) => {
         icon="plus"
         color="#fff"
         style={styles.fab}
-        onPress={() => {}}
+        onPress={() => navigation.navigate("MyItemCreate")}
         label="물품 추가"
       />
     </SafeAreaView>

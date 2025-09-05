@@ -1,4 +1,4 @@
-import { ImageManipulator } from "expo-image-manipulator";
+import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { Alert } from "react-native";
@@ -7,8 +7,10 @@ import { updateItemApi, updateItemImageApi } from "../../../../api/items";
 const MAX_DIM = 1280;
 
 export const useItemEdit = (initialItem: any, navigation: any) => {
-  const [title, setTitle] = useState(initialItem.title);
-  const [description, setDescription] = useState(initialItem.description);
+  const [title, setTitle] = useState<string>(initialItem.title);
+  const [description, setDescription] = useState<string>(
+    initialItem.description
+  );
   const [image, setImage] = useState<{
     uri: string;
     name: string;

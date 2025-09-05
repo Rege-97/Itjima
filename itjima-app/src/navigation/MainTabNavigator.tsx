@@ -1,13 +1,14 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import { View } from "react-native";
 import { Button, Text } from "react-native-paper";
-import MyItemsScreen from "../screens/items/MyItemScreen/MyItemsScreen";
 import { useAuth } from "../contexts/AuthContext";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import MyItemCreateScreen from "../screens/items/MyItemCreateScreen/MyItemCreateScreen";
 import MyItemDetailScreen from "../screens/items/MyItemDetailScreen/MyItemDetailScreen";
 import MyItemEditScreen from "../screens/items/MyItemEditScreen/MyItemEditScreen";
+import MyItemsScreen from "../screens/items/MyItemScreen/MyItemsScreen";
 
 const HomeScreen = () => (
   <View>
@@ -54,6 +55,7 @@ const MyItemsStackNavigator = () => {
       <MyItemsStack.Screen name="MyItemsList" component={MyItemsScreen} />
       <MyItemsStack.Screen name="MyItemDetail" component={MyItemDetailScreen} />
       <MyItemsStack.Screen name="MyItemEdit" component={MyItemEditScreen} />
+      <MyItemsStack.Screen name="MyItemCreate" component={MyItemCreateScreen} />
     </MyItemsStack.Navigator>
   );
 };

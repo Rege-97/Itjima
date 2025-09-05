@@ -1,5 +1,3 @@
-// src/screens/Auth/KakaoLoginScreen.tsx
-
 import React from "react";
 import { WebView } from "react-native-webview";
 import { useAuth } from "../../contexts/AuthContext";
