@@ -1,28 +1,28 @@
 import React from "react";
 import {
-    Image,
-    Keyboard,
-    StyleSheet,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  Image,
+  Keyboard,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 
 import { Appbar, Button, TextInput } from "react-native-paper";
 import { useItemCreate } from "./hooks/useItemCreate";
 
-const {
-  title,
-  setTitle,
-  description,
-  setDescription,
-  image,
-  isLoading,
-  pickImage,
-  handleCreate,
-} = useItemCreate(navigator);
-
 const MyItemCreateScreen = ({ navigation }: any) => {
+  const {
+    title,
+    setTitle,
+    description,
+    setDescription,
+    image,
+    isLoading,
+    pickImage,
+    handleCreate,
+  } = useItemCreate(navigator);
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>

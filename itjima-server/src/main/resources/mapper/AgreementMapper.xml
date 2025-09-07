@@ -196,39 +196,48 @@
     LIMIT #{sizePlusOne}
   </select>
   <select id="findAgreementSummariesByUserId" resultType="com.itjima_server.dto.agreement.response.AgreementSummaryResponseDTO">
-    SELECT a.id,
-           a.status,
-           a.amount,
-           a.terms,
-           a.due_at,
-           a.return_date,
-           i.title    AS itemTitle,
-           i.type     AS itemType,
-           i.file_url AS itemFileUrl,
-           u.name     AS partnerName,
-           CASE
-             WHEN i.type = 'MONEY' THEN a.amount - IFNULL(t_sum.total_paid, 0)
-             ELSE NULL
-             END    AS remainingAmount
-    FROM AGREEMENTS a
-           JOIN AGREEMENT_PARTIES my_party
-                ON a.id = my_party.agreement_id AND my_party.role = #{role}
-           JOIN AGREEMENT_PARTIES partner_party
-                ON a.id = partner_party.agreement_id AND partner_party.role != #{role}
-           JOIN ITEMS i ON a.item_id = i.id
-           JOIN USERS u ON partner_party.user_id = u.id
-           LEFT JOIN
-         (SELECT agreement_id, SUM(amount) AS total_paid FROM TRANSACTIONS GROUP BY agreement_id) t_sum
-         ON a.id = t_sum.agreement_id
-    WHERE my_party.user_id = #{userId}
-    <if test="lastId != null">
-      AND a.id &lt; #{lastId}
-    </if>
-    <if test="keyword != null and keyword != ''">
-      AND (i.title LIKE CONCAT('%', #{keyword}, '%')
-      OR u.name LIKE CONCAT('%', #{keyword}, '%'))
-    </if>
-    ORDER by a.id DESC
+    SELECT
+    a.id,
+    a.status,
+    a.amount,
+    a.terms,
+    a.due_at,
+    a.return_date,
+    i.title AS itemTitle,
+    i.type AS itemType,
+    i.file_url AS itemFileUrl,
+    u.name AS partnerName,
+    partner_party.role AS partnerRole,
+    CASE
+    WHEN i.type = 'MONEY' THEN a.amount - IFNULL(t_sum.total_paid, 0)
+    ELSE NULL
+    END AS remainingAmount
+    FROM
+    AGREEMENTS a
+    JOIN
+    ITEMS i ON a.item_id = i.id
+    JOIN
+    AGREEMENT_PARTIES my_party ON a.id = my_party.agreement_id AND my_party.user_id = #{userId}
+    JOIN
+    AGREEMENT_PARTIES partner_party ON a.id = partner_party.agreement_id AND partner_party.user_id != #{userId}
+    JOIN
+    USERS u ON partner_party.user_id = u.id
+    LEFT JOIN
+    (SELECT agreement_id, SUM(amount) AS total_paid FROM TRANSACTIONS GROUP BY agreement_id) t_sum
+    ON a.id = t_sum.agreement_id
+    <where>
+      <if test="role != null">
+        AND my_party.role = #{role}
+      </if>
+      <if test="lastId != null">
+        AND a.id &lt; #{lastId}
+      </if>
+      <if test="keyword != null and keyword != ''">
+        AND (i.title LIKE CONCAT('%', #{keyword}, '%') OR u.name LIKE CONCAT('%', #{keyword}, '%'))
+      </if>
+    </where>
+    ORDER BY
+    a.id DESC
     LIMIT #{sizePlusOne}
   </select>
 </mapper>

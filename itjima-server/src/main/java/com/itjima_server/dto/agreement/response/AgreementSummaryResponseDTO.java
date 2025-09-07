@@ -1,6 +1,7 @@
 package com.itjima_server.dto.agreement.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.itjima_server.domain.agreement.AgreementPartyRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -42,6 +43,9 @@ public class AgreementSummaryResponseDTO {
 
     @Schema(description = "상대방 이름(파트너)", example = "김철수")
     private String partnerName;
+
+    @Schema(description = "상대방 역할", example = "DEBTOR")
+    private AgreementPartyRole partnerRole;
 
     @Schema(description = "잔액(아이템 타입이 MONEY일 때만 계산됨, 그 외는 null)", example = "90000.00", nullable = true)
     private BigDecimal remainingAmount;
