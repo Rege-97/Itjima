@@ -21,6 +21,7 @@ import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementPartyInfoDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
+import com.itjima_server.dto.agreement.response.AgreementSummaryResponseDTO;
 import com.itjima_server.dto.transaction.response.TransactionResponseDTO;
 import com.itjima_server.dto.user.response.UserSimpleInfoDTO;
 import com.itjima_server.exception.agreement.NotFoundAgreementException;
@@ -551,9 +552,40 @@ public class AgreementService {
         return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
     }
 
-    // ==========================
-    // 내부 유틸리티
-    // ==========================
+
+    /**
+     * 화면 렌더링용 대여 리스트
+     *
+     * @param userId  로그인한 사용자 id
+     * @param keyword 물품명 또는 상대방 이름 검색 필터
+     * @param role  역할 필터
+     * @param lastId  조회할 마지막 id
+     * @param size    한 페이지에 보여줄 개수
+     * @return 대여 리스트 응답 DTO
+     */
+    @Transactional(readOnly = true)
+    public PagedResultDTO<?> getSummaries(Long userId, String keyword, AgreementPartyRole role,
+            Long lastId, int size) {
+        int sizePlusOne = size + 1;
+        List<AgreementSummaryResponseDTO> agreementSummaries = agreementMapper.findAgreementSummariesByUserId(
+                userId,
+                keyword, role, lastId, sizePlusOne);
+        if (agreementSummaries == null || agreementSummaries.isEmpty()) {
+            return PagedResultDTO.from(null, false, null);
+        }
+        boolean hasNext = false;
+        if (agreementSummaries.size() == sizePlusOne) {
+            hasNext = true;
+            agreementSummaries.remove(size);
+        }
+
+        lastId = agreementSummaries.get(agreementSummaries.size() - 1).getId();
+        return PagedResultDTO.from(agreementSummaries, hasNext, lastId);
+    }
+
+// ==========================
+// 내부 유틸리티
+// ==========================
 
     /**
      * INSERT 실행 결과 검증 유틸리티

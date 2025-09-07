@@ -1,8 +1,10 @@
 package com.itjima_server.mapper;
 
 import com.itjima_server.domain.agreement.Agreement;
+import com.itjima_server.domain.agreement.AgreementPartyRole;
 import com.itjima_server.domain.agreement.AgreementStatus;
 import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
+import com.itjima_server.dto.agreement.response.AgreementSummaryResponseDTO;
 import com.itjima_server.dto.item.response.ItemAgreementHistoryResponseDTO;
 import com.itjima_server.dto.user.response.RecentPartnerResponseDTO;
 import java.time.LocalDateTime;
@@ -39,6 +41,10 @@ public interface AgreementMapper {
     int updateTermsById(@Param("id") Long id, @Param("terms") String terms);
 
     List<ItemAgreementHistoryResponseDTO> findHistoryByItemId(@Param("itemId") Long itemId,
+            @Param("lastId") Long lastId, @Param("sizePlusOne") int sizePlusOne);
+
+    List<AgreementSummaryResponseDTO> findAgreementSummariesByUserId(@Param("userId") Long userId,
+            @Param("keyword") String keyword, @Param("role") AgreementPartyRole role,
             @Param("lastId") Long lastId, @Param("sizePlusOne") int sizePlusOne);
 }
 

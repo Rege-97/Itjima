@@ -9,6 +9,7 @@ import com.itjima_server.dto.agreement.request.AgreementUpdateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
 import com.itjima_server.dto.agreement.swagger.AgreementPagedResponse;
+import com.itjima_server.dto.agreement.swagger.AgreementSummaryPagedResponse;
 import com.itjima_server.dto.transaction.request.TransactionCreateRequestDTO;
 import com.itjima_server.dto.transaction.response.TransactionResponseDTO;
 import com.itjima_server.dto.transaction.swagger.TransactionPagedResponse;
@@ -420,6 +421,39 @@ public class AgreementController {
                 req.getTerms());
         return ResponseEntity.ok(
                 ApiResponseDTO.success(HttpStatus.OK.value(), "대여 내용 수정 요청 성공", res));
+    }
+
+    /**
+     * 화면 렌더링용 대여 물품 리스트 조회
+     *
+     * @param user    로그인한 사용자
+     * @param keyword 물품명 또는 상대방 이름 검색 필터
+     * @param role    역할 필터
+     * @param lastId  조회할 마지막 id
+     * @param size    한 페이지에 보여줄 개수
+     * @return 대여 리스트 응답 DTO
+     */
+    @Operation(
+            summary = "화면 렌더링용 대여 목록 조회(커서 기반)",
+            description = "lastId와 size로 커서 기반 페이지네이션",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "대여 목록 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = AgreementSummaryPagedResponse.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
+    @GetMapping("/summary")
+    public ResponseEntity<?> getSummaries(@RequestParam(required = false) Long lastId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) AgreementPartyRole role,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        PagedResultDTO<?> res = agreementService.getSummaries(user.getId(), keyword, role, lastId,
+                size);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 목록 조회 성공", res));
     }
 
 }
