@@ -4,6 +4,7 @@ import com.itjima_server.domain.agreement.Agreement;
 import com.itjima_server.domain.agreement.AgreementPartyRole;
 import com.itjima_server.domain.agreement.AgreementStatus;
 import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
+import com.itjima_server.dto.agreement.response.AgreementRenderingDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementSummaryResponseDTO;
 import com.itjima_server.dto.item.response.ItemAgreementHistoryResponseDTO;
 import com.itjima_server.dto.user.response.RecentPartnerResponseDTO;
@@ -46,5 +47,9 @@ public interface AgreementMapper {
     List<AgreementSummaryResponseDTO> findAgreementSummariesByUserId(@Param("userId") Long userId,
             @Param("keyword") String keyword, @Param("role") AgreementPartyRole role,
             @Param("lastId") Long lastId, @Param("sizePlusOne") int sizePlusOne);
+
+    AgreementRenderingDetailResponseDTO findAgreementDetailById(@Param("id") Long id);
+
+    boolean existsByIdAndUserId(@Param("id") Long id,@Param("userId") Long userId);
 }
 

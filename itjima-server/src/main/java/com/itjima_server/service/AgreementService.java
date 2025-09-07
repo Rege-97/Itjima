@@ -20,6 +20,7 @@ import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementPartyInfoDTO;
+import com.itjima_server.dto.agreement.response.AgreementRenderingDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementSummaryResponseDTO;
 import com.itjima_server.dto.transaction.response.TransactionResponseDTO;
@@ -49,7 +50,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 대여 관련 비즈니스 로직을 수행하는 서비스 클래스
  *
  * @author Rege-97
- * @since 2025-08-26
+ * @since 2025-09-08
  */
 @Service
 @RequiredArgsConstructor
@@ -558,7 +559,7 @@ public class AgreementService {
      *
      * @param userId  로그인한 사용자 id
      * @param keyword 물품명 또는 상대방 이름 검색 필터
-     * @param role  역할 필터
+     * @param role    역할 필터
      * @param lastId  조회할 마지막 id
      * @param size    한 페이지에 보여줄 개수
      * @return 대여 리스트 응답 DTO
@@ -581,6 +582,26 @@ public class AgreementService {
 
         lastId = agreementSummaries.get(agreementSummaries.size() - 1).getId();
         return PagedResultDTO.from(agreementSummaries, hasNext, lastId);
+    }
+
+    /**
+     * 렌더링용 대여 상세 조회
+     *
+     * @param id     조회할 대여 id
+     * @param userId 로그인한 사용자 id
+     * @return 조회된 대여 응답 DTO
+     */
+    public AgreementRenderingDetailResponseDTO getDetail(Long id, Long userId) {
+        if (!agreementMapper.existsByIdAndUserId(id, userId)) {
+            throw new NotAuthorException("로그인한 사용자의 물품이 아닙니다.");
+        }
+
+        AgreementRenderingDetailResponseDTO agreement = agreementMapper.findAgreementDetailById(id);
+        if (agreement == null) {
+            throw new NotFoundItemException("해당 물품을 찾을 수 없습니다.");
+        }
+
+        return agreement;
     }
 
 // ==========================
