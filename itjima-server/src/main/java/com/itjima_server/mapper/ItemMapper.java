@@ -2,6 +2,9 @@ package com.itjima_server.mapper;
 
 import com.itjima_server.domain.item.Item;
 import com.itjima_server.domain.item.ItemStatus;
+import com.itjima_server.dto.item.response.ItemCountDTO;
+import com.itjima_server.dto.item.response.ItemDetailResponseDTO;
+import com.itjima_server.dto.item.response.ItemSummaryResponseDTO;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -21,4 +24,14 @@ public interface ItemMapper {
             @Param("sizePlusOne") int sizePlusOne);
 
     int updateStatusById(@Param("id") Long id, @Param("status") ItemStatus status);
+
+    List<ItemSummaryResponseDTO> findItemSummariesByUserId(@Param("userId") Long userId,
+            @Param("keyword") String keyword, @Param("status") String status,
+            @Param("lastId") Long lastId, @Param("sizePlusOne") int sizePlusOne);
+
+    List<ItemCountDTO> countStatusByUserId(@Param("userId") Long userId);
+
+    ItemDetailResponseDTO findDetailById(@Param("id") Long id);
+
+    boolean existsByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
 }

@@ -9,7 +9,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { loginApi } from "../../utils/auth";
+import { loginApi } from "../../api/auth";
 import { useAuth } from "../../contexts/AuthContext";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   divider: {
     width: 1,
     height: 12,
-    backgroundColor: "#ccc", // 세로 구분선
+    backgroundColor: "#ccc",
     marginHorizontal: 8,
   },
 });

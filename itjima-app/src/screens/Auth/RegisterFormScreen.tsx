@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
-import { registerApi } from "../../utils/auth";
+import { registerApi } from "../../api/auth";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const RegisterFormScreen = ({ navigation }: any) => {

@@ -59,14 +59,15 @@ CREATE TABLE IF NOT EXISTS `ITEMS`
 -- 대여 계약 테이블
 CREATE TABLE IF NOT EXISTS `AGREEMENTS`
 (
-    `id`         bigint         NOT NULL AUTO_INCREMENT COMMENT '대여ID',
-    `item_id`    bigint         NULL COMMENT '대여품목ID (금전 거래 시 NULL 가능)',
-    `status`     varchar(20)    NOT NULL COMMENT '상태',
-    `amount`     decimal(10, 0) NULL COMMENT '금액',
-    `due_at`     datetime       NOT NULL COMMENT '반납예정일',
-    `terms`      text           NULL COMMENT '메모',
-    `created_at` datetime       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일',
-    `updated_at` datetime       NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일',
+    `id`          bigint         NOT NULL AUTO_INCREMENT COMMENT '대여ID',
+    `item_id`     bigint         NULL COMMENT '대여품목ID (금전 거래 시 NULL 가능)',
+    `status`      varchar(20)    NOT NULL COMMENT '상태',
+    `amount`      decimal(10, 0) NULL COMMENT '금액',
+    `due_at`      datetime       NOT NULL COMMENT '반납예정일',
+    `terms`       text           NULL COMMENT '메모',
+    `created_at`  datetime       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일',
+    `updated_at`  datetime       NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일',
+    `return_date` datetime       NULL COMMENT '실제 반납일',
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_agreements_item` FOREIGN KEY (`item_id`) REFERENCES `ITEMS` (`id`)
 ) ENGINE = InnoDB

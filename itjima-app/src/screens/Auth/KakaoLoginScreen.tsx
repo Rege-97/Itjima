@@ -1,15 +1,11 @@
-// src/screens/Auth/KakaoLoginScreen.tsx
-
 import React from "react";
 import { WebView } from "react-native-webview";
 import { useAuth } from "../../contexts/AuthContext";
 import { Alert } from "react-native";
+import { REDIRECT_URI, REST_API_KEY } from "@env";
 
 const KakaoLoginScreen = ({ navigation }: any) => {
   const { kakaoLoginWithCode } = useAuth();
-
-  const REST_API_KEY = "5f28982a2024f1d2fc549f6f01896693";
-  const REDIRECT_URI = "https://auth.expo.io/@rege/itjima-app/kakao-auth";
 
   const authorizationUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${REST_API_KEY}&redirect_uri=${REDIRECT_URI}&response_type=code`;
 

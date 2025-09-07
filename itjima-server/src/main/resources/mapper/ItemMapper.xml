@@ -41,6 +41,7 @@
     type,
     title,
     description,
+    status,
     file_url,
     file_type,
     created_at
@@ -58,4 +59,90 @@
     SET status = #{status}
     WHERE id = #{id}
   </update>
+  <select id="findItemSummariesByUserId" resultType="com.itjima_server.dto.item.response.ItemSummaryResponseDTO">
+    SELECT i.id,
+    i.user_id,
+    i.type,
+    i.title,
+    i.description,
+    i.status,
+    i.file_url,
+    i.file_type,
+    IFNULL(agg_summary.loanCount, 0) AS loanCount,
+    agg_summary.lastDebtorName,
+    i.created_at
+    FROM ITEMS i
+    LEFT JOIN (SELECT ra.item_id,
+    COUNT(*) AS loanCount,
+    MAX(CASE WHEN ra.rn = 1 THEN ra.debtorName END) AS lastDebtorName
+    FROM (SELECT a.item_id,
+    u.name AS debtorName,
+    ROW_NUMBER() OVER (PARTITION BY a.item_id ORDER BY a.created_at DESC) AS rn
+    FROM AGREEMENTS a
+    JOIN AGREEMENT_PARTIES ap
+    ON a.id = ap.agreement_id AND ap.role = 'DEBTOR'
+    JOIN USERS u ON ap.user_id = u.id
+    WHERE a.status = 'COMPLETED') ra
+    GROUP BY ra.item_id) agg_summary ON i.id = agg_summary.item_id
+    WHERE i.user_id = #{userId}
+    AND i.type='OBJECT'
+    <if test="lastId != null">
+      AND i.id &lt; #{lastId}
+    </if>
+    <if test="status != null and status == 'AVAILABLE'">
+      AND i.status = 'AVAILABLE'
+    </if>
+    <if test="status != null and status == 'ON_LOAN'">
+      AND i.status IN ('ON_LOAN','PENDING_APPROVAL')
+    </if>
+    <if test="keyword != null and keyword !=''">
+      AND i.title LIKE CONCAT('%', #{keyword}, '%')
+    </if>
+    ORDER by i.id DESC
+    LIMIT #{sizePlusOne}
+  </select>
+  <select id="countStatusByUserId" resultType="com.itjima_server.dto.item.response.ItemCountDTO">
+    SELECT status, COUNT(*) AS 'count'
+    FROM ITEMS
+    WHERE user_id = #{userId}
+    AND type = 'OBJECT'
+    GROUP BY status
+  </select>
+  <select id="findDetailById" resultType="com.itjima_server.dto.item.response.ItemDetailResponseDTO">
+    SELECT i.id,
+           i.title,
+           i.description,
+           i.status,
+           i.file_url,
+           i.created_at,
+           current_lender.name           AS currentDebtorName,
+           current_party.confirm_at      AS currentStartAt,
+           current_agreement.due_at      AS currentDueAt,
+           IFNULL(stats.rental_count, 0) AS rentalCount,
+           IFNULL(stats.total_days, 0)   AS totalRentalDays,
+           IFNULL(stats.avg_days, 0)     AS avgRentalDays
+    FROM ITEMS i
+           LEFT JOIN (SELECT a.item_id,
+                             COUNT(*)                                          AS rental_count,
+                             SUM(DATEDIFF(a.due_at, ap.confirm_at) + 1)        AS total_days,
+                             ROUND(AVG(DATEDIFF(a.due_at, ap.confirm_at) + 1)) AS avg_days
+                      FROM AGREEMENTS a
+                             JOIN AGREEMENT_PARTIES ap
+                                  ON a.id = ap.agreement_id AND ap.role = 'DEBTOR'
+                      WHERE a.status = 'COMPLETED'
+                      GROUP BY a.item_id) stats ON i.id = stats.item_id
+           LEFT JOIN AGREEMENTS current_agreement ON i.id = current_agreement.item_id
+      AND current_agreement.status IN ('ACCEPTED', 'OVERDUE')
+           LEFT JOIN AGREEMENT_PARTIES current_party
+                     ON current_agreement.id = current_party.agreement_id
+                       AND current_party.role = 'DEBTOR'
+           LEFT JOIN USERS current_lender ON current_party.user_id = current_lender.id
+    WHERE i.id = #{id}
+  </select>
+  <select id="existsByIdAndUserId" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM ITEMS
+    WHERE id = #{id}
+      AND user_id = #{userId}
+  </select>
 </mapper>

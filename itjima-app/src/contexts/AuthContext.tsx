@@ -1,12 +1,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
-  Children,
   createContext,
   useContext,
   useEffect,
   useState,
 } from "react";
-import { loginApi, kakaoLoginApi } from "../utils/auth";
+import { loginApi, kakaoLoginApi } from "../api/auth";
+import "../api/index";
+import { privateApi } from "../api/core";
+import { setLogoutHandler } from "../utils/session";
+
 
 interface AuthContextType {
   authToken: string | null;
@@ -31,38 +34,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadToken = async () => {
+    (async () => {
       try {
         const token = await AsyncStorage.getItem("authToken");
         if (token) {
           setAuthToken(token);
+          (privateApi.defaults.headers as any).Authorization = `Bearer ${token}`;
         }
-      } catch (error) {
-        console.error("저장소에서 토큰을 불러오는 데 실패했습니다", error);
       } finally {
         setIsLoading(false);
       }
-    };
-    loadToken();
+    })();
+
+    setLogoutHandler(async () => {
+      await logout();
+    });
   }, []);
 
   const login = async (params: any) => {
     const response = await loginApi(params);
-    const { accessToken } = response.data.data;
+    const { accessToken, refreshToken } = response.data.data;
     setAuthToken(accessToken);
     await AsyncStorage.setItem("authToken", accessToken);
+    await AsyncStorage.setItem("refreshToken", refreshToken);
   };
 
   const logout = async () => {
     setAuthToken(null);
     await AsyncStorage.removeItem("authToken");
+    await AsyncStorage.removeItem("refreshToken");
   };
 
   const kakaoLoginWithCode = async (code: string) => {
     const serverResponse = await kakaoLoginApi(code);
-    const { accessToken } = serverResponse.data.data;
+    const { accessToken, refreshToken } = serverResponse.data.data;
     setAuthToken(accessToken);
     await AsyncStorage.setItem("authToken", accessToken);
+    await AsyncStorage.setItem("refreshToken", refreshToken);
   };
 
   const value = {

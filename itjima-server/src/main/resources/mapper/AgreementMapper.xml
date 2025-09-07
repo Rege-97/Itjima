@@ -17,13 +17,20 @@
            due_at,
            terms,
            created_at,
-           updated_at
+           updated_at,
+           return_date
     FROM AGREEMENTS
     WHERE id = #{id}
   </select>
   <update id="updateStatusById">
     UPDATE AGREEMENTS
     SET status = #{status}
+    WHERE id = #{id}
+  </update>
+  <update id="updateCompleted">
+    UPDATE AGREEMENTS
+    SET status = 'COMPLETED',
+        return_date = NOW()
     WHERE id = #{id}
   </update>
   <select id="findDetailById"
@@ -166,4 +173,26 @@
     SET terms = #{terms}
     WHERE id = #{id}
   </update>
+  <select id="findHistoryByItemId" resultType="com.itjima_server.dto.item.response.ItemAgreementHistoryResponseDTO">
+    SELECT a.id,
+    u.name AS debtorName,
+    ap.confirm_at AS startDate,
+    a.due_at AS dueDate,
+    a.return_date AS returnDate,
+    a.status,
+    a.terms,
+    DATEDIFF(a.due_at, ap.confirm_at) + 1 AS rentalDays,
+    IF(a.status = 'COMPLETED' AND a.return_date > a.due_at, 1, 0) AS overdueReturn
+    FROM AGREEMENTS a
+    LEFT JOIN
+    AGREEMENT_PARTIES ap ON a.id = ap.agreement_id AND ap.role = 'DEBTOR'
+    LEFT JOIN
+    USERS u ON ap.user_id = u.id
+    WHERE a.item_id = #{itemId}
+    <if test="lastId != null">
+      AND a.id &lt; #{lastId}
+    </if>
+    ORDER by a.id DESC
+    LIMIT #{sizePlusOne}
+  </select>
 </mapper>

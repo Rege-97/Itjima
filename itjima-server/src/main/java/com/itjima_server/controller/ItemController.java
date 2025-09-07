@@ -4,8 +4,12 @@ import com.itjima_server.common.ApiResponseDTO;
 import com.itjima_server.common.PagedResultDTO;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
+import com.itjima_server.dto.item.response.ItemCountResponseDTO;
+import com.itjima_server.dto.item.response.ItemDetailResponseDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;
+import com.itjima_server.dto.item.swagger.ItemAgreementPagedResponse;
 import com.itjima_server.dto.item.swagger.ItemPagedResponse;
+import com.itjima_server.dto.item.swagger.ItemSummaryPagedResponse;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.ItemService;
 import com.itjima_server.util.FileResult;
@@ -36,7 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
  * 대여물품 관련 API 클래스
  *
  * @author Rege-97
- * @since 2025-08-22
+ * @since 2025-09-03
  */
 @RestController
 @RequestMapping("/api/items")
@@ -195,5 +199,124 @@ public class ItemController {
         ItemResponseDTO res = itemService.get(id, user.getId());
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 조회 성공", res));
+    }
+
+    /**
+     * 화면 렌더링용 대여 물품 리스트 조회
+     *
+     * @param user    로그인한 사용자
+     * @param keyword 물품명 검색 필터
+     * @param lastId  조회할 마지막 id
+     * @param status  상태 필터
+     * @param size    한 페이지에 보여줄 개수
+     * @return 대여 물품 리스트 응답 DTO
+     */
+    @Operation(
+            summary = "화면 렌더링용 물품 목록 조회(커서 기반)",
+            description = "lastId와 size로 커서 기반 페이지네이션",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "물품 목록 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ItemSummaryPagedResponse.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
+    @GetMapping("/summary")
+    public ResponseEntity<?> getSummaries(@RequestParam(required = false) Long lastId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        PagedResultDTO<?> res = itemService.getSummaries(user.getId(), keyword, status, lastId,
+                size);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 목록 조회 성공", res));
+    }
+
+    /**
+     * 물품 상태별 개수 조회
+     *
+     * @param user 로그인한 사용자
+     * @return 상태별 개수
+     */
+    @Operation(
+            summary = "물품 상태별 개수 조회",
+            description = "총 물건, 대여중, 대여 가능 상태별 조회",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "물품 개수 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ItemCountResponseDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
+    @GetMapping("/count")
+    public ResponseEntity<?> getCount(@AuthenticationPrincipal CustomUserDetails user) {
+        ItemCountResponseDTO res = itemService.getCount(user.getId());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 개수 조회 성공", res));
+    }
+
+    /**
+     * 렌더링용 대여 물품 상세 조회
+     *
+     * @param id   조회할 물품 id
+     * @param user 로그인한 사용자
+     * @return 조회된 물품 응답 DTO
+     */
+    @Operation(
+            summary = "렌더링용 물품 상세 조회",
+            description = "렌더링용 물품 식별자로 상세 조회",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "물품 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ItemDetailResponseDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "403", description = "권한 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 물품 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<?> getDetail(@PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        ItemDetailResponseDTO res = itemService.getDetail(id, user.getId());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 조회 성공", res));
+    }
+
+    /**
+     * 화면 렌더링용 대여 물품 기록 조회
+     *
+     * @param id     조회할 물품 id
+     * @param user   로그인한 사용자
+     * @param lastId 조회할 마지막 id
+     * @param size   한 페이지에 보여줄 개수
+     * @return 대여 물품 리스트 응답 DTO
+     */
+    @Operation(
+            summary = "화면 렌더링용 대여물품 대여 기록 조회(커서 기반)",
+            description = "lastId와 size로 커서 기반 페이지네이션",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "물품 기록 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ItemAgreementPagedResponse.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "403", description = "권한 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
+    @GetMapping("/{id}/agreements")
+    public ResponseEntity<?> getAgreementHistory(@PathVariable Long id,
+            @RequestParam(required = false) Long lastId,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        PagedResultDTO<?> res = itemService.getAgreementHistory(id, user.getId(), lastId, size);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "물품 목록 조회 성공", res));
     }
 }

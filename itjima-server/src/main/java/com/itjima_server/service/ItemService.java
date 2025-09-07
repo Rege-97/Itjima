@@ -5,11 +5,17 @@ import com.itjima_server.domain.item.Item;
 import com.itjima_server.domain.item.ItemStatus;
 import com.itjima_server.dto.item.request.ItemCreateRequestDTO;
 import com.itjima_server.dto.item.request.ItemUpdateRequestDTO;
+import com.itjima_server.dto.item.response.ItemAgreementHistoryResponseDTO;
+import com.itjima_server.dto.item.response.ItemCountDTO;
+import com.itjima_server.dto.item.response.ItemCountResponseDTO;
+import com.itjima_server.dto.item.response.ItemDetailResponseDTO;
 import com.itjima_server.dto.item.response.ItemResponseDTO;
+import com.itjima_server.dto.item.response.ItemSummaryResponseDTO;
 import com.itjima_server.exception.common.NotAuthorException;
 import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.item.NotFoundItemException;
 import com.itjima_server.exception.item.NotInsertItemException;
+import com.itjima_server.mapper.AgreementMapper;
 import com.itjima_server.mapper.ItemMapper;
 import com.itjima_server.util.FileResult;
 import com.itjima_server.util.FileUtil;
@@ -26,7 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
  * 대여 물품 관련 비즈니스 로직을 수행하는 서비스 클래스
  *
  * @author Rege-97
- * @since 2025-08-22
+ * @since 2025-09-03
  */
 @Service
 @RequiredArgsConstructor
@@ -36,6 +42,7 @@ public class ItemService {
     private String uploadDir;
 
     private final ItemMapper itemMapper;
+    private final AgreementMapper agreementMapper;
 
     /**
      * 대여물품 등록 처리
@@ -181,5 +188,117 @@ public class ItemService {
         }
 
         return ItemResponseDTO.from(item);
+    }
+
+    /**
+     * 화면 렌더링용 물품 리스트
+     *
+     * @param userId  로그인한 사용자 id
+     * @param keyword 물품명 검색 필터
+     * @param status  상태 필터
+     * @param lastId  조회할 마지막 id
+     * @param size    한 페이지에 보여줄 개수
+     * @return 대여 물품 리스트 응답 DTO
+     */
+    public PagedResultDTO<?> getSummaries(Long userId, String keyword, String status, Long lastId,
+            int size) {
+        int sizePlusOne = size + 1;
+        List<ItemSummaryResponseDTO> itemSummaries = itemMapper.findItemSummariesByUserId(userId,
+                keyword, status, lastId, sizePlusOne);
+        if (itemSummaries == null || itemSummaries.isEmpty()) {
+            return PagedResultDTO.from(null, false, null);
+        }
+        boolean hasNext = false;
+        if (itemSummaries.size() == sizePlusOne) {
+            hasNext = true;
+            itemSummaries.remove(size);
+        }
+
+        lastId = itemSummaries.get(itemSummaries.size() - 1).getId();
+        return PagedResultDTO.from(itemSummaries, hasNext, lastId);
+    }
+
+    /**
+     * 물품 상태별 개수 조회
+     *
+     * @param userId 로그인한 사용자 ID
+     * @return 상태별 개수 DTO
+     */
+    public ItemCountResponseDTO getCount(Long userId) {
+        List<ItemCountDTO> countList = itemMapper.countStatusByUserId(userId);
+
+        if (countList == null || countList.isEmpty()) {
+            return ItemCountResponseDTO.builder()
+                    .itemAvailableCount(0)
+                    .itemAllCount(0)
+                    .itemLoanCount(0)
+                    .build();
+        }
+
+        int itemLoanCount = 0;
+        int itemAvailableCount = 0;
+
+        for (ItemCountDTO count : countList) {
+            if (count.getStatus() == ItemStatus.AVAILABLE) {
+                itemAvailableCount = count.getCount();
+            } else if (count.getStatus() == ItemStatus.ON_LOAN) {
+                itemLoanCount += count.getCount();
+            } else if (count.getStatus() == ItemStatus.PENDING_APPROVAL) {
+                itemLoanCount += count.getCount();
+            }
+        }
+        int itemAllCount = itemLoanCount + itemAvailableCount;
+
+        return ItemCountResponseDTO.builder()
+                .itemAllCount(itemAllCount)
+                .itemLoanCount(itemLoanCount)
+                .itemAvailableCount(itemAvailableCount)
+                .build();
+    }
+
+    /**
+     * 렌더링용 대여 물품 상세 조회
+     *
+     * @param id     조회할 물품 id
+     * @param userId 로그인한 사용자 id
+     * @return 조회된 물품 응답 DTO
+     */
+    public ItemDetailResponseDTO getDetail(Long id, Long userId) {
+        if (!itemMapper.existsByIdAndUserId(id, userId)) {
+            throw new NotAuthorException("로그인한 사용자의 물품이 아닙니다.");
+        }
+
+        ItemDetailResponseDTO item = itemMapper.findDetailById(id);
+        if (item == null) {
+            throw new NotFoundItemException("해당 물품을 찾을 수 없습니다.");
+        }
+
+        return item;
+    }
+
+    public PagedResultDTO<?> getAgreementHistory(Long id, Long userId, Long lastId,
+            int size) {
+        if (!itemMapper.existsByIdAndUserId(id, userId)) {
+
+
+            throw new NotAuthorException("로그인한 사용자의 물품이 아닙니다.");
+        }
+
+        int sizePlusOne = size + 1;
+        List<ItemAgreementHistoryResponseDTO> itemAgreementHistories = agreementMapper.findHistoryByItemId(
+                id, lastId, sizePlusOne);
+
+        if (itemAgreementHistories == null || itemAgreementHistories.isEmpty()) {
+            return PagedResultDTO.from(null, false, null);
+        }
+
+        boolean hasNext = false;
+        if (itemAgreementHistories.size() == sizePlusOne) {
+            hasNext = true;
+            itemAgreementHistories.remove(size);
+        }
+
+        lastId = itemAgreementHistories.get(itemAgreementHistories.size() - 1).getId();
+        return PagedResultDTO.from(itemAgreementHistories, hasNext, lastId);
     }
 }

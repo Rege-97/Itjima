@@ -44,7 +44,7 @@ public class SecurityConfig {
                                 "/api/auth/verify-email", "/api/auth/kakao", "/api/auth/find-email",
                                 "/api/auth/verify-email/resend", "/api/auth/password-reset/resend",
                                 "/api/auth/password-reset/request",
-                                "/api/auth/password-reset/confirm")
+                                "/api/auth/password-reset/confirm","/uploads/**")
                         .permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
                                 "/swagger-ui.html").permitAll()
