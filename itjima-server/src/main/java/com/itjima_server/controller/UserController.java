@@ -4,6 +4,7 @@ import com.itjima_server.common.ApiResponseDTO;
 import com.itjima_server.common.PagedResultDTO;
 import com.itjima_server.dto.user.request.UserChangeProfileRequestDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
+import com.itjima_server.dto.user.response.UserSearchResponseDTO;
 import com.itjima_server.dto.user.swagger.RecentPartnerPagedResponse;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.UserService;
@@ -151,5 +152,31 @@ public class UserController {
         userService.deleteUser(user.getId());
         return ResponseEntity.ok(
                 ApiResponseDTO.success(HttpStatus.OK.value(), "회원 탈퇴 성공"));
+    }
+
+    /**
+     * 전화번호로 사용자 검색
+     *
+     * @param phone 검색할 전화번호
+     * @return 검색된 사용자 정보 DTO
+     */
+    @Operation(
+            summary = "전화번호로 사용자 검색",
+            description = "전화번호로 사용자 검색",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "프로필 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = UserSearchResponseDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "404", description = "대상 없음",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
+    @GetMapping("/search")
+    public ResponseEntity<?> searchByPhone(@RequestParam(required = true) String phone) {
+        UserSearchResponseDTO res = userService.searchUserByPhone(phone);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "사용자 검색 성공", res));
     }
 }

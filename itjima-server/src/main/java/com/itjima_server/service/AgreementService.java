@@ -595,6 +595,7 @@ public class AgreementService {
      * @param userId 로그인한 사용자 id
      * @return 조회된 대여 응답 DTO
      */
+    @Transactional(readOnly = true)
     public AgreementRenderingDetailResponseDTO getDetail(Long id, Long userId) {
         if (!agreementMapper.existsByIdAndUserId(id, userId)) {
             throw new NotAuthorException("로그인한 사용자의 물품이 아닙니다.");
@@ -617,6 +618,7 @@ public class AgreementService {
      * @param size   한 페이지에 보여줄 개수
      * @return 로그 리스트 응답 DTO
      */
+    @Transactional(readOnly = true)
     public PagedResultDTO<?> getLogs(Long id, Long lastId, int size) {
         int sizePlusOne = size + 1;
         List<AgreementLogsResponseDTO> logList = auditLogMapper.findByAgreementId(id, lastId,

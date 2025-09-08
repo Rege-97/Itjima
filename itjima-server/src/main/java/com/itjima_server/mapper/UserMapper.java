@@ -2,6 +2,7 @@ package com.itjima_server.mapper;
 
 import com.itjima_server.domain.user.Provider;
 import com.itjima_server.domain.user.User;
+import com.itjima_server.dto.user.response.UserSearchResponseDTO;
 import java.time.LocalDateTime;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -49,4 +50,6 @@ public interface UserMapper {
     User findByPasswordResetToken(@Param("passwordResetToken") String passwordResetToken);
 
     int updateDeleteStatusById(@Param("id") Long id);
+
+    UserSearchResponseDTO findByPhone(@Param("phone") String phone);
 }

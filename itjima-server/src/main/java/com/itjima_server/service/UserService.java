@@ -5,6 +5,7 @@ import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.user.request.UserChangeProfileRequestDTO;
 import com.itjima_server.dto.user.response.RecentPartnerResponseDTO;
 import com.itjima_server.dto.user.response.UserResponseDTO;
+import com.itjima_server.dto.user.response.UserSearchResponseDTO;
 import com.itjima_server.exception.common.InvalidStateException;
 import com.itjima_server.exception.common.UpdateFailedException;
 import com.itjima_server.exception.user.DuplicateUserFieldException;
@@ -115,6 +116,7 @@ public class UserService {
 
     /**
      * 회원 탈퇴 처리
+     *
      * @param id 로그인한 사용자 ID
      */
     @Transactional(rollbackFor = Exception.class)
@@ -126,6 +128,21 @@ public class UserService {
 
         refreshTokenMapper.deleteByUserId(id);
         checkUpdateResult(userMapper.updateDeleteStatusById(id), "회원 탈퇴 중 오류가 발생했습니다.");
+    }
+
+    /**
+     * 전화번호로 사용자 검색
+     *
+     * @param phone 검색할 전화번호
+     * @return 검색된 사용자 정보 DTO
+     */
+    @Transactional(readOnly = true)
+    public UserSearchResponseDTO searchUserByPhone(String phone) {
+        UserSearchResponseDTO res = userMapper.findByPhone(phone);
+        if (res == null) {
+            throw new NotFoundUserException("존재하지 않는 사용자입니다.");
+        }
+        return res;
     }
 
     // ==========================
