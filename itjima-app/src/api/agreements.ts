@@ -51,3 +51,32 @@ export const agreementExtend = (
 ) => {
   return privateApi.put(`/agreements/${agreementId}/extend`, params);
 };
+
+export const getAgreementLogsApi = (agreementId: Number, lastId?: Number) => {
+  let url = `/agreements/${agreementId}/logs?`;
+  if (lastId) {
+    url += `lastId=${lastId}&`;
+  }
+  console.log(url);
+  return privateApi.get(url);
+};
+
+export const getAgreementTransactionsApi = (
+  agreementId: Number,
+  lastId?: Number
+) => {
+  let url = `/agreements/${agreementId}/transactions?`;
+  if (lastId) {
+    url += `lastId=${lastId}&`;
+  }
+  console.log(url);
+  return privateApi.get(url);
+};
+
+export const confirmTransactionApi = (transactionId: number) => {
+  return privateApi.put(`/transactions/${transactionId}/confirm`);
+};
+
+export const rejectTransactionApi = (transactionId: number) => {
+  return privateApi.put(`/transactions/${transactionId}/reject`);
+};
