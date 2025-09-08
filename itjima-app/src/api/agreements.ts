@@ -69,7 +69,6 @@ export const getAgreementTransactionsApi = (
   if (lastId) {
     url += `lastId=${lastId}&`;
   }
-  console.log(url);
   return privateApi.get(url);
 };
 
@@ -79,4 +78,14 @@ export const confirmTransactionApi = (transactionId: number) => {
 
 export const rejectTransactionApi = (transactionId: number) => {
   return privateApi.put(`/transactions/${transactionId}/reject`);
+};
+
+export const agreementCreateApi = (params: {
+  itemId: number;
+  amount?: string;
+  dueAt: string;
+  terms: string;
+  debtorUserId: number;
+}) => {
+  return privateApi.post("/agreements", params);
 };

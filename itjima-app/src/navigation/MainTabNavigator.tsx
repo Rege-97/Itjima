@@ -11,15 +11,11 @@ import MyItemEditScreen from "../screens/items/MyItemEditScreen/MyItemEditScreen
 import MyItemsScreen from "../screens/items/MyItemScreen/MyItemsScreen";
 import MyAgreementsScreen from "../screens/agreements/MyAgreementsScreen/MyAgreementsScreen";
 import MyAgreementDetailScreen from "../screens/agreements/MyAgreementDetailScreen/MyAgreementDetailScreen";
+import MyAgreementCreateScreen from "../screens/agreements/MyAgreementCreateScreen/MyAgreementCreateScreen";
 
 const HomeScreen = () => (
   <View>
     <Text>홈</Text>
-  </View>
-);
-const AddAgreementScreen = () => (
-  <View>
-    <Text>등록</Text>
   </View>
 );
 const ProfileScreen = () => (
@@ -63,17 +59,33 @@ const MyAgreementsStackNavigator = () => {
   return (
     <MyAgreementsStack.Navigator
       initialRouteName="MyAgreementsList"
-      screenOptions={{headerShown:false}}
+      screenOptions={{ headerShown: false }}
     >
       <MyAgreementsStack.Screen
         name="MyAgreementsList"
         component={MyAgreementsScreen}
       />
       <MyAgreementsStack.Screen
-      name="MyAgreementDetail"
-      component={MyAgreementDetailScreen}
+        name="MyAgreementDetail"
+        component={MyAgreementDetailScreen}
       />
     </MyAgreementsStack.Navigator>
+  );
+};
+
+const MyAgreementCreateStack = createNativeStackNavigator();
+
+const MyAgreementCreateStackNavigator = () => {
+  return (
+    <MyAgreementCreateStack.Navigator
+      initialRouteName="MyAgreementCreate"
+      screenOptions={{ headerShown: false }}
+    >
+      <MyAgreementCreateStack.Screen
+        name="MyAgreementCreate"
+        component={MyAgreementCreateScreen}
+      />
+    </MyAgreementCreateStack.Navigator>
   );
 };
 
@@ -115,7 +127,7 @@ const MainTabNavigator = () => {
       />
       <Tab.Screen
         name="AddAgreement"
-        component={AddAgreementScreen}
+        component={MyAgreementCreateStackNavigator}
         options={{
           title: "등록",
           tabBarIcon: ({ color, size }) => (
