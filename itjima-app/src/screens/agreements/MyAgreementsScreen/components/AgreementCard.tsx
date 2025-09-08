@@ -88,7 +88,11 @@ const AgreementCard = ({
   const isMoneyLoan = agreement.itemType === "MONEY";
 
   return (
-    <TouchableOpacity onPress={() => {}}>
+    <TouchableOpacity
+      onPress={() =>
+        navigation.navigate("MyAgreementDetail", { agreementId: agreement.id })
+      }
+    >
       <View style={styles.listagreement}>
         <View style={styles.headerRow}>
           <View style={styles.thumbnailWrapper}>

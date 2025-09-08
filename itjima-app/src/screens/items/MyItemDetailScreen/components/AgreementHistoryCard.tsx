@@ -82,7 +82,6 @@ export const AgreementHistoryCard = ({ item }: { item: any }) => {
         />
       </View>
 
-      {/* terms 등 나머지 정보는 그대로 */}
       {item.terms ? (
         <Text style={styles.agreementItemTerms}>{item.terms}</Text>
       ) : null}

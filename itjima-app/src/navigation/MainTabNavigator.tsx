@@ -10,6 +10,7 @@ import MyItemDetailScreen from "../screens/items/MyItemDetailScreen/MyItemDetail
 import MyItemEditScreen from "../screens/items/MyItemEditScreen/MyItemEditScreen";
 import MyItemsScreen from "../screens/items/MyItemScreen/MyItemsScreen";
 import MyAgreementsScreen from "../screens/agreements/MyAgreementsScreen/MyAgreementsScreen";
+import MyAgreementDetailScreen from "../screens/agreements/MyAgreementDetailScreen/MyAgreementDetailScreen";
 
 const HomeScreen = () => (
   <View>
@@ -67,6 +68,10 @@ const MyAgreementsStackNavigator = () => {
       <MyAgreementsStack.Screen
         name="MyAgreementsList"
         component={MyAgreementsScreen}
+      />
+      <MyAgreementsStack.Screen
+      name="MyAgreementDetail"
+      component={MyAgreementDetailScreen}
       />
     </MyAgreementsStack.Navigator>
   );

@@ -1,21 +1,19 @@
-import React, { useCallback, useState } from "react";
+import { MaterialIcons } from "@expo/vector-icons";
+import React, { useState } from "react";
 import {
-  FlatList,
-  RefreshControl,
-  SafeAreaView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    FlatList,
+    RefreshControl,
+    SafeAreaView,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import {
-  ActivityIndicator,
-  Searchbar,
-  SegmentedButtons,
-  Text,
+    ActivityIndicator,
+    Searchbar,
+    SegmentedButtons,
+    Text,
 } from "react-native-paper";
-import { getMyAgreementsApi } from "../../../api/agreements";
-import { useFocusEffect } from "@react-navigation/native";
-import { MaterialIcons } from "@expo/vector-icons";
 import AgreementCard from "./components/AgreementCard";
 import { useAgreement } from "./hooks/useAgreement";
 

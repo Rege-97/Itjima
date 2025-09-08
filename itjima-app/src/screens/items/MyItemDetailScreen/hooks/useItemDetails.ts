@@ -1,10 +1,13 @@
 import { useCallback, useState } from "react";
 import { Alert } from "react-native";
-import { getItemAgreementHistoryApi, getItemDetailApi } from "../../../../api/items";
+import {
+  getItemAgreementHistoryApi,
+  getItemDetailApi,
+} from "../../../../api/items";
 import { useFocusEffect } from "@react-navigation/native";
 
 export const useItemDetails = (itemId: number, navigation: any) => {
-const [item, setItem] = useState<any>(null);
+  const [item, setItem] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [agreementHistory, setAgreementHistory] = useState<any[]>([]);
   const [lastId, setLastId] = useState<number | null>(null);
