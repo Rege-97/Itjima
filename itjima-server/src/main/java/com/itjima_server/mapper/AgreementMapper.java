@@ -48,8 +48,9 @@ public interface AgreementMapper {
             @Param("keyword") String keyword, @Param("role") AgreementPartyRole role,
             @Param("lastId") Long lastId, @Param("sizePlusOne") int sizePlusOne);
 
-    AgreementRenderingDetailResponseDTO findAgreementDetailById(@Param("id") Long id);
+    AgreementRenderingDetailResponseDTO findAgreementDetailByIdAndUserId(@Param("id") Long id,
+            @Param("userId") Long userId);
 
-    boolean existsByIdAndUserId(@Param("id") Long id,@Param("userId") Long userId);
+    boolean existsByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
 }
 

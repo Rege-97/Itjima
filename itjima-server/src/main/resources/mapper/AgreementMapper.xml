@@ -223,7 +223,7 @@
     JOIN
     USERS u ON partner_party.user_id = u.id
     LEFT JOIN
-    (SELECT agreement_id, SUM(amount) AS total_paid FROM TRANSACTIONS GROUP BY agreement_id) t_sum
+    (SELECT agreement_id, SUM(amount) AS total_paid FROM TRANSACTIONS WHERE status = 'CONFIRMED' GROUP BY agreement_id) t_sum
     ON a.id = t_sum.agreement_id
     <where>
       <if test="role != null">
@@ -240,7 +240,7 @@
     a.id DESC
     LIMIT #{sizePlusOne}
   </select>
-  <select id="findAgreementDetailById" resultType="com.itjima_server.dto.agreement.response.AgreementRenderingDetailResponseDTO">
+  <select id="findAgreementDetailByIdAndUserId" resultType="com.itjima_server.dto.agreement.response.AgreementRenderingDetailResponseDTO">
     SELECT a.id,
            a.status,
            a.amount,
@@ -250,19 +250,28 @@
            a.created_at                                                         AS createdAt,
            i.id                                                                 AS itemId,
            i.title                                                              AS itemTitle,
+           i.description                                                        AS itemDescription,
            i.type                                                               AS itemType,
            i.file_url                                                           AS itemFileUrl,
            creditor_user.id                                                     AS creditorId,
            creditor_user.name                                                   AS creditorName,
+           creditor_user.phone                                                  AS creditorPhone,
            creditor_party.confirm_at                                            AS creditorConfirmAt,
            debtor_user.id                                                       AS debtorId,
            debtor_user.name                                                     AS debtorName,
+           debtor_user.phone                                                    as debtorPhone,
            debtor_party.confirm_at                                              AS debtorConfirmAt,
+           DATEDIFF(a.due_at, debtor_party.confirm_at) + 1                      AS rentalDays,
            IF(a.status = 'COMPLETED' AND a.return_date > a.due_at, TRUE, FALSE) AS isOverdueReturn,
            CASE
              WHEN i.type = 'MONEY' THEN a.amount - IFNULL(t_sum.total_paid, 0)
              ELSE NULL
-             END                                                              AS remainingAmount
+             END                                                              AS remainingAmount,
+           CASE
+             WHEN creditor_user.id = 1 THEN 'CREDITOR'
+             WHEN debtor_user.id = 1 THEN 'DEBTOR'
+             ELSE NULL
+             END                                                              AS myRole
     FROM AGREEMENTS a
            JOIN
          ITEMS i ON a.item_id = i.id
@@ -277,7 +286,7 @@
            JOIN
          USERS debtor_user ON debtor_party.user_id = debtor_user.id
            LEFT JOIN
-         (SELECT agreement_id, SUM(amount) AS total_paid FROM TRANSACTIONS GROUP BY agreement_id) t_sum
+         (SELECT agreement_id, SUM(amount) AS total_paid FROM TRANSACTIONS WHERE status = 'CONFIRMED' GROUP BY agreement_id) t_sum
          ON a.id = t_sum.agreement_id
     WHERE a.id = #{id}
   </select>

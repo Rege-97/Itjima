@@ -5,7 +5,7 @@
 <mapper namespace="com.itjima_server.mapper.ScheduleMapper">
   <insert id="insert" parameterType="com.itjima_server.domain.notification.Schedule"
     useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO SCHEDULES (agreement_id, type, due_at)
+    INSERT INTO SCHEDULES (agreement_id, schedule_type, due_at)
     VALUES (#{agreementId}, #{type}, #{dueAt})
   </insert>
   <update id="updateNotifiedById">
@@ -16,7 +16,7 @@
   <select id="findPendingSchedules" resultType="com.itjima_server.domain.notification.Schedule">
     SELECT id,
            agreement_id,
-           type,
+           schedule_type,
            due_at,
            notified
     FROM SCHEDULES

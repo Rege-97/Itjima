@@ -39,6 +39,7 @@ import com.itjima_server.mapper.ScheduleMapper;
 import com.itjima_server.mapper.TransactionMapper;
 import com.itjima_server.mapper.UserMapper;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -496,7 +497,7 @@ public class AgreementService {
      * @return 변경한 대여 정보 DTO
      */
     @Transactional(rollbackFor = Exception.class)
-    public AgreementResponseDTO agreementExtend(Long id, Long userId, LocalDateTime dueAt) {
+    public AgreementResponseDTO agreementExtend(Long id, Long userId, LocalDate dueAt) {
         Agreement agreement = findByAgreementId(id);
 
         List<AgreementParty> agreementPartyList = verifyCanRespond(userId, agreement,
@@ -510,7 +511,7 @@ public class AgreementService {
             agreement.setStatus(AgreementStatus.ACCEPTED);
         }
 
-        agreement.setDueAt(dueAt);
+        agreement.setDueAt(dueAt.atStartOfDay());
 
         checkUpdateResult(
                 agreementMapper.updateDueAtAndStatusById(agreement.getId(), agreement.getStatus(),
@@ -596,7 +597,8 @@ public class AgreementService {
             throw new NotAuthorException("로그인한 사용자의 물품이 아닙니다.");
         }
 
-        AgreementRenderingDetailResponseDTO agreement = agreementMapper.findAgreementDetailById(id);
+        AgreementRenderingDetailResponseDTO agreement = agreementMapper.findAgreementDetailByIdAndUserId(
+                id, userId);
         if (agreement == null) {
             throw new NotFoundItemException("해당 물품을 찾을 수 없습니다.");
         }
