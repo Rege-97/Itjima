@@ -19,6 +19,7 @@ import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
+import com.itjima_server.dto.agreement.response.AgreementLogsResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementPartyInfoDTO;
 import com.itjima_server.dto.agreement.response.AgreementRenderingDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
@@ -34,6 +35,7 @@ import com.itjima_server.exception.item.NotFoundItemException;
 import com.itjima_server.exception.user.NotFoundUserException;
 import com.itjima_server.mapper.AgreementMapper;
 import com.itjima_server.mapper.AgreementPartyMapper;
+import com.itjima_server.mapper.AuditLogMapper;
 import com.itjima_server.mapper.ItemMapper;
 import com.itjima_server.mapper.ScheduleMapper;
 import com.itjima_server.mapper.TransactionMapper;
@@ -63,6 +65,7 @@ public class AgreementService {
     private final ItemMapper itemMapper;
     private final TransactionMapper transactionMapper;
     private final ScheduleMapper scheduleMapper;
+    private final AuditLogMapper auditLogMapper;
 
     /**
      * 대여 생성 처리
@@ -604,6 +607,31 @@ public class AgreementService {
         }
 
         return agreement;
+    }
+
+    /**
+     * 대여 로그 리스트
+     *
+     * @param id     대여 ID
+     * @param lastId 조회할 마지막 id
+     * @param size   한 페이지에 보여줄 개수
+     * @return 로그 리스트 응답 DTO
+     */
+    public PagedResultDTO<?> getLogs(Long id, Long lastId, int size) {
+        int sizePlusOne = size + 1;
+        List<AgreementLogsResponseDTO> logList = auditLogMapper.findByAgreementId(id, lastId,
+                sizePlusOne);
+        if (logList == null || logList.isEmpty()) {
+            return PagedResultDTO.from(null, false, null);
+        }
+        boolean hasNext = false;
+        if (logList.size() == sizePlusOne) {
+            hasNext = true;
+            logList.remove(size);
+        }
+
+        lastId = logList.get(logList.size() - 1).getId();
+        return PagedResultDTO.from(logList, hasNext, lastId);
     }
 
 // ==========================

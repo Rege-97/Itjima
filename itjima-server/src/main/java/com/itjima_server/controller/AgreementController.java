@@ -9,6 +9,7 @@ import com.itjima_server.dto.agreement.request.AgreementUpdateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementRenderingDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
+import com.itjima_server.dto.agreement.swagger.AgreementLogsPagedResponse;
 import com.itjima_server.dto.agreement.swagger.AgreementPagedResponse;
 import com.itjima_server.dto.agreement.swagger.AgreementSummaryPagedResponse;
 import com.itjima_server.dto.transaction.request.TransactionCreateRequestDTO;
@@ -491,4 +492,31 @@ public class AgreementController {
                 .body(ApiResponseDTO.success(HttpStatus.OK.value(), "대여 상세 조회 성공", res));
     }
 
+    /**
+     * 대여 로그 리스트
+     *
+     * @param id     대여 ID
+     * @param lastId 조회할 마지막 id
+     * @param size   한 페이지에 보여줄 개수
+     * @return 로그 리스트 응답 DTO
+     */
+    @Operation(
+            summary = "대여 로그 목록 조회(커서 기반)",
+            description = "lastId와 size로 커서 기반 페이지네이션",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "대여 로그 조회 성공",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = AgreementLogsPagedResponse.class))),
+                    @ApiResponse(responseCode = "401", description = "인증 필요",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+    )
+    @GetMapping("/{id}/logs")
+    public ResponseEntity<?> getLogs(@PathVariable Long id,
+            @RequestParam(required = false) Long lastId,
+            @RequestParam(defaultValue = "10") int size) {
+        PagedResultDTO<?> res = agreementService.getLogs(id, lastId, size);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponseDTO.success(HttpStatus.OK.value(), "로그 목록 조회 성공", res));
+    }
 }
