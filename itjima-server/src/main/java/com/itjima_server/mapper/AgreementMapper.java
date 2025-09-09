@@ -6,6 +6,9 @@ import com.itjima_server.domain.agreement.AgreementStatus;
 import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
 import com.itjima_server.dto.agreement.response.AgreementRenderingDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementSummaryResponseDTO;
+import com.itjima_server.dto.dashboard.response.DashboardAgreementCountResponseDTO;
+import com.itjima_server.dto.dashboard.response.DashboardComingReturnDTO;
+import com.itjima_server.dto.dashboard.response.DashboardOverdueDTO;
 import com.itjima_server.dto.item.response.ItemAgreementHistoryResponseDTO;
 import com.itjima_server.dto.user.response.RecentPartnerResponseDTO;
 import java.time.LocalDate;
@@ -52,5 +55,11 @@ public interface AgreementMapper {
             @Param("userId") Long userId);
 
     boolean existsByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
+
+    List<DashboardAgreementCountResponseDTO> countAgreementsByUserId(@Param("userId") Long userId);
+
+    List<DashboardComingReturnDTO> findComingAgreementsByUserId(@Param("userId") Long userId);
+
+    List<DashboardOverdueDTO> findOverdueAgreementsByUserId(@Param("userId") Long userId);
 }
 

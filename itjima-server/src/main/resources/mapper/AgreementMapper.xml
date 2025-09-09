@@ -297,4 +297,49 @@
     WHERE a.id = #{id}
       AND ap.user_id = #{userId}
   </select>
+  <select id="countAgreementsByUserId" resultType="com.itjima_server.dto.dashboard.response.DashboardAgreementCountResponseDTO">
+    SELECT ap.role, count(*) AS count
+    FROM AGREEMENTS a
+           JOIN AGREEMENT_PARTIES ap ON a.id = ap.agreement_id
+    WHERE user_id = #{userId}
+      AND (a.status = 'ACCEPTED' OR a.status = 'OVERDUE')
+    GROUP BY ap.role
+  </select>
+  <select id="findComingAgreementsByUserId" resultType="com.itjima_server.dto.dashboard.response.DashboardComingReturnDTO">
+    SELECT a.id,
+           a.amount,
+           a.due_at,
+           ap.role,
+           i.title                       AS itemTitle,
+           i.description                 AS itemDescription,
+           i.file_url                    AS itemFileUrl,
+           DATEDIFF(a.due_at, CURDATE()) AS daysLeft
+    FROM AGREEMENTS a
+           JOIN AGREEMENT_PARTIES ap ON a.id = ap.agreement_id
+           JOIN USERS u ON ap.user_id = u.id
+           JOIN ITEMS i ON a.item_id = i.id
+    WHERE DATEDIFF(a.due_at, CURDATE()) BETWEEN 0 AND 7
+      AND a.status = 'ACCEPTED'
+      AND ap.user_id = #{userId}
+    ORDER BY due_at
+    LIMIT 5
+  </select>
+  <select id="findOverdueAgreementsByUserId" resultType="com.itjima_server.dto.dashboard.response.DashboardOverdueDTO">
+    SELECT a.id,
+           a.amount,
+           a.due_at,
+           ap.role,
+           i.title                       AS itemTitle,
+           i.description                 AS itemDescription,
+           i.file_url                    AS itemFileUrl,
+           DATEDIFF(CURDATE(), a.due_at) AS overDays
+    FROM AGREEMENTS a
+           JOIN AGREEMENT_PARTIES ap ON a.id = ap.agreement_id
+           JOIN USERS u ON ap.user_id = u.id
+           JOIN ITEMS i ON a.item_id = i.id
+    WHERE a.status = 'OVERDUE'
+      AND ap.user_id = #{userId}
+    ORDER BY due_at
+    LIMIT 5
+  </select>
 </mapper>
