@@ -5,6 +5,7 @@ import com.itjima_server.domain.agreement.Agreement;
 import com.itjima_server.domain.agreement.AgreementStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,8 +30,8 @@ public class AgreementResponseDTO {
     private AgreementStatus status;
 
     @Schema(description = "상환/반납 예정일", type = "string", example = "2025-09-10 00:00:00")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime dueAt;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate dueAt;
 
     @Schema(description = "약정 조건(특약 등)", example = "연체 시 일 1% 지연 손해금")
     private String terms;

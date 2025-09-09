@@ -305,8 +305,11 @@ const MyAgreementDetailScreen = ({ route, navigation }: any) => {
         onDismiss={() => setExtendVisible(false)}
         onConfirm={async ({ date }) => {
           try {
+            const adjusted = new Date(date!);
+            adjusted.setDate(adjusted.getDate() + 1);
+
             await agreementExtend(agreementId, {
-              dueAt: toLocalDateString(date!),
+              dueAt: adjusted.toISOString(),
             });
             setExtendVisible(false);
             await fetchInitialData();

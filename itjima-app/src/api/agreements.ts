@@ -57,7 +57,6 @@ export const getAgreementLogsApi = (agreementId: Number, lastId?: Number) => {
   if (lastId) {
     url += `lastId=${lastId}&`;
   }
-  console.log(url);
   return privateApi.get(url);
 };
 
@@ -87,5 +86,6 @@ export const agreementCreateApi = (params: {
   terms: string;
   debtorUserId: number;
 }) => {
+  console.log(params.dueAt);
   return privateApi.post("/agreements", params);
 };

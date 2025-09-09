@@ -268,8 +268,8 @@
              ELSE NULL
              END                                                              AS remainingAmount,
            CASE
-             WHEN creditor_user.id = 1 THEN 'CREDITOR'
-             WHEN debtor_user.id = 1 THEN 'DEBTOR'
+             WHEN creditor_user.id = #{userId} THEN 'CREDITOR'
+             WHEN debtor_user.id = #{userId} THEN 'DEBTOR'
              ELSE NULL
              END                                                              AS myRole
     FROM AGREEMENTS a

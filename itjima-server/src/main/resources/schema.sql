@@ -1,3 +1,5 @@
+SET GLOBAL time_zone = '+09:00';
+
 -- 사용자 테이블
 CREATE TABLE IF NOT EXISTS `USERS`
 (
@@ -63,7 +65,7 @@ CREATE TABLE IF NOT EXISTS `AGREEMENTS`
     `item_id`     bigint         NULL COMMENT '대여품목ID (금전 거래 시 NULL 가능)',
     `status`      varchar(20)    NOT NULL COMMENT '상태',
     `amount`      decimal(10, 0) NULL COMMENT '금액',
-    `due_at`      datetime       NOT NULL COMMENT '반납예정일',
+    `due_at`      date           NOT NULL COMMENT '반납예정일',
     `terms`       text           NULL COMMENT '메모',
     `created_at`  datetime       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일',
     `updated_at`  datetime       NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일',

@@ -1,6 +1,7 @@
 package com.itjima_server.domain.agreement;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +14,7 @@ public class Agreement {
     private long itemId;
     private AgreementStatus status;
     private BigDecimal amount;
-    private LocalDateTime dueAt;
+    private LocalDate dueAt;
     private String terms;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

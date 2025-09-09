@@ -8,7 +8,7 @@ import com.itjima_server.dto.agreement.response.AgreementRenderingDetailResponse
 import com.itjima_server.dto.agreement.response.AgreementSummaryResponseDTO;
 import com.itjima_server.dto.item.response.ItemAgreementHistoryResponseDTO;
 import com.itjima_server.dto.user.response.RecentPartnerResponseDTO;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -37,7 +37,7 @@ public interface AgreementMapper {
     List<Long> findOverdueAgreementIds();
 
     int updateDueAtAndStatusById(@Param("id") Long id, @Param("status") AgreementStatus status,
-            @Param("dueAt") LocalDateTime dueAt);
+            @Param("dueAt") LocalDate dueAt);
 
     int updateTermsById(@Param("id") Long id, @Param("terms") String terms);
 

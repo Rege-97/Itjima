@@ -3,32 +3,32 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useHeaderHeight } from "@react-navigation/elements";
 import React from "react";
 import {
-    FlatList,
-    Image,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  FlatList,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import {
-    Dialog,
-    Divider,
-    List,
-    Menu,
-    Portal,
-    Text,
-    TextInput,
+  Dialog,
+  Divider,
+  List,
+  Menu,
+  Portal,
+  Text,
+  TextInput,
 } from "react-native-paper";
 import { DatePickerModal } from "react-native-paper-dates";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-    AVAILABLE_STATUS,
-    useMyAgreementCreate,
+  AVAILABLE_STATUS,
+  useMyAgreementCreate,
 } from "./hooks/useMyAgreementCreate";
 
 export default function MyAgreementCreateScreen({ route, navigation }: any) {
@@ -98,7 +98,10 @@ export default function MyAgreementCreateScreen({ route, navigation }: any) {
         date={dueDate}
         onConfirm={({ date }) => {
           setIsDateModalVisible(false);
-          setDueDate(date);
+          const adjusted = new Date(date!);
+          adjusted.setDate(adjusted.getDate() + 1);
+
+          setDueDate(adjusted);
         }}
         validRange={{ startDate: new Date() }}
       />

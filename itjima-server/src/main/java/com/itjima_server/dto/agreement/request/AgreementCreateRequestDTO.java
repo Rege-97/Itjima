@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,7 +28,7 @@ public class AgreementCreateRequestDTO {
 
     @NotNull(message = "dueAt은 필수입니다.")
     @Future(message = "dueAt은 미래 시간이여야 합니다.")
-    private LocalDateTime dueAt;
+    private LocalDate dueAt;
 
     @NotBlank(message = "terms는 비어 있을 수 없습니다.")
     @Size(max = 1000, message = "terms는 1000자를 초과할 수 없습니다.")
