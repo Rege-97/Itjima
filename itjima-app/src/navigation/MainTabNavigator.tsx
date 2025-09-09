@@ -12,6 +12,7 @@ import MyItemsScreen from "../screens/items/MyItemScreen/MyItemsScreen";
 import MyAgreementsScreen from "../screens/agreements/MyAgreementsScreen/MyAgreementsScreen";
 import MyAgreementDetailScreen from "../screens/agreements/MyAgreementDetailScreen/MyAgreementDetailScreen";
 import MyAgreementCreateScreen from "../screens/agreements/MyAgreementCreateScreen/MyAgreementCreateScreen";
+import PartnerSelectScreen from "../screens/agreements/MyAgreementCreateScreen/PartnerSelectScreen";
 
 const HomeScreen = () => (
   <View>
@@ -78,9 +79,13 @@ const MyAgreementCreateStack = createNativeStackNavigator();
 const MyAgreementCreateStackNavigator = () => {
   return (
     <MyAgreementCreateStack.Navigator
-      initialRouteName="MyAgreementCreate"
+      initialRouteName="PartnerSelect"
       screenOptions={{ headerShown: false }}
     >
+      <MyAgreementCreateStack.Screen
+        name="PartnerSelect"
+        component={PartnerSelectScreen}
+      />
       <MyAgreementCreateStack.Screen
         name="MyAgreementCreate"
         component={MyAgreementCreateScreen}

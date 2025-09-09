@@ -1,83 +1,55 @@
-import React, { useCallback, useState } from "react";
+import { IMG_BASE_URL } from "@env";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useHeaderHeight } from "@react-navigation/elements";
+import { useFocusEffect } from "@react-navigation/native";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as ImagePicker from "expo-image-picker";
+import React, { useCallback, useRef, useState } from "react";
 import {
-  Alert,
-  SafeAreaView,
-  View,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
-  ScrollView,
+    Alert,
+    FlatList,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import {
-  ActivityIndicator,
-  Button,
-  Dialog,
-  Portal,
-  SegmentedButtons,
-  Text,
-  TextInput,
+    Dialog,
+    Divider,
+    List,
+    Menu,
+    Portal,
+    Text,
+    TextInput,
 } from "react-native-paper";
-import * as Contacts from "expo-contacts";
-import * as ImagePicker from "expo-image-picker";
-import * as ImageManipulator from "expo-image-manipulator";
 import { DatePickerModal } from "react-native-paper-dates";
-import { recentPartnersApi, searchUserByPhoneApi } from "../../../api/users";
-import { useItem } from "../../items/MyItemScreen/hooks/useItem";
-import { IMG_BASE_URL } from "@env";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { agreementCreateApi } from "../../../api/agreements";
 import { createItemApi, updateItemImageApi } from "../../../api/items";
-import { useFocusEffect } from "@react-navigation/native";
+import { useItem } from "../../items/MyItemScreen/hooks/useItem";
 
 const MAX_DIM = 1280;
+const AVAILABLE_STATUS = "AVAILABLE";
 
-type User = {
-  id: number;
-  name: string;
-  phone: string;
-};
+type User = { id: number; name: string; phone: string };
 type RentType = "ITEM" | "MONEY";
 type RentSource = "EXISTING" | "NEW";
 
-const normalizePhone = (raw: string) => {
-  if (!raw) return "";
-  let phone = raw.replace(/[^0-9+]/g, "");
-  if (phone.startsWith("+82")) {
-    phone = "0" + phone.slice(3);
-  }
-  return phone;
-};
+export default function MyAgreementCreateScreen({ route, navigation }: any) {
+  const { debtorUser: initialDebtor } = route.params;
 
-const MyAgreementCreateScreen = () => {
-  const [debtorUser, setDebtorUser] = useState<User | null>(null);
+  const [debtorUser, setDebtorUser] = useState<User | null>(initialDebtor);
 
-  // 모달 상태
-  const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
-  const [searchPhone, setSearchPhone] = useState("");
-  const [searchResult, setSearchResult] = useState<User | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isRecentVisible, setIsRecentVisible] = useState(false);
-
-  // 연락처
-  const [contacts, setContacts] = useState<any[]>([]);
-  const [isContactsVisible, setIsContactsVisible] = useState(false);
-  const [contactSearch, setContactSearch] = useState("");
-
-  // 최근 파트너
-  const [partners, setPartners] = useState<User[]>([]);
-  const [isLoadingPartners, setIsLoadingPartners] = useState(false);
-  const [hasNextPartners, setHasNextPartners] = useState(true);
-  const [lastPartnerId, setLastPartnerId] = useState<number | null>(null);
-
-  // 대여 타입 & 소스
   const [rentType, setRentType] = useState<RentType | null>(null);
   const [rentSource, setRentSource] = useState<RentSource | null>(null);
   const [amount, setAmount] = useState("");
 
-  // 새 물건 등록 상태
   const [itemTitle, setItemTitle] = useState("");
   const [itemDesc, setItemDesc] = useState("");
   const [itemImage, setItemImage] = useState<{
@@ -86,143 +58,50 @@ const MyAgreementCreateScreen = () => {
     type: string;
   } | null>(null);
 
-  // 기존 물건 상태
   const [itemId, setItemId] = useState<number | null>(null);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
 
-  // 반납일 상태
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [isDateModalVisible, setIsDateModalVisible] = useState(false);
-
-  // 대여 상세 (terms)
   const [terms, setTerms] = useState("");
 
   const {
     items,
-    isLoading,
     isRefreshing,
     fetchMoreItems,
     onRefresh,
     searchQuery,
     setSearchQuery,
     handleSearchSubmit,
+    handleFilterPress,
   } = useItem(null);
-
   const [isItemModalVisible, setIsItemModalVisible] = useState(false);
 
-  const handleCreate = async () => {
-    if (!debtorUser) {
-      Alert.alert("알림", "대여 상대방을 선택해주세요.");
-      return;
-    }
-    if (!dueDate) {
-      Alert.alert("알림", "반납일을 선택해주세요.");
-      return;
-    }
+  const [rentTypeMenuOpen, setRentTypeMenuOpen] = useState(false);
+  const [rentSourceMenuOpen, setRentSourceMenuOpen] = useState(false);
 
-    try {
-      let finalItemId = itemId;
-
-      // 새 물건 등록
-      if (rentType === "ITEM" && rentSource === "NEW") {
-        if (!itemTitle.trim()) {
-          Alert.alert("알림", "물건 제목을 입력해주세요.");
-          return;
-        }
-
-        const res = await createItemApi({
-          type: "OBJECT",
-          title: itemTitle,
-          description: itemDesc,
-        });
-
-        finalItemId = res.data.data.id;
-
-        // 이미지 있으면 업로드
-        if (itemImage) {
-          const formData = new FormData();
-          formData.append("img", {
-            uri: itemImage.uri,
-            name: itemImage.name,
-            type: itemImage.type,
-          } as any);
-          await updateItemImageApi(finalItemId!, formData);
-        }
-      }
-
-      // 금전 대여
-      if (rentType === "MONEY") {
-        if (!amount.trim()) {
-          Alert.alert("알림", "금액을 입력해주세요.");
-          return;
-        }
-
-        const res = await createItemApi({
-          type: "MONEY",
-          title: "금전 대여",
-          description: `${amount}원`,
-        });
-
-        finalItemId = res.data.data.id;
-      }
-
-      // 대여 등록
-      if (!finalItemId) {
-        Alert.alert("알림", "대여할 아이템을 선택해주세요.");
-        return;
-      }
-
-      await agreementCreateApi({
-        itemId: finalItemId,
-        amount: rentType === "MONEY" ? amount : undefined,
-        dueAt: dueDate.toISOString(),
-        terms,
-        debtorUserId: debtorUser.id,
-      });
-
-      Alert.alert("성공", "대여가 등록되었습니다.");
-      // navigation.goBack(); 필요하면 추가
-    } catch (err) {
-      console.error("대여 등록 실패:", err);
-      Alert.alert("오류", "대여 등록에 실패했습니다.");
-    }
-  };
+  const insets = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
+  const keyboardOffset = headerHeight + insets.top + 8;
+  const scrollRef = useRef<ScrollView>(null);
 
   useFocusEffect(
     useCallback(() => {
-      setDebtorUser(null);
-      setSearchPhone("");
-      setSearchResult(null);
-      setIsSearching(false);
-      setIsSearchModalVisible(false);
-      setIsRecentVisible(false);
-      setContacts([]);
-      setIsContactsVisible(false);
-      setContactSearch("");
-
-      setPartners([]);
-      setIsLoadingPartners(false);
-      setHasNextPartners(true);
-      setLastPartnerId(null);
-
+      setDebtorUser(initialDebtor);
       setRentType(null);
       setRentSource(null);
       setAmount("");
-
       setItemTitle("");
       setItemDesc("");
       setItemImage(null);
       setItemId(null);
       setSelectedItem(null);
-
       setDueDate(undefined);
       setIsDateModalVisible(false);
-
       setTerms("");
-    }, [])
+    }, [initialDebtor])
   );
 
-  // 이미지 선택
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -238,12 +117,10 @@ const MyAgreementCreateScreen = () => {
       aspect: [4, 3],
       quality: 1,
     });
-
     if (result.canceled) return;
 
     const asset = result.assets[0];
     const { uri, width, height } = asset;
-
     const scale = Math.min(
       1,
       MAX_DIM / Math.max(width ?? MAX_DIM, height ?? MAX_DIM)
@@ -262,93 +139,18 @@ const MyAgreementCreateScreen = () => {
       uri.split("/").pop() ||
       "image"
     ).replace(/\.[^/.]+$/, "");
-    const finalName = `${filename}.jpg`;
-
     setItemImage({
       uri: manipulated.uri,
-      name: finalName,
+      name: `${filename}.jpg`,
       type: "image/jpeg",
     });
   };
 
-  // ✅ 사용자 검색
-  const handleSearch = async (phone?: string) => {
-    const targetPhone = phone || searchPhone;
-    if (!targetPhone) {
-      Alert.alert("알림", "전화번호를 입력해주세요.");
-      return;
-    }
-    setIsSearching(true);
-    try {
-      const res = await searchUserByPhoneApi(normalizePhone(targetPhone));
-      if (!res.data?.data) {
-        Alert.alert("알림", "가입하지 않은 유저입니다.");
-        setSearchResult(null);
-        return;
-      }
-      setSearchResult(res.data.data);
-    } catch (err) {
-      console.error("검색 실패:", err);
-      Alert.alert("알림", "가입하지 않은 유저입니다.");
-      setSearchResult(null);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  // 연락처 불러오기
-  const loadContacts = async () => {
-    const { status } = await Contacts.requestPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("권한 필요", "연락처 접근 권한이 필요합니다.");
-      return;
-    }
-    const { data } = await Contacts.getContactsAsync({
-      fields: [Contacts.Fields.PhoneNumbers],
-    });
-    setContacts(data);
-    setContactSearch("");
-    setIsContactsVisible(true);
-  };
-
-  // ✅ 최근 파트너 불러오기
-  const loadPartners = async () => {
-    if (isLoadingPartners || !hasNextPartners) return;
-    setIsLoadingPartners(true);
-    try {
-      const res = await recentPartnersApi(lastPartnerId!);
-      const fetchedData = res.data.data;
-      setPartners((prev) => [...prev, ...(fetchedData.items || [])]);
-      setHasNextPartners(fetchedData.hasNext);
-      setLastPartnerId(fetchedData.lastId);
-    } catch (err) {
-      console.error("최근 파트너 불러오기 실패:", err);
-    } finally {
-      setIsLoadingPartners(false);
-    }
-  };
-
-  // ✅ 사용자 선택 시 초기화
-  const handleSelectUser = (user: User) => {
-    setDebtorUser(user);
-    setItemId(null);
-    setSelectedItem(null);
-    setItemTitle("");
-    setItemDesc("");
-    setItemImage(null);
-    setAmount("");
-    setRentSource(null);
-    setTerms("");
-  };
-
-  // ✅ rentType 변경 시 초기화
   const handleRentTypeChange = (v: string) => {
-    const newType = v as RentType;
-    setRentType(newType);
-
-    if (newType === "ITEM") {
-      setAmount("");
-    } else if (newType === "MONEY") {
+    const t = v as RentType;
+    setRentType(t);
+    if (t === "ITEM") setAmount("");
+    if (t === "MONEY") {
       setItemId(null);
       setSelectedItem(null);
       setItemTitle("");
@@ -357,145 +159,148 @@ const MyAgreementCreateScreen = () => {
       setRentSource(null);
     }
   };
-
-  // ✅ rentSource 변경 시 초기화
   const handleRentSourceChange = (v: string) => {
-    const newSource = v as RentSource;
-    setRentSource(newSource);
-
-    if (newSource === "EXISTING") {
+    const s = v as RentSource;
+    setRentSource(s);
+    if (s === "EXISTING") {
       setItemTitle("");
       setItemDesc("");
       setItemImage(null);
-    } else if (newSource === "NEW") {
+    }
+    if (s === "NEW") {
       setItemId(null);
       setSelectedItem(null);
     }
   };
 
-  // 연락처 검색 필터링
-  const filteredContacts = contacts.filter((c) =>
-    c.name?.toLowerCase().includes(contactSearch.toLowerCase())
-  );
+  const handleCreate = async () => {
+    if (!debtorUser) {
+      Alert.alert("알림", "대여 상대방을 선택해주세요.");
+      return;
+    }
+    if (!dueDate) {
+      Alert.alert("알림", "반납일을 선택해주세요.");
+      return;
+    }
+
+    try {
+      let finalItemId = itemId;
+
+      if (rentType === "ITEM" && rentSource === "NEW") {
+        if (!itemTitle.trim()) {
+          Alert.alert("알림", "물건 제목을 입력해주세요.");
+          return;
+        }
+        const res = await createItemApi({
+          type: "OBJECT",
+          title: itemTitle,
+          description: itemDesc,
+        });
+        finalItemId = res.data.data.id;
+        if (itemImage) {
+          const fd = new FormData();
+          fd.append("img", {
+            uri: itemImage.uri,
+            name: itemImage.name,
+            type: itemImage.type,
+          } as any);
+          await updateItemImageApi(finalItemId!, fd);
+        }
+      }
+
+      if (rentType === "MONEY") {
+        if (!amount.trim()) {
+          Alert.alert("알림", "금액을 입력해주세요.");
+          return;
+        }
+        const res = await createItemApi({
+          type: "MONEY",
+          title: "금전 대여",
+          description: `${amount}원`,
+        });
+        finalItemId = res.data.data.id;
+      }
+
+      if (!finalItemId) {
+        Alert.alert("알림", "대여할 아이템을 선택해주세요.");
+        return;
+      }
+
+      await agreementCreateApi({
+        itemId: finalItemId,
+        amount: rentType === "MONEY" ? amount : undefined,
+        dueAt: dueDate.toISOString(),
+        terms,
+        debtorUserId: debtorUser.id,
+      });
+
+      Alert.alert("성공", "대여가 등록되었습니다.", [
+        {
+          text: "확인",
+          onPress: () =>
+            navigation.navigate("AgreementList", {
+              screen: "MyAgreementsList",
+            }),
+        },
+      ]);
+    } catch (e) {
+      console.error(e);
+      Alert.alert("오류", "대여 등록에 실패했습니다.");
+    }
+  };
+
+  const step1Done = !!rentType;
+  const step2Done =
+    rentType === "MONEY"
+      ? !!amount.trim()
+      : rentSource === "EXISTING"
+      ? !!selectedItem
+      : rentSource === "NEW"
+      ? !!itemTitle.trim()
+      : false;
+  const step3Done = !!dueDate;
+
+  const rentTypeLabel =
+    rentType === "ITEM"
+      ? "물건 대여"
+      : rentType === "MONEY"
+      ? "금전 대여"
+      : "대여 타입을 선택하세요";
 
   return (
     <>
-      {/* ✅ 모달들은 TouchableWithoutFeedback 바깥 */}
+      {/* 날짜 선택 모달 */}
+      <DatePickerModal
+        locale="ko"
+        mode="single"
+        visible={isDateModalVisible}
+        onDismiss={() => setIsDateModalVisible(false)}
+        date={dueDate}
+        onConfirm={({ date }) => {
+          setIsDateModalVisible(false);
+          setDueDate(date);
+        }}
+        validRange={{ startDate: new Date() }}
+      />
+
+      {/* 기존 물건 선택 모달 */}
       <Portal>
-        {/* 사용자 검색 모달 */}
-        <Dialog
-          visible={isSearchModalVisible}
-          onDismiss={() => setIsSearchModalVisible(false)}
-        >
-          <Dialog.Title>사용자 찾기</Dialog.Title>
-          <Dialog.Content>
-            <TextInput
-              label="휴대폰 번호"
-              value={searchPhone}
-              onChangeText={setSearchPhone}
-              keyboardType="phone-pad"
-            />
-            <Button
-              mode="contained"
-              onPress={() => handleSearch()}
-              loading={isSearching}
-              style={{ marginTop: 10 }}
-            >
-              번호로 검색
-            </Button>
-
-            <Button
-              mode="outlined"
-              onPress={loadContacts}
-              style={{ marginTop: 10 }}
-            >
-              연락처에서 선택
-            </Button>
-
-            <Button
-              mode="outlined"
-              onPress={async () => {
-                setPartners([]);
-                setLastPartnerId(null);
-                setHasNextPartners(true);
-                setIsRecentVisible(true);
-                await loadPartners();
-              }}
-              style={{ marginTop: 10 }}
-            >
-              최근 거래한 사용자
-            </Button>
-
-            {searchResult && (
-              <View style={{ marginTop: 20 }}>
-                <Text>이름: {searchResult.name}</Text>
-                <Text>전화번호: {searchResult.phone}</Text>
-                <Button
-                  mode="outlined"
-                  onPress={() => {
-                    handleSelectUser(searchResult);
-                    setIsSearchModalVisible(false);
-                  }}
-                  style={{ marginTop: 10 }}
-                >
-                  선택하기
-                </Button>
-              </View>
-            )}
-          </Dialog.Content>
-        </Dialog>
-
-        {/* 연락처 모달 */}
-        <Dialog
-          visible={isContactsVisible}
-          onDismiss={() => setIsContactsVisible(false)}
-        >
-          <Dialog.Title>연락처 선택</Dialog.Title>
-          <Dialog.Content style={{ height: 350 }}>
-            <TextInput
-              label="이름 검색"
-              value={contactSearch}
-              onChangeText={setContactSearch}
-              style={{ marginBottom: 10 }}
-            />
-            <FlatList
-              data={filteredContacts}
-              keyExtractor={(item) => item.id}
-              keyboardShouldPersistTaps="handled"
-              renderItem={({ item }) => {
-                const phone = normalizePhone(
-                  item.phoneNumbers?.[0]?.number || ""
-                );
-                return (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setIsContactsVisible(false);
-                      handleSearch(phone);
-                    }}
-                    style={{ paddingVertical: 8 }}
-                  >
-                    <Text>{item.name}</Text>
-                    <Text>{phone}</Text>
-                  </TouchableOpacity>
-                );
-              }}
-            />
-          </Dialog.Content>
-        </Dialog>
-
-        {/* 기존 물건 모달 */}
         <Dialog
           visible={isItemModalVisible}
           onDismiss={() => setIsItemModalVisible(false)}
+          style={styles.dialog}
         >
-          <Dialog.Title>대여 가능한 물건 선택</Dialog.Title>
-          <Dialog.Content style={{ height: 400 }}>
+          <Dialog.Title style={styles.dialogTitle}>
+            대여 가능한 물건 선택
+          </Dialog.Title>
+          <Dialog.Content style={[styles.dialogContent, { height: 420 }]}>
             <TextInput
+              mode="outlined"
               label="물건 이름 검색"
               value={searchQuery}
               onChangeText={setSearchQuery}
               onSubmitEditing={handleSearchSubmit}
-              style={{ marginBottom: 10 }}
+              style={styles.input}
             />
             <FlatList
               data={items}
@@ -505,273 +310,680 @@ const MyAgreementCreateScreen = () => {
               onEndReached={fetchMoreItems}
               onEndReachedThreshold={0.5}
               keyboardShouldPersistTaps="handled"
+              ItemSeparatorComponent={Divider}
               renderItem={({ item }) => (
-                <TouchableOpacity
+                <List.Item
                   onPress={() => {
                     setItemId(item.id);
                     setSelectedItem(item);
                     setIsItemModalVisible(false);
                   }}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingVertical: 10,
-                    borderBottomWidth: 0.5,
-                    borderBottomColor: "#ccc",
-                  }}
-                >
-                  <Image
-                    source={{
-                      uri: item.fileUrl
-                        ? IMG_BASE_URL + item.fileUrl
-                        : "https://via.placeholder.com/150",
-                    }}
-                    style={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: 8,
-                      marginRight: 10,
-                    }}
-                  />
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontWeight: "bold" }}>{item.title}</Text>
-                    <Text numberOfLines={1} style={{ color: "#555" }}>
-                      {item.description}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                  title={item.title}
+                  description={item.description}
+                  left={() => (
+                    <Image
+                      source={{
+                        uri: item.fileUrl
+                          ? IMG_BASE_URL + item.fileUrl
+                          : "https://via.placeholder.com/150",
+                      }}
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: 8,
+                        marginRight: 12,
+                      }}
+                    />
+                  )}
+                  right={(p) => <List.Icon {...p} icon="chevron-right" />}
+                  style={{ paddingVertical: 10 }}
+                />
               )}
             />
           </Dialog.Content>
         </Dialog>
-
-        {/* 🤝 최근 파트너 모달 */}
-        <Dialog
-          visible={isRecentVisible}
-          onDismiss={() => setIsRecentVisible(false)}
-        >
-          <Dialog.Title>최근 거래한 사용자</Dialog.Title>
-          <Dialog.Content style={{ height: 350 }}>
-            <FlatList
-              data={partners}
-              keyExtractor={(item) => item.id.toString()}
-              onEndReached={loadPartners}
-              onEndReachedThreshold={0.5}
-              ListFooterComponent={
-                isLoadingPartners ? (
-                  <ActivityIndicator style={{ margin: 10 }} />
-                ) : null
-              }
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  onPress={() => {
-                    setDebtorUser(item);
-                    setIsRecentVisible(false);
-                    setIsSearchModalVisible(false);
-                  }}
-                  style={{
-                    paddingVertical: 10,
-                    borderBottomWidth: 0.5,
-                    borderBottomColor: "#ccc",
-                  }}
-                >
-                  <Text style={{ fontWeight: "bold" }}>{item.name}</Text>
-                  <Text style={{ color: "#555" }}>{item.phone}</Text>
-                </TouchableOpacity>
-              )}
-            />
-          </Dialog.Content>
-        </Dialog>
-
-        {/* 반납일 모달 */}
-        <DatePickerModal
-          locale="ko"
-          mode="single"
-          visible={isDateModalVisible}
-          onDismiss={() => setIsDateModalVisible(false)}
-          date={dueDate}
-          onConfirm={({ date }) => {
-            setIsDateModalVisible(false);
-            setDueDate(date);
-          }}
-          validRange={{ startDate: new Date() }}
-        />
       </Portal>
 
-      {/* ✅ 본문 */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={keyboardOffset}
         >
-          <SafeAreaView style={{ flex: 1, padding: 16 }}>
-            <ScrollView>
-              {/* 사용자 선택 */}
-              <Button
-                mode="outlined"
-                onPress={() => setIsSearchModalVisible(true)}
-                style={{ marginVertical: 20 }}
-              >
-                사용자 검색 / 연락처 선택
-              </Button>
-
-              {debtorUser && (
-                <View style={{ marginTop: 20 }}>
-                  <Text>선택된 사용자</Text>
-                  <Text>
-                    {debtorUser.name} ({debtorUser.phone})
+          <SafeAreaView style={styles.safe}>
+            <ScrollView
+              ref={scrollRef}
+              contentContainerStyle={[
+                styles.container,
+                { paddingBottom: insets.bottom + 24 },
+              ]}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.pageHeader}>
+                <View style={styles.pageHeaderIcon}>
+                  <MaterialCommunityIcons
+                    name="package-variant-closed"
+                    size={30}
+                    color="#2F3438"
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.pageHeaderTitle}>대여 등록</Text>
+                  <Text style={styles.pageHeaderSubtitle}>
+                    물건이나 금전에 대한 대여 약정을 생성합니다.
                   </Text>
                 </View>
+              </View>
+              <Divider style={styles.topDivider} />
+
+              <View style={styles.sectionHeaderRow}>
+                <MaterialCommunityIcons
+                  name="account-outline"
+                  size={22}
+                  color="#111"
+                  style={{ marginRight: 8 }}
+                />
+                <Text style={styles.sectionHeaderTitle}>대여 상대방 선택</Text>
+              </View>
+
+              {debtorUser ? (
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={() => navigation.goBack()}
+                  style={styles.personCard}
+                >
+                  <View style={styles.personAvatar}>
+                    <MaterialCommunityIcons
+                      name="account"
+                      size={22}
+                      color="#6B7280"
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.personName}>{debtorUser.name}</Text>
+                    <Text style={styles.personPhone}>{debtorUser.phone}</Text>
+                  </View>
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>선택됨</Text>
+                  </View>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={() => navigation.goBack()}
+                  style={[styles.personCard, styles.personCardEmpty]}
+                >
+                  <View style={styles.personAvatar}>
+                    <MaterialCommunityIcons
+                      name="account"
+                      size={22}
+                      color="#9CA3AF"
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.personName, { color: "#9CA3AF" }]}>
+                      상대방을 선택하세요
+                    </Text>
+                    <Text style={[styles.personPhone, { color: "#C4C7CE" }]}>
+                      연락처/검색에서 선택
+                    </Text>
+                  </View>
+                  <MaterialCommunityIcons
+                    name="chevron-right"
+                    size={22}
+                    color="#9CA3AF"
+                  />
+                </TouchableOpacity>
               )}
 
-              {/* 대여 타입 */}
-              <Text style={{ marginTop: 20, marginBottom: 10 }}>
-                대여 타입 선택
-              </Text>
-              <SegmentedButtons
-                value={rentType!}
-                onValueChange={handleRentTypeChange}
-                buttons={[
-                  { value: "ITEM", label: "물건" },
-                  { value: "MONEY", label: "금전" },
-                ]}
-              />
+              <View style={[styles.sectionHeaderRow, { marginTop: 22 }]}>
+                <MaterialCommunityIcons
+                  name="cube-outline"
+                  size={20}
+                  color="#111"
+                  style={{ marginRight: 8 }}
+                />
+                <Text style={styles.sectionHeaderTitle}>대여 타입 선택</Text>
+              </View>
 
-              {/* ITEM */}
-              {rentType === "ITEM" && (
-                <View style={{ marginTop: 20 }}>
-                  <Text style={{ marginBottom: 10 }}>물건 선택 방식</Text>
-                  <SegmentedButtons
-                    value={rentSource!}
-                    onValueChange={handleRentSourceChange}
-                    buttons={[
-                      { value: "EXISTING", label: "기존 물건" },
-                      { value: "NEW", label: "새로 등록" },
-                    ]}
-                  />
+              <Menu
+                visible={rentTypeMenuOpen}
+                onDismiss={() => setRentTypeMenuOpen(false)}
+                anchor={
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => setRentTypeMenuOpen(true)}
+                    style={styles.selectBox}
+                  >
+                    <Text
+                      style={[
+                        styles.selectBoxLabel,
+                        !rentType && { color: "#9CA3AF" },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {rentTypeLabel}
+                    </Text>
+                    <MaterialCommunityIcons
+                      name="chevron-down"
+                      size={20}
+                      color="#9CA3AF"
+                    />
+                  </TouchableOpacity>
+                }
+                contentStyle={styles.menuSurface}
+              >
+                <List.Item
+                  onPress={() => {
+                    handleRentTypeChange("ITEM");
+                    setRentTypeMenuOpen(false);
+                  }}
+                  title="물건 대여"
+                  description="물리적인 물건을 대여합니다"
+                  left={(p) => <List.Icon {...p} icon="cube-outline" />}
+                />
+                <Divider />
+                <List.Item
+                  onPress={() => {
+                    handleRentTypeChange("MONEY");
+                    setRentTypeMenuOpen(false);
+                  }}
+                  title="금전 대여"
+                  description="현금을 대여합니다"
+                  left={(p) => <List.Icon {...p} icon="currency-usd" />}
+                />
+              </Menu>
+
+              {step1Done && rentType === "ITEM" && (
+                <>
+                  <View style={[styles.sectionHeaderRow, { marginTop: 24 }]}>
+                    <MaterialCommunityIcons
+                      name="cube-outline"
+                      size={20}
+                      color="#111"
+                      style={{ marginRight: 8 }}
+                    />
+                    <Text style={styles.sectionHeaderTitle}>물건 설정</Text>
+                  </View>
+
+                  <Menu
+                    visible={rentSourceMenuOpen}
+                    onDismiss={() => setRentSourceMenuOpen(false)}
+                    anchor={
+                      <TouchableOpacity
+                        activeOpacity={0.9}
+                        onPress={() => setRentSourceMenuOpen(true)}
+                        style={styles.selectBox}
+                      >
+                        <Text
+                          style={[
+                            styles.selectBoxLabel,
+                            !rentSource && { color: "#9CA3AF" },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {rentSource === "EXISTING"
+                            ? "기존 물건 선택"
+                            : rentSource === "NEW"
+                            ? "새로 등록"
+                            : "선택 방식을 고르세요"}
+                        </Text>
+                        <MaterialCommunityIcons
+                          name="chevron-down"
+                          size={20}
+                          color="#9CA3AF"
+                        />
+                      </TouchableOpacity>
+                    }
+                    contentStyle={styles.menuSurface}
+                  >
+                    <List.Item
+                      left={(p) => <List.Icon {...p} icon="tray-arrow-up" />}
+                      title="기존 물건 선택"
+                      onPress={() => {
+                        handleRentSourceChange("EXISTING");
+                        setRentSourceMenuOpen(false);
+                      }}
+                    />
+                    <Divider />
+                    <List.Item
+                      left={(p) => (
+                        <List.Icon {...p} icon="plus-box-multiple-outline" />
+                      )}
+                      title="새로 등록"
+                      onPress={() => {
+                        handleRentSourceChange("NEW");
+                        setRentSourceMenuOpen(false);
+                      }}
+                    />
+                  </Menu>
 
                   {rentSource === "EXISTING" && (
-                    <>
-                      <Button
-                        mode="outlined"
-                        onPress={() => setIsItemModalVisible(true)}
-                        style={{ marginTop: 20 }}
+                    <View style={{ marginTop: 12 }}>
+                      <TouchableOpacity
+                        style={styles.outlinedButton}
+                        activeOpacity={0.9}
+                        onPress={() => {
+                          handleFilterPress(AVAILABLE_STATUS);
+                          setIsItemModalVisible(true);
+                        }}
                       >
-                        기존 물건 선택하기
-                      </Button>
+                        <MaterialCommunityIcons
+                          name="tray-arrow-up"
+                          size={18}
+                          color="#5B6166"
+                          style={{ marginRight: 6 }}
+                        />
+                        <Text style={styles.outlinedButtonText}>
+                          기존 물건 선택하기
+                        </Text>
+                      </TouchableOpacity>
+
                       {selectedItem && (
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            marginTop: 20,
-                            padding: 10,
-                            borderWidth: 1,
-                            borderColor: "#ccc",
-                            borderRadius: 8,
-                          }}
-                        >
-                          <Image
-                            source={{
-                              uri: selectedItem.fileUrl
-                                ? IMG_BASE_URL + selectedItem.fileUrl
-                                : "https://via.placeholder.com/150",
-                            }}
-                            style={{
-                              width: 60,
-                              height: 60,
-                              borderRadius: 8,
-                              marginRight: 10,
-                            }}
-                          />
-                          <View style={{ flex: 1 }}>
-                            <Text style={{ fontWeight: "bold" }}>
+                        <View style={{ marginTop: 12 }}>
+                          <View style={styles.selectedItemCard}>
+                            <Image
+                              source={{
+                                uri: selectedItem.fileUrl
+                                  ? IMG_BASE_URL + selectedItem.fileUrl
+                                  : "https://via.placeholder.com/300",
+                              }}
+                              style={styles.selectedItemImage}
+                              resizeMode="cover"
+                            />
+                            <Text
+                              style={styles.selectedItemTitle}
+                              numberOfLines={2}
+                            >
                               {selectedItem.title}
                             </Text>
-                            <Text numberOfLines={2} style={{ color: "#555" }}>
-                              {selectedItem.description}
-                            </Text>
+                            {!!selectedItem.description && (
+                              <Text
+                                style={styles.selectedItemDesc}
+                                numberOfLines={4}
+                              >
+                                {selectedItem.description}
+                              </Text>
+                            )}
                           </View>
                         </View>
                       )}
-                    </>
+                    </View>
                   )}
 
                   {rentSource === "NEW" && (
-                    <View style={{ marginTop: 20 }}>
+                    <View style={styles.card}>
+                      <Text style={styles.fieldLabel}>물건 제목</Text>
                       <TextInput
-                        label="물건 제목"
+                        mode="outlined"
+                        placeholder="물건 제목을 입력하세요"
                         value={itemTitle}
                         onChangeText={setItemTitle}
-                        style={{ marginBottom: 10 }}
+                        style={styles.input}
                       />
-                      <TextInput
-                        label="물건 설명"
-                        value={itemDesc}
-                        onChangeText={setItemDesc}
-                        multiline
-                        style={{ marginBottom: 10 }}
-                      />
-                      <Button mode="outlined" onPress={pickImage}>
-                        이미지 선택
-                      </Button>
+
+                      <Text style={styles.fieldLabel}>물건 사진</Text>
+                      <TouchableOpacity
+                        style={styles.outlinedButton}
+                        activeOpacity={0.9}
+                        onPress={pickImage}
+                      >
+                        <MaterialCommunityIcons
+                          name="cloud-upload-outline"
+                          size={18}
+                          color="#5B6166"
+                          style={{ marginRight: 6 }}
+                        />
+                        <Text style={styles.outlinedButtonText}>
+                          이미지 업로드
+                        </Text>
+                      </TouchableOpacity>
                       {itemImage && (
                         <Image
                           source={{ uri: itemImage.uri }}
-                          style={{ width: "100%", height: 200, marginTop: 10 }}
+                          style={styles.preview}
                           resizeMode="cover"
                         />
                       )}
+
+                      <Text style={[styles.fieldLabel, { marginTop: 12 }]}>
+                        물건 설명
+                      </Text>
+                      <TextInput
+                        mode="outlined"
+                        placeholder="물건에 대한 상세 설명을 입력하세요"
+                        value={itemDesc}
+                        onChangeText={setItemDesc}
+                        multiline
+                        textAlignVertical="top"
+                        style={[styles.input, { minHeight: 120 }]}
+                        returnKeyType="done"
+                        blurOnSubmit
+                        onFocus={() =>
+                          setTimeout(
+                            () =>
+                              scrollRef.current?.scrollToEnd({
+                                animated: true,
+                              }),
+                            150
+                          )
+                        }
+                      />
                     </View>
                   )}
-                </View>
+                </>
               )}
 
-              {/* MONEY */}
-              {rentType === "MONEY" && (
-                <View style={{ marginTop: 20 }}>
-                  <TextInput
-                    label="대여 금액"
-                    value={amount}
-                    onChangeText={setAmount}
-                    keyboardType="numeric"
-                  />
-                </View>
+              {step1Done && rentType === "MONEY" && (
+                <>
+                  <View style={[styles.sectionHeaderRow, { marginTop: 24 }]}>
+                    <MaterialCommunityIcons
+                      name="currency-usd"
+                      size={20}
+                      color="#111"
+                      style={{ marginRight: 8 }}
+                    />
+                    <Text style={styles.sectionHeaderTitle}>
+                      금전 대여 설정
+                    </Text>
+                  </View>
+                  <View style={styles.card}>
+                    <Text style={styles.fieldLabel}>대여 금액</Text>
+                    <TextInput
+                      mode="outlined"
+                      placeholder="대여할 금액을 입력하세요"
+                      value={amount}
+                      onChangeText={setAmount}
+                      keyboardType="numeric"
+                      style={styles.input}
+                    />
+                  </View>
+                </>
               )}
 
-              {/* terms */}
-              <View style={{ marginTop: 20 }}>
-                <TextInput
-                  label="대여 상세 내용"
-                  value={terms}
-                  onChangeText={setTerms}
-                  multiline
-                />
-              </View>
+              {step2Done && (
+                <>
+                  <View style={[styles.sectionHeaderRow, { marginTop: 24 }]}>
+                    <MaterialCommunityIcons
+                      name="calendar"
+                      size={20}
+                      color="#111"
+                      style={{ marginRight: 8 }}
+                    />
+                    <Text style={styles.sectionHeaderTitle}>
+                      반납일 및 상세 조건
+                    </Text>
+                  </View>
+                  <View style={styles.card}>
+                    <Text style={styles.fieldLabel}>반납일</Text>
+                    <TouchableOpacity
+                      style={styles.outlinedButton}
+                      activeOpacity={0.9}
+                      onPress={() => setIsDateModalVisible(true)}
+                    >
+                      <MaterialCommunityIcons
+                        name="calendar"
+                        size={18}
+                        color="#5B6166"
+                        style={{ marginRight: 6 }}
+                      />
+                      <Text style={styles.outlinedButtonText}>
+                        {dueDate
+                          ? `반납일: ${dueDate.toLocaleDateString()}`
+                          : "반납일을 선택하세요"}
+                      </Text>
+                    </TouchableOpacity>
 
-              {/* 반납일 */}
-              <Button
-                mode="outlined"
-                onPress={() => setIsDateModalVisible(true)}
-                style={{ marginTop: 20 }}
-              >
-                {dueDate
-                  ? `반납일: ${dueDate.toLocaleDateString()}`
-                  : "반납일 선택"}
-              </Button>
-              <Button
-                mode="contained"
-                onPress={handleCreate}
-                style={{ marginTop: 30 }}
-              >
-                대여 등록하기
-              </Button>
+                    <Text style={[styles.fieldLabel, { marginTop: 12 }]}>
+                      대여 상세 조건
+                    </Text>
+                    <TextInput
+                      mode="outlined"
+                      placeholder="대여 조건, 주의사항 등을 입력하세요"
+                      value={terms}
+                      onChangeText={setTerms}
+                      multiline
+                      textAlignVertical="top"
+                      style={[styles.input, { minHeight: 140 }]}
+                      onFocus={() =>
+                        setTimeout(
+                          () =>
+                            scrollRef.current?.scrollToEnd({ animated: true }),
+                          150
+                        )
+                      }
+                    />
+                  </View>
+                </>
+              )}
+
+              {step3Done && (
+                <View
+                  style={{
+                    paddingHorizontal: 12,
+                    marginTop: 16,
+                    marginBottom: 28,
+                  }}
+                >
+                  <TouchableOpacity
+                    style={styles.outlinedButton}
+                    activeOpacity={0.9}
+                    onPress={handleCreate}
+                  >
+                    <Text style={styles.outlinedButtonText}>대여 요청하기</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </ScrollView>
           </SafeAreaView>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     </>
   );
-};
+}
 
-export default MyAgreementCreateScreen;
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+  },
+  container: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  pageHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 6,
+    marginVertical: 16,
+  },
+  pageHeaderIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 30,
+    backgroundColor: "#E9ECEF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 20,
+  },
+  pageHeaderTitle: { fontSize: 25, fontWeight: "800", color: "#111" },
+  pageHeaderSubtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginTop: 5,
+  },
+  topDivider: {
+    marginTop: 10,
+    marginBottom: 24,
+  },
+  sectionHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    paddingLeft: 2,
+  },
+  sectionHeaderTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#111",
+  },
+  selectBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#E6E6E6",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    backgroundColor: "#F7F7F7",
+  },
+  selectBoxLabel: {
+    fontSize: 15,
+    color: "#2F3438",
+    fontWeight: "600",
+  },
+  menuSurface: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    paddingVertical: 4,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    color: "#4B5563",
+    marginLeft: 2,
+    marginBottom: 6,
+  },
+  card: {
+    backgroundColor: "#F7F8FA",
+    borderRadius: 16,
+    padding: 14,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: "#EEF0F2",
+  },
+  outlinedButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    paddingVertical: 14,
+  },
+  outlinedButtonText: {
+    color: "#2F3438",
+    fontWeight: "700",
+  },
+  personCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#F7F7F7",
+    marginBottom: 6,
+  },
+  personCardEmpty: {
+    backgroundColor: "#FAFAFA",
+  },
+  personAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#E9ECEF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  personName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111",
+  },
+  personPhone: {
+    fontSize: 13,
+    color: "#8B95A1",
+    marginTop: 4,
+  },
+  badge: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    backgroundColor: "#E6F8EE",
+  },
+  badgeText: {
+    color: "#199A5E",
+    fontWeight: "700",
+    fontSize: 12,
+  },
+  thumb: {
+    width: 56,
+    height: 56,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  preview: {
+    width: "100%",
+    height: 200,
+    borderRadius: 10,
+    marginTop: 8,
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#E7E7E7",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  avatarText: {
+    fontWeight: "700",
+  },
+  dialog: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+  },
+  dialogTitle: {
+    fontWeight: "700",
+  },
+  dialogContent: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    paddingTop: 6,
+  },
+  input: {
+    marginBottom: 12,
+    backgroundColor: "transparent",
+  },
+  selectedItemCard: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 14,
+    padding: 12,
+    alignItems: "center",
+  },
+  selectedItemImage: {
+    width: "100%",
+    height: 180,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  selectedItemTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#111",
+    marginBottom: 6,
+  },
+  selectedItemDesc: {
+    fontSize: 13,
+    color: "#6B7280",
+    lineHeight: 19,
+  },
+});
