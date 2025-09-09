@@ -1,109 +1,62 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import * as Contacts from "expo-contacts";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
-    FlatList,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  FlatList,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import {
-    ActivityIndicator,
-    Button,
-    Dialog,
-    Divider,
-    List,
-    Portal,
-    Text,
-    TextInput,
+  ActivityIndicator,
+  Button,
+  Dialog,
+  Divider,
+  List,
+  Portal,
+  Text,
+  TextInput,
 } from "react-native-paper";
-import { recentPartnersApi, searchUserByPhoneApi } from "../../../api/users";
-
-type User = { id: number; name: string; phone: string };
-
-const normalizePhone = (raw: string) => {
-  if (!raw) return "";
-  let phone = raw.replace(/[^0-9+]/g, "");
-  if (phone.startsWith("+82")) phone = "0" + phone.slice(3);
-  return phone;
-};
+import {
+  normalizePhone,
+  usePartnerSelect,
+  User,
+} from "./hooks/usePartnerSelect";
 
 export default function PartnerSelectScreen({ navigation }: any) {
-  const [searchPhone, setSearchPhone] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResult, setSearchResult] = useState<User | null>(null);
-
-  const [contacts, setContacts] = useState<any[]>([]);
-  const [contactSearch, setContactSearch] = useState("");
-  const [contactsLoaded, setContactsLoaded] = useState(false);
-
-  const [partners, setPartners] = useState<User[]>([]);
-  const [isLoadingPartners, setIsLoadingPartners] = useState(false);
-  const [hasNextPartners, setHasNextPartners] = useState(true);
-  const [lastPartnerId, setLastPartnerId] = useState<number | null>(null);
-
-  const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
-  const [isContactsVisible, setIsContactsVisible] = useState(false);
-  const [isRecentVisible, setIsRecentVisible] = useState(false);
+  const {
+    searchPhone,
+    isSearching,
+    searchResult,
+    contacts,
+    contactSearch,
+    contactsLoaded,
+    partners,
+    isLoadingPartners,
+    hasNextPartners,
+    lastPartnerId,
+    isSearchModalVisible,
+    isContactsVisible,
+    isRecentVisible,
+    setSearchPhone,
+    setSearchResult,
+    setContactSearch,
+    setIsSearchModalVisible,
+    setIsContactsVisible,
+    setIsRecentVisible,
+    setPartners,
+    setLastPartnerId,
+    setHasNextPartners,
+    handleSearch,
+    loadContacts,
+    loadPartners,
+    filteredContacts,
+  } = usePartnerSelect();
 
   const goNext = (user: User) => {
     navigation.navigate("MyAgreementCreate", { debtorUser: user });
   };
-
-  const handleSearch = async (phone?: string) => {
-    const target = phone || searchPhone;
-    if (!target) return;
-    setIsSearching(true);
-    try {
-      const res = await searchUserByPhoneApi(normalizePhone(target));
-      const user = res?.data?.data as User | undefined;
-      setSearchResult(user ?? null);
-    } catch {
-      setSearchResult(null);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const loadContacts = async () => {
-    const { status } = await Contacts.requestPermissionsAsync();
-    if (status !== "granted") return;
-    const { data } = await Contacts.getContactsAsync({
-      fields: [Contacts.Fields.PhoneNumbers],
-    });
-    setContacts(data);
-    setContactsLoaded(true);
-  };
-
-  const filteredContacts = contacts.filter((c) =>
-    (c.name || "").toLowerCase().includes(contactSearch.toLowerCase())
-  );
-
-  const loadPartners = async (reset?: boolean) => {
-    if (isLoadingPartners) return;
-    if (!hasNextPartners && !reset) return;
-
-    setIsLoadingPartners(true);
-    try {
-      const cursor = reset ? undefined : lastPartnerId ?? undefined;
-      const res = await recentPartnersApi(cursor);
-      const payload = res.data?.data;
-
-      setPartners((prev) =>
-        reset ? payload?.items || [] : [...prev, ...(payload?.items || [])]
-      );
-      setHasNextPartners(!!payload?.hasNext);
-      setLastPartnerId(payload?.lastId ?? null);
-    } finally {
-      setIsLoadingPartners(false);
-    }
-  };
-
-  useEffect(() => {
-    loadPartners();
-  }, []);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -133,6 +86,7 @@ export default function PartnerSelectScreen({ navigation }: any) {
           />
           <Text style={styles.sectionHeaderTitle}>대여 상대방 선택</Text>
         </View>
+
         <TouchableOpacity
           onPress={() => {
             setIsSearchModalVisible(true);
@@ -181,7 +135,6 @@ export default function PartnerSelectScreen({ navigation }: any) {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* 모달들 */}
       <Portal>
         {/* 번호 검색 모달 */}
         <Dialog
@@ -206,29 +159,6 @@ export default function PartnerSelectScreen({ navigation }: any) {
               style={styles.dialogBtn}
             >
               번호로 검색
-            </Button>
-            <Button
-              mode="outlined"
-              onPress={async () => {
-                if (!contactsLoaded) await loadContacts();
-                setIsContactsVisible(true);
-              }}
-              style={styles.dialogBtn}
-            >
-              연락처에서 선택
-            </Button>
-            <Button
-              mode="outlined"
-              onPress={async () => {
-                setPartners([]);
-                setLastPartnerId(null);
-                setHasNextPartners(true);
-                setIsRecentVisible(true);
-                await loadPartners();
-              }}
-              style={styles.dialogBtn}
-            >
-              최근 거래한 사용자
             </Button>
 
             {searchResult && (
@@ -358,10 +288,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 20,
-  },
-  pageHeaderIconText: {
-    fontWeight: "700",
-    color: "#2F3438",
   },
   pageHeaderTitle: {
     fontSize: 25,
