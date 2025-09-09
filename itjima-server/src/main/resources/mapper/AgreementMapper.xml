@@ -195,4 +195,106 @@
     ORDER by a.id DESC
     LIMIT #{sizePlusOne}
   </select>
+  <select id="findAgreementSummariesByUserId" resultType="com.itjima_server.dto.agreement.response.AgreementSummaryResponseDTO">
+    SELECT
+    a.id,
+    a.status,
+    a.amount,
+    a.terms,
+    a.due_at,
+    a.return_date,
+    i.title AS itemTitle,
+    i.type AS itemType,
+    i.file_url AS itemFileUrl,
+    u.name AS partnerName,
+    partner_party.role AS partnerRole,
+    CASE
+    WHEN i.type = 'MONEY' THEN a.amount - IFNULL(t_sum.total_paid, 0)
+    ELSE NULL
+    END AS remainingAmount
+    FROM
+    AGREEMENTS a
+    JOIN
+    ITEMS i ON a.item_id = i.id
+    JOIN
+    AGREEMENT_PARTIES my_party ON a.id = my_party.agreement_id AND my_party.user_id = #{userId}
+    JOIN
+    AGREEMENT_PARTIES partner_party ON a.id = partner_party.agreement_id AND partner_party.user_id != #{userId}
+    JOIN
+    USERS u ON partner_party.user_id = u.id
+    LEFT JOIN
+    (SELECT agreement_id, SUM(amount) AS total_paid FROM TRANSACTIONS WHERE status = 'CONFIRMED' GROUP BY agreement_id) t_sum
+    ON a.id = t_sum.agreement_id
+    <where>
+      <if test="role != null">
+        AND my_party.role = #{role}
+      </if>
+      <if test="lastId != null">
+        AND a.id &lt; #{lastId}
+      </if>
+      <if test="keyword != null and keyword != ''">
+        AND (i.title LIKE CONCAT('%', #{keyword}, '%') OR u.name LIKE CONCAT('%', #{keyword}, '%'))
+      </if>
+    </where>
+    ORDER BY
+    a.id DESC
+    LIMIT #{sizePlusOne}
+  </select>
+  <select id="findAgreementDetailByIdAndUserId" resultType="com.itjima_server.dto.agreement.response.AgreementRenderingDetailResponseDTO">
+    SELECT a.id,
+           a.status,
+           a.amount,
+           a.terms,
+           a.due_at                                                             AS dueDate,
+           a.return_date                                                        AS returnDate,
+           a.created_at                                                         AS createdAt,
+           i.id                                                                 AS itemId,
+           i.title                                                              AS itemTitle,
+           i.description                                                        AS itemDescription,
+           i.type                                                               AS itemType,
+           i.file_url                                                           AS itemFileUrl,
+           creditor_user.id                                                     AS creditorId,
+           creditor_user.name                                                   AS creditorName,
+           creditor_user.phone                                                  AS creditorPhone,
+           creditor_party.confirm_at                                            AS creditorConfirmAt,
+           debtor_user.id                                                       AS debtorId,
+           debtor_user.name                                                     AS debtorName,
+           debtor_user.phone                                                    as debtorPhone,
+           debtor_party.confirm_at                                              AS debtorConfirmAt,
+           DATEDIFF(a.due_at, debtor_party.confirm_at) + 1                      AS rentalDays,
+           IF(a.status = 'COMPLETED' AND a.return_date > a.due_at, TRUE, FALSE) AS isOverdueReturn,
+           CASE
+             WHEN i.type = 'MONEY' THEN a.amount - IFNULL(t_sum.total_paid, 0)
+             ELSE NULL
+             END                                                              AS remainingAmount,
+           CASE
+             WHEN creditor_user.id = 1 THEN 'CREDITOR'
+             WHEN debtor_user.id = 1 THEN 'DEBTOR'
+             ELSE NULL
+             END                                                              AS myRole
+    FROM AGREEMENTS a
+           JOIN
+         ITEMS i ON a.item_id = i.id
+           JOIN
+         AGREEMENT_PARTIES creditor_party
+         ON a.id = creditor_party.agreement_id AND creditor_party.role = 'CREDITOR'
+           JOIN
+         USERS creditor_user ON creditor_party.user_id = creditor_user.id
+           JOIN
+         AGREEMENT_PARTIES debtor_party
+         ON a.id = debtor_party.agreement_id AND debtor_party.role = 'DEBTOR'
+           JOIN
+         USERS debtor_user ON debtor_party.user_id = debtor_user.id
+           LEFT JOIN
+         (SELECT agreement_id, SUM(amount) AS total_paid FROM TRANSACTIONS WHERE status = 'CONFIRMED' GROUP BY agreement_id) t_sum
+         ON a.id = t_sum.agreement_id
+    WHERE a.id = #{id}
+  </select>
+  <select id="existsByIdAndUserId" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM AGREEMENTS a
+           JOIN AGREEMENT_PARTIES ap ON a.id = ap.agreement_id
+    WHERE a.id = #{id}
+      AND ap.user_id = #{userId}
+  </select>
 </mapper>

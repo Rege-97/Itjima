@@ -9,20 +9,14 @@ import MyItemCreateScreen from "../screens/items/MyItemCreateScreen/MyItemCreate
 import MyItemDetailScreen from "../screens/items/MyItemDetailScreen/MyItemDetailScreen";
 import MyItemEditScreen from "../screens/items/MyItemEditScreen/MyItemEditScreen";
 import MyItemsScreen from "../screens/items/MyItemScreen/MyItemsScreen";
+import MyAgreementsScreen from "../screens/agreements/MyAgreementsScreen/MyAgreementsScreen";
+import MyAgreementDetailScreen from "../screens/agreements/MyAgreementDetailScreen/MyAgreementDetailScreen";
+import MyAgreementCreateScreen from "../screens/agreements/MyAgreementCreateScreen/MyAgreementCreateScreen";
+import PartnerSelectScreen from "../screens/agreements/MyAgreementCreateScreen/PartnerSelectScreen";
 
 const HomeScreen = () => (
   <View>
     <Text>홈</Text>
-  </View>
-);
-const AgreementListScreen = () => (
-  <View>
-    <Text>목록</Text>
-  </View>
-);
-const AddAgreementScreen = () => (
-  <View>
-    <Text>등록</Text>
   </View>
 );
 const ProfileScreen = () => (
@@ -60,6 +54,46 @@ const MyItemsStackNavigator = () => {
   );
 };
 
+const MyAgreementsStack = createNativeStackNavigator();
+
+const MyAgreementsStackNavigator = () => {
+  return (
+    <MyAgreementsStack.Navigator
+      initialRouteName="MyAgreementsList"
+      screenOptions={{ headerShown: false }}
+    >
+      <MyAgreementsStack.Screen
+        name="MyAgreementsList"
+        component={MyAgreementsScreen}
+      />
+      <MyAgreementsStack.Screen
+        name="MyAgreementDetail"
+        component={MyAgreementDetailScreen}
+      />
+    </MyAgreementsStack.Navigator>
+  );
+};
+
+const MyAgreementCreateStack = createNativeStackNavigator();
+
+const MyAgreementCreateStackNavigator = () => {
+  return (
+    <MyAgreementCreateStack.Navigator
+      initialRouteName="PartnerSelect"
+      screenOptions={{ headerShown: false }}
+    >
+      <MyAgreementCreateStack.Screen
+        name="PartnerSelect"
+        component={PartnerSelectScreen}
+      />
+      <MyAgreementCreateStack.Screen
+        name="MyAgreementCreate"
+        component={MyAgreementCreateScreen}
+      />
+    </MyAgreementCreateStack.Navigator>
+  );
+};
+
 const Tab = createBottomTabNavigator();
 
 const MainTabNavigator = () => {
@@ -84,7 +118,7 @@ const MainTabNavigator = () => {
       />
       <Tab.Screen
         name="AgreementList"
-        component={AgreementListScreen}
+        component={MyAgreementsStackNavigator}
         options={{
           title: "목록",
           tabBarIcon: ({ color, size }) => (
@@ -98,7 +132,7 @@ const MainTabNavigator = () => {
       />
       <Tab.Screen
         name="AddAgreement"
-        component={AddAgreementScreen}
+        component={MyAgreementCreateStackNavigator}
         options={{
           title: "등록",
           tabBarIcon: ({ color, size }) => (

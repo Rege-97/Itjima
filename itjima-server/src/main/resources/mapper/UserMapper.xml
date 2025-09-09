@@ -217,4 +217,12 @@
         deleted_at = NOW()
     WHERE id = #{id}
   </update>
+  <select id="findByPhone" resultType="com.itjima_server.dto.user.response.UserSearchResponseDTO">
+    SELECT id,
+           name,
+           email,
+           phone
+    FROM USERS
+    WHERE phone = #{phone}
+  </select>
 </mapper>

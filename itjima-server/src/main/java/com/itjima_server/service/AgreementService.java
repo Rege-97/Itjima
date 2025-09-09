@@ -19,8 +19,11 @@ import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.agreement.request.AgreementCreateRequestDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailDTO;
 import com.itjima_server.dto.agreement.response.AgreementDetailResponseDTO;
+import com.itjima_server.dto.agreement.response.AgreementLogsResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementPartyInfoDTO;
+import com.itjima_server.dto.agreement.response.AgreementRenderingDetailResponseDTO;
 import com.itjima_server.dto.agreement.response.AgreementResponseDTO;
+import com.itjima_server.dto.agreement.response.AgreementSummaryResponseDTO;
 import com.itjima_server.dto.transaction.response.TransactionResponseDTO;
 import com.itjima_server.dto.user.response.UserSimpleInfoDTO;
 import com.itjima_server.exception.agreement.NotFoundAgreementException;
@@ -32,11 +35,13 @@ import com.itjima_server.exception.item.NotFoundItemException;
 import com.itjima_server.exception.user.NotFoundUserException;
 import com.itjima_server.mapper.AgreementMapper;
 import com.itjima_server.mapper.AgreementPartyMapper;
+import com.itjima_server.mapper.AuditLogMapper;
 import com.itjima_server.mapper.ItemMapper;
 import com.itjima_server.mapper.ScheduleMapper;
 import com.itjima_server.mapper.TransactionMapper;
 import com.itjima_server.mapper.UserMapper;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +53,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 대여 관련 비즈니스 로직을 수행하는 서비스 클래스
  *
  * @author Rege-97
- * @since 2025-08-26
+ * @since 2025-09-08
  */
 @Service
 @RequiredArgsConstructor
@@ -60,6 +65,7 @@ public class AgreementService {
     private final ItemMapper itemMapper;
     private final TransactionMapper transactionMapper;
     private final ScheduleMapper scheduleMapper;
+    private final AuditLogMapper auditLogMapper;
 
     /**
      * 대여 생성 처리
@@ -494,7 +500,7 @@ public class AgreementService {
      * @return 변경한 대여 정보 DTO
      */
     @Transactional(rollbackFor = Exception.class)
-    public AgreementResponseDTO agreementExtend(Long id, Long userId, LocalDateTime dueAt) {
+    public AgreementResponseDTO agreementExtend(Long id, Long userId, LocalDate dueAt) {
         Agreement agreement = findByAgreementId(id);
 
         List<AgreementParty> agreementPartyList = verifyCanRespond(userId, agreement,
@@ -508,7 +514,7 @@ public class AgreementService {
             agreement.setStatus(AgreementStatus.ACCEPTED);
         }
 
-        agreement.setDueAt(dueAt);
+        agreement.setDueAt(dueAt.atStartOfDay());
 
         checkUpdateResult(
                 agreementMapper.updateDueAtAndStatusById(agreement.getId(), agreement.getStatus(),
@@ -551,9 +557,88 @@ public class AgreementService {
         return toAgreementResponseDTO(agreementPartyCreditor, agreementPartyDebtor, agreement);
     }
 
-    // ==========================
-    // 내부 유틸리티
-    // ==========================
+
+    /**
+     * 화면 렌더링용 대여 리스트
+     *
+     * @param userId  로그인한 사용자 id
+     * @param keyword 물품명 또는 상대방 이름 검색 필터
+     * @param role    역할 필터
+     * @param lastId  조회할 마지막 id
+     * @param size    한 페이지에 보여줄 개수
+     * @return 대여 리스트 응답 DTO
+     */
+    @Transactional(readOnly = true)
+    public PagedResultDTO<?> getSummaries(Long userId, String keyword, AgreementPartyRole role,
+            Long lastId, int size) {
+        int sizePlusOne = size + 1;
+        List<AgreementSummaryResponseDTO> agreementSummaries = agreementMapper.findAgreementSummariesByUserId(
+                userId,
+                keyword, role, lastId, sizePlusOne);
+        if (agreementSummaries == null || agreementSummaries.isEmpty()) {
+            return PagedResultDTO.from(null, false, null);
+        }
+        boolean hasNext = false;
+        if (agreementSummaries.size() == sizePlusOne) {
+            hasNext = true;
+            agreementSummaries.remove(size);
+        }
+
+        lastId = agreementSummaries.get(agreementSummaries.size() - 1).getId();
+        return PagedResultDTO.from(agreementSummaries, hasNext, lastId);
+    }
+
+    /**
+     * 렌더링용 대여 상세 조회
+     *
+     * @param id     조회할 대여 id
+     * @param userId 로그인한 사용자 id
+     * @return 조회된 대여 응답 DTO
+     */
+    @Transactional(readOnly = true)
+    public AgreementRenderingDetailResponseDTO getDetail(Long id, Long userId) {
+        if (!agreementMapper.existsByIdAndUserId(id, userId)) {
+            throw new NotAuthorException("로그인한 사용자의 물품이 아닙니다.");
+        }
+
+        AgreementRenderingDetailResponseDTO agreement = agreementMapper.findAgreementDetailByIdAndUserId(
+                id, userId);
+        if (agreement == null) {
+            throw new NotFoundItemException("해당 물품을 찾을 수 없습니다.");
+        }
+
+        return agreement;
+    }
+
+    /**
+     * 대여 로그 리스트
+     *
+     * @param id     대여 ID
+     * @param lastId 조회할 마지막 id
+     * @param size   한 페이지에 보여줄 개수
+     * @return 로그 리스트 응답 DTO
+     */
+    @Transactional(readOnly = true)
+    public PagedResultDTO<?> getLogs(Long id, Long lastId, int size) {
+        int sizePlusOne = size + 1;
+        List<AgreementLogsResponseDTO> logList = auditLogMapper.findByAgreementId(id, lastId,
+                sizePlusOne);
+        if (logList == null || logList.isEmpty()) {
+            return PagedResultDTO.from(null, false, null);
+        }
+        boolean hasNext = false;
+        if (logList.size() == sizePlusOne) {
+            hasNext = true;
+            logList.remove(size);
+        }
+
+        lastId = logList.get(logList.size() - 1).getId();
+        return PagedResultDTO.from(logList, hasNext, lastId);
+    }
+
+// ==========================
+// 내부 유틸리티
+// ==========================
 
     /**
      * INSERT 실행 결과 검증 유틸리티

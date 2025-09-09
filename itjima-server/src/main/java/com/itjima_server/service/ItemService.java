@@ -146,6 +146,7 @@ public class ItemService {
      * @param size   한 페이지에 보여줄 개수
      * @return 대여 물품 리스트 응답 DTO
      */
+    @Transactional(readOnly = true)
     public PagedResultDTO<?> getList(Long userId, Long lastId, int size) {
         int sizePlusOne = size + 1;
         List<Item> itemList = itemMapper.findByUserId(userId, lastId, sizePlusOne);
@@ -177,6 +178,7 @@ public class ItemService {
      * @param userId 로그인한 사용자 id
      * @return 조회된 물품 응답 DTO
      */
+    @Transactional(readOnly = true)
     public ItemResponseDTO get(Long id, Long userId) {
         Item item = itemMapper.findById(id);
         if (item == null) {
@@ -200,6 +202,7 @@ public class ItemService {
      * @param size    한 페이지에 보여줄 개수
      * @return 대여 물품 리스트 응답 DTO
      */
+    @Transactional(readOnly = true)
     public PagedResultDTO<?> getSummaries(Long userId, String keyword, String status, Long lastId,
             int size) {
         int sizePlusOne = size + 1;
@@ -224,6 +227,7 @@ public class ItemService {
      * @param userId 로그인한 사용자 ID
      * @return 상태별 개수 DTO
      */
+    @Transactional(readOnly = true)
     public ItemCountResponseDTO getCount(Long userId) {
         List<ItemCountDTO> countList = itemMapper.countStatusByUserId(userId);
 
@@ -276,6 +280,7 @@ public class ItemService {
         return item;
     }
 
+    @Transactional(readOnly = true)
     public PagedResultDTO<?> getAgreementHistory(Long id, Long userId, Long lastId,
             int size) {
         if (!itemMapper.existsByIdAndUserId(id, userId)) {
