@@ -268,8 +268,8 @@
              ELSE NULL
              END                                                              AS remainingAmount,
            CASE
-             WHEN creditor_user.id = 1 THEN 'CREDITOR'
-             WHEN debtor_user.id = 1 THEN 'DEBTOR'
+             WHEN creditor_user.id = #{userId} THEN 'CREDITOR'
+             WHEN debtor_user.id = #{userId} THEN 'DEBTOR'
              ELSE NULL
              END                                                              AS myRole
     FROM AGREEMENTS a
@@ -296,5 +296,157 @@
            JOIN AGREEMENT_PARTIES ap ON a.id = ap.agreement_id
     WHERE a.id = #{id}
       AND ap.user_id = #{userId}
+  </select>
+  <select id="countAgreementsByUserId" resultType="com.itjima_server.dto.dashboard.response.DashboardAgreementCountResponseDTO">
+    SELECT ap.role, count(*) AS count
+    FROM AGREEMENTS a
+           JOIN AGREEMENT_PARTIES ap ON a.id = ap.agreement_id
+    WHERE user_id = #{userId}
+      AND (a.status = 'ACCEPTED' OR a.status = 'OVERDUE')
+    GROUP BY ap.role
+  </select>
+  <select id="findComingAgreementsByUserId" resultType="com.itjima_server.dto.dashboard.response.DashboardComingReturnDTO">
+    SELECT a.id,
+           a.amount,
+           a.due_at,
+           ap.role,
+           i.title                       AS itemTitle,
+           i.description                 AS itemDescription,
+           i.file_url                    AS itemFileUrl,
+           DATEDIFF(a.due_at, CURDATE()) AS daysLeft
+    FROM AGREEMENTS a
+           JOIN AGREEMENT_PARTIES ap ON a.id = ap.agreement_id
+           JOIN USERS u ON ap.user_id = u.id
+           JOIN ITEMS i ON a.item_id = i.id
+    WHERE DATEDIFF(a.due_at, CURDATE()) BETWEEN 0 AND 7
+      AND a.status = 'ACCEPTED'
+      AND ap.user_id = #{userId}
+    ORDER BY due_at
+    LIMIT 5
+  </select>
+  <select id="findOverdueAgreementsByUserId" resultType="com.itjima_server.dto.dashboard.response.DashboardOverdueDTO">
+    SELECT a.id,
+           a.amount,
+           a.due_at,
+           ap.role,
+           i.title                       AS itemTitle,
+           i.description                 AS itemDescription,
+           i.file_url                    AS itemFileUrl,
+           DATEDIFF(CURDATE(), a.due_at) AS overDays
+    FROM AGREEMENTS a
+           JOIN AGREEMENT_PARTIES ap ON a.id = ap.agreement_id
+           JOIN USERS u ON ap.user_id = u.id
+           JOIN ITEMS i ON a.item_id = i.id
+    WHERE a.status = 'OVERDUE'
+      AND ap.user_id = #{userId}
+    ORDER BY due_at
+    LIMIT 5
+  </select>
+  <select id="findPendingAgreementsByUserId" resultType="com.itjima_server.dto.dashboard.response.DashboardPendingResponseDTO">
+    SELECT *
+    FROM (
+    SELECT 'AGREEMENT' AS source,
+    a.id,
+    CASE
+    WHEN a.status = 'PENDING' THEN '대여 승인 요청'
+    ELSE a.status
+    END AS status,
+    creditorUser.name AS pendingUser,
+    CASE
+    WHEN i.type = 'OBJECT' THEN i.title
+    ELSE CONCAT(a.amount, '원')
+    END AS description,
+    UNIX_TIMESTAMP(a.created_at) * 1000 AS cursorKey,
+    a.created_at
+    FROM AGREEMENTS a
+    JOIN AGREEMENT_PARTIES debtorParty
+    ON a.id = debtorParty.agreement_id AND debtorParty.role = 'DEBTOR'
+    JOIN AGREEMENT_PARTIES creditorParty
+    ON a.id = creditorParty.agreement_id AND creditorParty.role = 'CREDITOR'
+    JOIN USERS debtorUser ON debtorParty.user_id = debtorUser.id
+    JOIN USERS creditorUser ON creditorParty.user_id = creditorUser.id
+    JOIN ITEMS i ON a.item_id = i.id
+    WHERE a.status = 'PENDING'
+    AND debtorParty.user_id = #{userId}
+
+    UNION ALL
+
+    SELECT 'TRANSACTION' AS source,
+    a.id,
+    CASE
+    WHEN t.status = 'PENDING' THEN '상환 완료 요청'
+    ELSE t.status
+    END AS status,
+    debtorUser.name AS pendingUser,
+    CONCAT(t.amount, '원') AS description,
+    UNIX_TIMESTAMP(t.created_at) * 1000 AS cursorKey,
+    t.created_at
+    FROM TRANSACTIONS t
+    JOIN AGREEMENTS a ON a.id = t.agreement_id
+    JOIN AGREEMENT_PARTIES debtorParty
+    ON a.id = debtorParty.agreement_id AND debtorParty.role = 'DEBTOR'
+    JOIN AGREEMENT_PARTIES creditorParty
+    ON a.id = creditorParty.agreement_id AND creditorParty.role = 'CREDITOR'
+    JOIN USERS debtorUser ON debtorParty.user_id = debtorUser.id
+    JOIN USERS creditorUser ON creditorParty.user_id = creditorUser.id
+    WHERE t.status = 'PENDING'
+    AND creditorParty.user_id = #{userId}
+    ) x
+    <if test="cursorKey != null">
+      WHERE x.cursorKey &lt; #{cursorKey}
+    </if>
+    ORDER BY x.cursorKey DESC
+    LIMIT #{sizePlusOne}
+  </select>
+  <select id="countPendingAgreementsByUserId" resultType="int">
+    SELECT count(*)
+    FROM (
+           SELECT 'AGREEMENT' AS source,
+                  a.id,
+                  CASE
+                    WHEN a.status = 'PENDING' THEN '대여 승인 요청'
+                    ELSE a.status
+                    END AS status,
+                  creditorUser.name AS pendingUser,
+                  CASE
+                    WHEN i.type = 'OBJECT' THEN i.title
+                    ELSE CONCAT(a.amount, '원')
+                    END AS description,
+                  UNIX_TIMESTAMP(a.created_at) * 1000 AS cursorKey,
+                  a.created_at
+           FROM AGREEMENTS a
+                  JOIN AGREEMENT_PARTIES debtorParty
+                       ON a.id = debtorParty.agreement_id AND debtorParty.role = 'DEBTOR'
+                  JOIN AGREEMENT_PARTIES creditorParty
+                       ON a.id = creditorParty.agreement_id AND creditorParty.role = 'CREDITOR'
+                  JOIN USERS debtorUser ON debtorParty.user_id = debtorUser.id
+                  JOIN USERS creditorUser ON creditorParty.user_id = creditorUser.id
+                  JOIN ITEMS i ON a.item_id = i.id
+           WHERE a.status = 'PENDING'
+             AND debtorParty.user_id = #{userId}
+
+           UNION ALL
+
+           SELECT 'TRANSACTION' AS source,
+                  a.id,
+                  CASE
+                    WHEN t.status = 'PENDING' THEN '상환 완료 요청'
+                    ELSE t.status
+                    END AS status,
+                  debtorUser.name AS pendingUser,
+                  CONCAT(t.amount, '원') AS description,
+                  UNIX_TIMESTAMP(t.created_at) * 1000 AS cursorKey,
+                  t.created_at
+           FROM TRANSACTIONS t
+                  JOIN AGREEMENTS a ON a.id = t.agreement_id
+                  JOIN AGREEMENT_PARTIES debtorParty
+                       ON a.id = debtorParty.agreement_id AND debtorParty.role = 'DEBTOR'
+                  JOIN AGREEMENT_PARTIES creditorParty
+                       ON a.id = creditorParty.agreement_id AND creditorParty.role = 'CREDITOR'
+                  JOIN USERS debtorUser ON debtorParty.user_id = debtorUser.id
+                  JOIN USERS creditorUser ON creditorParty.user_id = creditorUser.id
+           WHERE t.status = 'PENDING'
+             AND creditorParty.user_id = #{userId}
+         ) x
   </select>
 </mapper>

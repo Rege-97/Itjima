@@ -2,7 +2,6 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import {
   FlatList,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -23,6 +22,7 @@ import {
   usePartnerSelect,
   User,
 } from "./hooks/usePartnerSelect";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function PartnerSelectScreen({ navigation }: any) {
   const {

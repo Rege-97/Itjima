@@ -1,5 +1,6 @@
 package com.itjima_server.domain.notification;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,6 @@ public class Schedule {
     private long id;
     private long agreementId;
     private ScheduleType type;
-    private LocalDateTime dueAt;
+    private LocalDate dueAt;
     private boolean notified;
 }

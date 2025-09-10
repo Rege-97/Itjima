@@ -21,11 +21,11 @@ const AgreementStatusBadge = ({
   let label = status;
   switch (status) {
     case "PENDING":
-      backgroundColor = "#FFC107";
+      backgroundColor = "#5c36f4";
       label = "승인 대기 중";
       break;
     case "ACCEPTED":
-      backgroundColor = "#2196F3";
+      backgroundColor = "#4CAF50";
       label = "대여중";
       break;
     case "REJECTED":
@@ -33,7 +33,7 @@ const AgreementStatusBadge = ({
       label = "거절됨";
       break;
     case "COMPLETED":
-      backgroundColor = overdueReturn ? "#FF5722" : "#4CAF50";
+      backgroundColor = overdueReturn ? "#2196F3" : "#4CAF50";
       label = overdueReturn ? "연체반납" : "완료됨";
       break;
     case "CANCELED":
@@ -41,7 +41,7 @@ const AgreementStatusBadge = ({
       label = "취소됨";
       break;
     case "OVERDUE":
-      backgroundColor = "#E91E63";
+      backgroundColor = "#FF9800";
       label = "연체됨";
       break;
   }
@@ -54,7 +54,7 @@ const AgreementStatusBadge = ({
 
 const RoleBadge = ({ myRole }: { myRole: "DEBTOR" | "CREDITOR" }) => {
   const isDebtor = myRole === "DEBTOR";
-  const backgroundColor = isDebtor ? "#4CAF50" : "#5c36f4";
+  const backgroundColor = isDebtor ? "#E91E63" : "#009688";
   const text = isDebtor ? "빌림" : "빌려줌";
   return (
     <View style={[styles.badge, { backgroundColor, marginRight: 8 }]}>

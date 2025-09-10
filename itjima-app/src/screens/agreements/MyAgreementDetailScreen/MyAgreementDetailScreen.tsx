@@ -1,16 +1,17 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View, TouchableOpacity } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
   Button,
   Dialog,
   Portal,
-  SegmentedButtons,
+  Text,
   TextInput,
 } from "react-native-paper";
 import { DatePickerModal } from "react-native-paper-dates";
 import { useFocusEffect } from "@react-navigation/native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   agreementAccept,
   agreementCancel,
@@ -20,9 +21,7 @@ import {
   agreementTransaction,
 } from "../../../api/agreements";
 
-import useAgreementDetail, {
-  toLocalDateString,
-} from "./hooks/useAgreementDetail";
+import useAgreementDetail from "./hooks/useAgreementDetail";
 import AgreementInfoTab from "./components/AgreementInfoTab";
 import ActionButtons from "./components/ActionButtons";
 import ActivityLogTab from "./components/ActivityLogTab";
@@ -82,6 +81,17 @@ const MyAgreementDetailScreen = ({ route, navigation }: any) => {
     }
   }, [activeTab, isRepayInitLoaded, agreement?.itemType, fetchRepayments]);
 
+  const isMoney = agreement?.itemType === "MONEY";
+  const hideStatuses = ["PENDING", "REJECTED", "CANCELED"] as const;
+  const canShowRepayTab =
+    !!agreement && isMoney && !hideStatuses.includes(agreement.status as any);
+
+  useEffect(() => {
+    if (!canShowRepayTab && activeTab === "REPAY") {
+      setActiveTab("INFO");
+    }
+  }, [canShowRepayTab, activeTab]);
+
   if (isLoading) {
     return (
       <View style={styles.centeredView}>
@@ -127,36 +137,10 @@ const MyAgreementDetailScreen = ({ route, navigation }: any) => {
     agreement.myRole === "CREDITOR"
       ? agreement.debtorPhone
       : agreement.creditorPhone;
-  const isMoney = agreement.itemType === "MONEY";
   const isItemLoan = agreement.itemType === "OBJECT";
   const hasSettlement =
     typeof agreement.amount === "number" ||
     typeof agreement.remainingAmount === "number";
-
-  const segmentedButtons = [
-    {
-      value: "INFO",
-      label: "대여정보",
-      style: styles.segmentedButton,
-      labelStyle: styles.segmentedLabel,
-    },
-    {
-      value: "LOG",
-      label: "활동로그",
-      style: styles.segmentedButton,
-      labelStyle: styles.segmentedLabel,
-    },
-    ...(isMoney
-      ? [
-          {
-            value: "REPAY",
-            label: "상환기록",
-            style: styles.segmentedButton,
-            labelStyle: styles.segmentedLabel,
-          } as const,
-        ]
-      : []),
-  ] as const;
 
   return (
     <>
@@ -166,19 +150,10 @@ const MyAgreementDetailScreen = ({ route, navigation }: any) => {
       </Appbar.Header>
 
       <View style={{ backgroundColor: "#fff" }}>
-        <SegmentedButtons
+        <DetailFilterPills
           value={activeTab}
-          onValueChange={(v) => setActiveTab(v as Tab)}
-          style={styles.segmentedContainer}
-          buttons={segmentedButtons as any}
-          theme={{
-            colors: {
-              primary: "#fff",
-              onPrimary: "#000",
-              surface: "#f0f0f3",
-              outline: "transparent",
-            },
-          }}
+          showRepay={canShowRepayTab}
+          onChange={setActiveTab}
         />
       </View>
 
@@ -247,7 +222,7 @@ const MyAgreementDetailScreen = ({ route, navigation }: any) => {
         </View>
       )}
 
-      {activeTab === "REPAY" && agreement.itemType === "MONEY" && (
+      {activeTab === "REPAY" && canShowRepayTab && (
         <View style={styles.container}>
           <RepaymentTab
             remainingAmount={agreement.remainingAmount}
@@ -305,8 +280,10 @@ const MyAgreementDetailScreen = ({ route, navigation }: any) => {
         onDismiss={() => setExtendVisible(false)}
         onConfirm={async ({ date }) => {
           try {
+            const adjusted = new Date(date!);
+            adjusted.setDate(adjusted.getDate() + 1);
             await agreementExtend(agreementId, {
-              dueAt: toLocalDateString(date!),
+              dueAt: adjusted.toISOString(),
             });
             setExtendVisible(false);
             await fetchInitialData();
@@ -319,6 +296,83 @@ const MyAgreementDetailScreen = ({ route, navigation }: any) => {
   );
 };
 
+function DetailFilterPills({
+  value,
+  showRepay,
+  onChange,
+}: {
+  value: Tab;
+  showRepay: boolean;
+  onChange: (v: Tab) => void;
+}) {
+  return (
+    <View style={styles.pillsRow}>
+      <Pill
+        active={value === "INFO"}
+        bg="#F3F4F6"
+        border="#E5E7EB"
+        icon="information-outline"
+        label="대여정보"
+        textColor="#374151"
+        onPress={() => onChange("INFO")}
+      />
+      <Pill
+        active={value === "LOG"}
+        bg="#EEF2FF"
+        border="#E0E7FF"
+        icon="history"
+        label="활동로그"
+        textColor="#3730A3"
+        onPress={() => onChange("LOG")}
+      />
+      {showRepay && (
+        <Pill
+          active={value === "REPAY"}
+          bg="#F5F3FF"
+          border="#EDE9FE"
+          icon="cash-multiple"
+          label="상환기록"
+          textColor="#7C3AED"
+          onPress={() => onChange("REPAY")}
+        />
+      )}
+    </View>
+  );
+}
+
+function Pill({
+  active,
+  bg,
+  border,
+  icon,
+  label,
+  textColor,
+  onPress,
+}: {
+  active: boolean;
+  bg: string;
+  border: string;
+  icon: any;
+  label: string;
+  textColor: string;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={onPress}
+      style={[
+        styles.pill,
+        { backgroundColor: bg, borderColor: border },
+        active && styles.pillActive,
+      ]}
+    >
+      <MaterialCommunityIcons name={icon} size={16} color={textColor} />
+      <Text style={[styles.pillText, { color: textColor }]}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -329,20 +383,39 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  segmentedContainer: {
+
+  pillsRow: {
+    flexDirection: "row",
+    alignItems: "stretch",
     marginHorizontal: 14,
     marginVertical: 8,
-    borderRadius: 6,
-    height: 40,
-    backgroundColor: "#f0f0f3",
   },
-  segmentedButton: {
+  pill: {
     flex: 1,
-    borderRadius: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minHeight: 36,
+    marginRight: 8,
   },
-  segmentedLabel: {
+  pillText: {
     fontSize: 13,
-    fontWeight: "600",
+    fontWeight: "700",
+    includeFontPadding: false,
+    textAlignVertical: "center",
+  },
+  pillActive: {
+    borderColor: "#111827",
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
   },
 });
 

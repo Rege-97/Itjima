@@ -13,12 +13,14 @@ import MyAgreementsScreen from "../screens/agreements/MyAgreementsScreen/MyAgree
 import MyAgreementDetailScreen from "../screens/agreements/MyAgreementDetailScreen/MyAgreementDetailScreen";
 import MyAgreementCreateScreen from "../screens/agreements/MyAgreementCreateScreen/MyAgreementCreateScreen";
 import PartnerSelectScreen from "../screens/agreements/MyAgreementCreateScreen/PartnerSelectScreen";
+import HomeScreen from "../screens/home/HomeScreen";
+import { useIsFocused } from "@react-navigation/native";
 
-const HomeScreen = () => (
-  <View>
-    <Text>홈</Text>
-  </View>
-);
+const FocusUnmount: React.FC<React.PropsWithChildren> = ({ children }) => {
+  const isFocused = useIsFocused();
+  return isFocused ? <>{children}</> : null; // 포커스 아닐 땐 언마운트
+};
+
 const ProfileScreen = () => (
   <View>
     <Text>프로필</Text>
@@ -42,15 +44,23 @@ const MyItemsStack = createNativeStackNavigator();
 
 const MyItemsStackNavigator = () => {
   return (
-    <MyItemsStack.Navigator
-      initialRouteName="MyItemsList"
-      screenOptions={{ headerShown: false }}
-    >
-      <MyItemsStack.Screen name="MyItemsList" component={MyItemsScreen} />
-      <MyItemsStack.Screen name="MyItemDetail" component={MyItemDetailScreen} />
-      <MyItemsStack.Screen name="MyItemEdit" component={MyItemEditScreen} />
-      <MyItemsStack.Screen name="MyItemCreate" component={MyItemCreateScreen} />
-    </MyItemsStack.Navigator>
+    <FocusUnmount>
+      <MyItemsStack.Navigator
+        initialRouteName="MyItemsList"
+        screenOptions={{ headerShown: false }}
+      >
+        <MyItemsStack.Screen name="MyItemsList" component={MyItemsScreen} />
+        <MyItemsStack.Screen
+          name="MyItemDetail"
+          component={MyItemDetailScreen}
+        />
+        <MyItemsStack.Screen name="MyItemEdit" component={MyItemEditScreen} />
+        <MyItemsStack.Screen
+          name="MyItemCreate"
+          component={MyItemCreateScreen}
+        />
+      </MyItemsStack.Navigator>
+    </FocusUnmount>
   );
 };
 
@@ -58,19 +68,21 @@ const MyAgreementsStack = createNativeStackNavigator();
 
 const MyAgreementsStackNavigator = () => {
   return (
-    <MyAgreementsStack.Navigator
-      initialRouteName="MyAgreementsList"
-      screenOptions={{ headerShown: false }}
-    >
-      <MyAgreementsStack.Screen
-        name="MyAgreementsList"
-        component={MyAgreementsScreen}
-      />
-      <MyAgreementsStack.Screen
-        name="MyAgreementDetail"
-        component={MyAgreementDetailScreen}
-      />
-    </MyAgreementsStack.Navigator>
+    <FocusUnmount>
+      <MyAgreementsStack.Navigator
+        initialRouteName="MyAgreementsList"
+        screenOptions={{ headerShown: false }}
+      >
+        <MyAgreementsStack.Screen
+          name="MyAgreementsList"
+          component={MyAgreementsScreen}
+        />
+        <MyAgreementsStack.Screen
+          name="MyAgreementDetail"
+          component={MyAgreementDetailScreen}
+        />
+      </MyAgreementsStack.Navigator>
+    </FocusUnmount>
   );
 };
 
@@ -78,19 +90,36 @@ const MyAgreementCreateStack = createNativeStackNavigator();
 
 const MyAgreementCreateStackNavigator = () => {
   return (
-    <MyAgreementCreateStack.Navigator
-      initialRouteName="PartnerSelect"
-      screenOptions={{ headerShown: false }}
-    >
-      <MyAgreementCreateStack.Screen
-        name="PartnerSelect"
-        component={PartnerSelectScreen}
-      />
-      <MyAgreementCreateStack.Screen
-        name="MyAgreementCreate"
-        component={MyAgreementCreateScreen}
-      />
-    </MyAgreementCreateStack.Navigator>
+    <FocusUnmount>
+      <MyAgreementCreateStack.Navigator
+        initialRouteName="PartnerSelect"
+        screenOptions={{ headerShown: false }}
+      >
+        <MyAgreementCreateStack.Screen
+          name="PartnerSelect"
+          component={PartnerSelectScreen}
+        />
+        <MyAgreementCreateStack.Screen
+          name="MyAgreementCreate"
+          component={MyAgreementCreateScreen}
+        />
+      </MyAgreementCreateStack.Navigator>
+    </FocusUnmount>
+  );
+};
+
+const HomeStack = createNativeStackNavigator();
+
+const HomeStackNavigator = () => {
+  return (
+    <FocusUnmount>
+      <HomeStack.Navigator
+        initialRouteName="HomeScreen"
+        screenOptions={{ headerShown: false }}
+      >
+        <HomeStack.Screen name="HomeScreen" component={HomeScreen} />
+      </HomeStack.Navigator>
+    </FocusUnmount>
   );
 };
 
@@ -104,7 +133,7 @@ const MainTabNavigator = () => {
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeStackNavigator}
         options={{
           title: "홈",
           tabBarIcon: ({ color, size }) => (

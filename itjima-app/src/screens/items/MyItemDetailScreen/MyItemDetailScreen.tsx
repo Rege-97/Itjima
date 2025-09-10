@@ -1,9 +1,10 @@
 import React from "react";
-import { FlatList, SafeAreaView, StyleSheet, View } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Appbar, Button, Text } from "react-native-paper";
 import { AgreementHistoryCard } from "./components/AgreementHistoryCard";
 import { ItemDetailsHeader } from "./components/ItemDetailsHeader";
 import { useItemDetails } from "./hooks/useItemDetails";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const MyItemDetailScreen = ({ route, navigation }: any) => {
   const { itemId } = route.params;

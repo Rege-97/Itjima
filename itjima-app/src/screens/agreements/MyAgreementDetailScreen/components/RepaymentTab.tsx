@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   repayActionBtn: {
     marginLeft: 6,
     minWidth: 64,
-    height: 32,
+    height: 40,
     justifyContent: "center",
   },
 

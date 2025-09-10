@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   FlatList,
   RefreshControl,
-  SafeAreaView,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -12,6 +11,7 @@ import ItemCard from "./components/ItemCard";
 import SummaryBox from "./components/SummaryBox";
 import { useItem } from "./hooks/useItem";
 import { MaterialIcons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const MyItemsScreen = ({ navigation }: any) => {
   const {

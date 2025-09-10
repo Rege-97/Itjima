@@ -182,8 +182,8 @@ public class AgreementService {
         checkUpdateResult(itemMapper.updateStatusById(agreement.getItemId(), ItemStatus.ON_LOAN),
                 "물품 상태 변경에 실패했습니다.");
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime dueAt = agreement.getDueAt();
+        LocalDate now = LocalDate.now();
+        LocalDate dueAt = agreement.getDueAt();
 
         if (dueAt.minusDays(7).isAfter(now)) {
             scheduleMapper.insert(Schedule.builder()
@@ -486,7 +486,7 @@ public class AgreementService {
             scheduleMapper.insert(Schedule.builder()
                     .agreementId(id)
                     .type(ScheduleType.OVERDUE)
-                    .dueAt(LocalDateTime.now())
+                    .dueAt(LocalDate.now())
                     .build());
         }
     }
@@ -505,7 +505,8 @@ public class AgreementService {
 
         List<AgreementParty> agreementPartyList = verifyCanRespond(userId, agreement,
                 AgreementPartyRole.CREDITOR,
-                List.of(AgreementStatus.ACCEPTED, AgreementStatus.OVERDUE));
+                List.of(AgreementStatus.ACCEPTED, AgreementStatus.OVERDUE,
+                        AgreementStatus.PENDING));
 
         AgreementParty agreementPartyCreditor = agreementPartyList.get(0);
         AgreementParty agreementPartyDebtor = agreementPartyList.get(1);
@@ -514,7 +515,7 @@ public class AgreementService {
             agreement.setStatus(AgreementStatus.ACCEPTED);
         }
 
-        agreement.setDueAt(dueAt.atStartOfDay());
+        agreement.setDueAt(dueAt);
 
         checkUpdateResult(
                 agreementMapper.updateDueAtAndStatusById(agreement.getId(), agreement.getStatus(),

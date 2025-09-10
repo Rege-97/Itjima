@@ -15,65 +15,41 @@ const formatDate = (dateString: string | null) => {
   });
 };
 
-const StatusBadge = ({ status }: { status: string }) => {
-  let backgroundColor = "#ccc";
-  let label = status;
+const formatKRW = (n?: number | string) => {
+  if (n == null) return "-";
+  const num = typeof n === "string" ? Number(n) : n;
+  if (Number.isNaN(num)) return "-";
+  return num.toLocaleString("ko-KR");
+};
 
-  switch (status) {
-    case "PENDING":
-      backgroundColor = "#5c36f4";
-      label = "요청";
-      break;
-    case "ACCEPTED":
-      backgroundColor = "#4CAF50";
-      label = "대여중";
-      break;
-    case "REJECTED":
-      backgroundColor = "#F44336";
-      label = "거절됨";
-      break;
-    case "COMPLETED":
-      backgroundColor = "#2196F3";
-      label = "완료됨";
-      break;
-    case "CANCELED":
-      backgroundColor = "#9E9E9E";
-      label = "취소됨";
-      break;
-    case "OVERDUE":
-      backgroundColor = "#FF9800";
-      label = "연체됨";
-      break;
-    default:
-      backgroundColor = "#ccc";
-      label = status;
-  }
+const StatusBadge = ({ status }: { status: string }) => {
+  const map: Record<string, { bg: string; label: string }> = {
+    PENDING: { bg: "#5c36f4", label: "요청" },
+    ACCEPTED: { bg: "#4CAF50", label: "대여중" },
+    REJECTED: { bg: "#F44336", label: "거절됨" },
+    COMPLETED: { bg: "#2196F3", label: "완료됨" },
+    CANCELED: { bg: "#9E9E9E", label: "취소됨" },
+    OVERDUE: { bg: "#FF9800", label: "연체됨" },
+  };
+  const tone = map[status] || { bg: "#9E9E9E", label: status };
 
   return (
-    <View style={[styles.statusBadge, { backgroundColor }]}>
-      <Text style={styles.statusBadgeText}>{label}</Text>
+    <View style={[styles.statusBadge, { backgroundColor: tone.bg }]}>
+      <Text style={styles.statusBadgeText}>{tone.label}</Text>
     </View>
   );
 };
 
 const RoleBadge = ({ role }: { role: string }) => {
-  let backgroundColor = "#ccc";
-  let label = role;
-
-  switch (role) {
-    case "DEBTOR":
-      backgroundColor = "#5c36f4";
-      label = "빌려줌";
-      break;
-    case "CREDITOR":
-      backgroundColor = "#4CAF50";
-      label = "빌림";
-      break;
-  }
+  const map: Record<string, { bg: string; label: string }> = {
+    DEBTOR: { bg: "#009688", label: "빌려줌" },
+    CREDITOR: { bg: "#E91E63", label: "빌림" },
+  };
+  const tone = map[role] || { bg: "#666", label: role };
 
   return (
-    <View style={[styles.roleBadge, { backgroundColor }]}>
-      <Text style={styles.statusBadgeText}>{label}</Text>
+    <View style={[styles.roleBadge, { backgroundColor: tone.bg }]}>
+      <Text style={styles.statusBadgeText}>{tone.label}</Text>
     </View>
   );
 };
@@ -86,6 +62,37 @@ const AgreementCard = ({
   navigation: any;
 }) => {
   const isMoneyLoan = agreement.itemType === "MONEY";
+  const fileUrl = agreement?.itemFileUrl
+    ? IMG_BASE_URL + agreement.itemFileUrl
+    : null;
+
+  const Thumb = () => {
+    if (isMoneyLoan) {
+      return (
+        <View style={[styles.squareAvatar, styles.moneyThumb]}>
+          <MaterialCommunityIcons
+            name="cash-multiple"
+            size={34}
+            color="#7C3AED"
+          />
+          <Text style={styles.moneyThumbText}>금전</Text>
+        </View>
+      );
+    }
+    if (fileUrl) {
+      return <Image source={{ uri: fileUrl }} style={styles.squareAvatar} />;
+    }
+    return (
+      <View style={[styles.squareAvatar, styles.thumbPlaceholder]}>
+        <MaterialCommunityIcons
+          name="image-off-outline"
+          size={28}
+          color="#9CA3AF"
+        />
+        <Text style={styles.placeholderText}>이미지 없음</Text>
+      </View>
+    );
+  };
 
   return (
     <TouchableOpacity
@@ -96,14 +103,7 @@ const AgreementCard = ({
       <View style={styles.listagreement}>
         <View style={styles.headerRow}>
           <View style={styles.thumbnailWrapper}>
-            <Image
-              source={{
-                uri: agreement?.itemFileUrl
-                  ? IMG_BASE_URL + agreement.itemFileUrl
-                  : "https://via.placeholder.com/150",
-              }}
-              style={styles.squareAvatar}
-            />
+            <Thumb />
             <View style={styles.statusOverlay}>
               <StatusBadge status={agreement.status} />
             </View>
@@ -116,19 +116,20 @@ const AgreementCard = ({
               </Text>
               <RoleBadge role={agreement.partnerRole} />
             </View>
+
             <Text style={styles.itemTitle} numberOfLines={1}>
               {agreement.itemTitle}
             </Text>
+
             {isMoneyLoan && (
-              <>
-                <Text style={styles.amount}>
-                  {agreement.amount}원{" "}
-                  <Text style={styles.remaining}>
-                    (잔금 {agreement.remainingAmount}원)
-                  </Text>
+              <Text style={styles.amount}>
+                {formatKRW(agreement.amount)}원{" "}
+                <Text style={styles.remaining}>
+                  (잔금 {formatKRW(agreement.remainingAmount)}원)
                 </Text>
-              </>
+              </Text>
             )}
+
             <View style={styles.dateCol}>
               <View style={styles.statagreement}>
                 <MaterialCommunityIcons
@@ -148,10 +149,7 @@ const AgreementCard = ({
                     color="#555"
                   />
                   <Text style={styles.statText}>
-                    반납일:{" "}
-                    {agreement.returnDate
-                      ? formatDate(agreement.returnDate)
-                      : "없음"}
+                    반납일: {formatDate(agreement.returnDate)}
                   </Text>
                 </View>
               )}
@@ -170,30 +168,47 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     backgroundColor: "#fff",
   },
-
   headerRow: {
     flexDirection: "row",
     alignItems: "flex-start",
   },
-
   thumbnailWrapper: {
     position: "relative",
   },
-
   squareAvatar: {
     width: 120,
     height: 120,
-    borderRadius: 8,
+    borderRadius: 10,
     backgroundColor: "#eee",
     marginRight: 20,
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
   },
-
+  moneyThumb: {
+    backgroundColor: "#F5F3FF", // light violet
+    borderWidth: 1,
+    borderColor: "#EDE9FE", // violet border
+  },
+  moneyThumbText: {
+    marginTop: 6,
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#7C3AED", // violet text
+  },
+  thumbPlaceholder: {
+    backgroundColor: "#F3F4F6",
+  },
+  placeholderText: {
+    marginTop: 6,
+    fontSize: 11,
+    color: "#9CA3AF",
+  },
   statusOverlay: {
     position: "absolute",
     top: 8,
     left: 8,
   },
-
   rightCol: {
     flex: 1,
     justifyContent: "flex-start",
@@ -224,10 +239,10 @@ const styles = StyleSheet.create({
   },
   remaining: {
     fontSize: 13,
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#d32f2f",
     marginTop: 2,
-  },
+  }, // 빨강 복원
   dateCol: {
     flexDirection: "column",
     alignItems: "flex-start",
@@ -247,24 +262,24 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   statusBadge: {
-    borderRadius: 6,
+    borderRadius: 999,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  roleBadge: {
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginLeft: 4,
     justifyContent: "center",
     alignItems: "center",
   },
   statusBadgeText: {
     fontSize: 11,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "#fff",
+  },
+  roleBadge: {
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginLeft: 6,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

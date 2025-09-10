@@ -225,4 +225,9 @@
     FROM USERS
     WHERE phone = #{phone}
   </select>
+  <select id="findNameById" resultType="string">
+    SELECT name
+    FROM USERS
+    WHERE id = #{id}
+  </select>
 </mapper>
