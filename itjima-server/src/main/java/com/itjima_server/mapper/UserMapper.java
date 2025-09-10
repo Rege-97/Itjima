@@ -52,4 +52,6 @@ public interface UserMapper {
     int updateDeleteStatusById(@Param("id") Long id);
 
     UserSearchResponseDTO findByPhone(@Param("phone") String phone);
+
+    String findNameById(@Param("id") Long id);
 }
