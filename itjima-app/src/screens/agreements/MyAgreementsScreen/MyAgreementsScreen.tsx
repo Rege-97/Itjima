@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import {
   FlatList,
   RefreshControl,
-  SafeAreaView,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -16,6 +15,7 @@ import {
 } from "react-native-paper";
 import AgreementCard from "./components/AgreementCard";
 import { useAgreement } from "./hooks/useAgreement";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const MyAgreementsScreen = ({ navigation }: any) => {
   const {

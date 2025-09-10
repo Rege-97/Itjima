@@ -8,7 +8,6 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -25,7 +24,7 @@ import {
   TextInput,
 } from "react-native-paper";
 import { DatePickerModal } from "react-native-paper-dates";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   AVAILABLE_STATUS,
   useMyAgreementCreate,
