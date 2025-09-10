@@ -1,12 +1,13 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
+  Alert,
 } from "react-native";
 import {
   ActivityIndicator,
@@ -14,6 +15,7 @@ import {
   Dialog,
   Portal,
   Text,
+  TextInput,
 } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -22,6 +24,7 @@ import OverDueRow from "./components/OverDueRow";
 import PendingRow from "./components/PendingRow";
 import StatBox from "./components/StatBox";
 import useHomeScreen from "./hooks/useHomeScreen";
+import { updateProfile } from "../../api/users";
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
@@ -38,6 +41,7 @@ export default function HomeScreen() {
 
   const {
     name,
+    phone,
     borrowedCount,
     lentCount,
     pendingCount,
@@ -56,7 +60,40 @@ export default function HomeScreen() {
     pendingLoading,
     loadPendings,
     openPending,
+    refetch,
   } = useHomeScreen();
+
+  const [phoneModalOpen, setPhoneModalOpen] = useState(false);
+  const [newPhone, setNewPhone] = useState("");
+  const [submittingPhone, setSubmittingPhone] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading && !error && (!phone || phone.trim() === "")) {
+      setPhoneModalOpen(true);
+    }
+  }, [isLoading, error, phone]);
+
+  const handlePhoneSubmit = async () => {
+    if (!newPhone || newPhone.length < 10 || newPhone.length > 11) {
+      Alert.alert("안내", "휴대폰 번호를 10~11자리 숫자로 입력해주세요.");
+      return;
+    }
+    try {
+      setSubmittingPhone(true);
+      await updateProfile({ phone: newPhone });
+      Alert.alert("완료", "전화번호가 등록되었습니다.");
+      setPhoneModalOpen(false);
+      refetch();
+    } catch (e: any) {
+      const msg =
+        e?.response?.data?.message ||
+        e?.message ||
+        "전화번호 등록에 실패했습니다.";
+      Alert.alert("오류", msg);
+    } finally {
+      setSubmittingPhone(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -250,42 +287,62 @@ export default function HomeScreen() {
           </Dialog.Actions>
         </Dialog>
       </Portal>
+
+      {/* 전화번호 등록 모달 */}
+      <Portal>
+        <Dialog
+          visible={phoneModalOpen}
+          dismissable={false}
+          style={styles.dialog}
+        >
+          <Dialog.Title>
+            <Text style={styles.dialogTitleText}>전화번호 등록</Text>
+          </Dialog.Title>
+          <Dialog.Content style={styles.dialogContent}>
+            <TextInput
+              label="휴대폰 번호 (숫자만)"
+              value={newPhone}
+              onChangeText={(t) => setNewPhone(t.replace(/[^\d]/g, ""))}
+              keyboardType="number-pad"
+              left={<TextInput.Icon icon="cellphone" />}
+              style={{ backgroundColor: "#fff" }}
+              returnKeyType="done"
+              onSubmitEditing={handlePhoneSubmit}
+              blurOnSubmit
+            />
+          </Dialog.Content>
+          <Dialog.Actions style={styles.dialogActions}>
+            <Button
+              onPress={handlePhoneSubmit}
+              loading={submittingPhone}
+              disabled={submittingPhone}
+            >
+              확인
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    gap: 16,
-  },
+  container: { padding: 16, gap: 16 },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  greet: {
-    fontWeight: "700",
-  },
-
-  statsRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  section: {
-    gap: 10,
-  },
+  greet: { fontWeight: "700" },
+  statsRow: { flexDirection: "row", gap: 12 },
+  section: { gap: 10 },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 10,
   },
-  moreBtn: {
-    color: "#2563eb",
-    fontWeight: "700",
-  },
-
+  moreBtn: { color: "#2563eb", fontWeight: "700" },
   emptyBox: {
     paddingVertical: 24,
     alignItems: "center",
@@ -306,12 +363,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 4,
   },
-  badgeText: {
-    color: "#fff",
-    fontSize: 11,
-    fontWeight: "700",
-  },
-
+  badgeText: { color: "#fff", fontSize: 11, fontWeight: "700" },
   dialog: {
     backgroundColor: "#ffffff",
     borderRadius: 16,
@@ -322,27 +374,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 6,
   },
-  dialogTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  dialogTitleText: {
-    fontWeight: "700",
-    color: "#111827",
-    fontSize: 18,
-  },
-  dialogContent: {
-    backgroundColor: "#ffffff",
-    paddingTop: 8,
-  },
-  dialogActions: {
-    justifyContent: "flex-end",
-    paddingHorizontal: 12,
-  },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  dialogTitleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  dialogTitleText: { fontWeight: "700", color: "#111827", fontSize: 18 },
+  dialogContent: { backgroundColor: "#ffffff", paddingTop: 8 },
+  dialogActions: { justifyContent: "flex-end", paddingHorizontal: 12 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
 });

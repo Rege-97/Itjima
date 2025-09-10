@@ -37,27 +37,27 @@ const AppNavigator = () => {
             <Stack.Screen
               name="Login"
               component={LoginScreen}
-              options={{ title: "로그인" }}
+              options={{ title: "로그인", headerShown: false }}
             />
             <Stack.Screen
               name="RegisterWelcome"
               component={RegisterWelcomeScreen}
-              options={{ title: "회원가입" }}
+              options={{ title: "회원가입", headerShown: false }}
             />
             <Stack.Screen
               name="RegisterForm"
               component={RegisterFormScreen}
-              options={{ title: "정보 입력" }}
+              options={{ title: "정보 입력", headerShown: false }}
             />
             <Stack.Screen
               name="VerifyEmail"
               component={VerifyEmailScreen}
-              options={{ title: "이메일 인증" }}
+              options={{ title: "이메일 인증", headerShown: false }}
             />
             <Stack.Screen
               name="KakaoLogin"
               component={KakaoLoginScreen}
-              options={{ title: "카카오 로그인" }} // 모달로 띄우는 것이 좋습니다.
+              options={{ title: "카카오 로그인", headerShown: false }} 
             />
           </>
         )}

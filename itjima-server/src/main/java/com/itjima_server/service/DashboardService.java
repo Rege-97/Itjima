@@ -1,6 +1,7 @@
 package com.itjima_server.service;
 
 import com.itjima_server.common.PagedResultDTO;
+import com.itjima_server.domain.user.User;
 import com.itjima_server.dto.dashboard.response.DashboardAgreementCountResponseDTO;
 import com.itjima_server.dto.dashboard.response.DashboardComingReturnDTO;
 import com.itjima_server.dto.dashboard.response.DashboardOverdueDTO;
@@ -34,6 +35,8 @@ public class DashboardService {
      */
     @Transactional(readOnly = true)
     public DashboardResponseDTO getDashboardInfo(Long userId) {
+        User user = userMapper.findById(userId);
+
         int pendingCount = agreementMapper.countPendingAgreementsByUserId(userId);
 
         String name = userMapper.findNameById(userId);
@@ -46,7 +49,8 @@ public class DashboardService {
 
         List<DashboardOverdueDTO> overDues = agreementMapper.findOverdueAgreementsByUserId(userId);
 
-        return new DashboardResponseDTO(pendingCount, name, counts, comingReturns, overDues);
+        return new DashboardResponseDTO(user.getPhone(), pendingCount, name, counts, comingReturns,
+                overDues);
     }
 
     @Transactional(readOnly = true)

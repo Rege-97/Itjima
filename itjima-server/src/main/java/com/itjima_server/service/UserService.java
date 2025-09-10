@@ -93,10 +93,7 @@ public class UserService {
 
         User user = findById(id);
 
-        if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
-            throw new InvalidStateException("현재 비밀번호가 일치하지 않습니다.");
-        }
-
+        // 전화번호 변경
         if (req.getPhone() != null) {
             if (userMapper.existsByPhone(req.getPhone())) {
                 throw new DuplicateUserFieldException("이미 사용 중인 전화번호 입니다.");
@@ -105,7 +102,15 @@ public class UserService {
             checkUpdateResult(userMapper.updatePhoneById(id, req.getPhone()), "전화번호 변경에 실패했습니다.");
         }
 
+        // 비밀번호 변경
         if (req.getNewPassword() != null) {
+            if (req.getCurrentPassword() == null) {
+                throw new IllegalArgumentException("현재 비밀번호를 입력해야 합니다.");
+            }
+            if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
+                throw new InvalidStateException("현재 비밀번호가 일치하지 않습니다.");
+            }
+
             String newPassword = passwordEncoder.encode(req.getNewPassword());
             user.setPassword(newPassword);
             checkUpdateResult(userMapper.updatePasswordById(id, newPassword), "비밀번호 변경에 실패했습니다.");

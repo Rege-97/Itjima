@@ -37,6 +37,7 @@ const normalize = (v: any) => (Array.isArray(v) ? v : v ? [v] : []);
 
 export default function useHomeScreen() {
   const [name, setName] = useState<string>("");
+  const [phone, setPhone] = useState<string | null>(null);
   const [borrowedCount, setBorrowedCount] = useState<number>(0);
   const [lentCount, setLentCount] = useState<number>(0);
   const [comingReturns, setComingReturns] = useState<ComingReturn[]>([]);
@@ -48,7 +49,6 @@ export default function useHomeScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 승인 모달/리스트
   const [pendingOpen, setPendingOpen] = useState(false);
   const [pendings, setPendings] = useState<PendingItem[]>([]);
   const [pendingHasNext, setPendingHasNext] = useState<boolean>(true);
@@ -57,44 +57,53 @@ export default function useHomeScreen() {
 
   const pendingFetcher = useMemo(() => getPendingAPi(), []);
 
-  // 대시보드 최초 로드 (원래 로직 그대로)
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const res = await getDashboardApi();
-        const fetchedData = res.data.data;
+  const fetchDashboard = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await getDashboardApi();
+      const fetchedData = res.data.data;
 
-        setName(
-          fetchedData?.name ||
-            fetchedData?.userName ||
-            fetchedData?.username ||
-            ""
-        );
+      setName(
+        fetchedData?.name ||
+          fetchedData?.userName ||
+          fetchedData?.username ||
+          ""
+      );
 
-        const countsData = fetchedData?.counts;
-        if (Array.isArray(countsData)) {
-          for (let c of countsData) {
-            if (c.role === "CREDITOR") setLentCount(c.count);
-            else setBorrowedCount(c.count);
-          }
-        } else if (countsData && typeof countsData === "object") {
-          if (countsData.role === "CREDITOR")
-            setLentCount(countsData.count || 0);
+      const countsData = fetchedData?.counts;
+      if (Array.isArray(countsData)) {
+        for (let c of countsData) {
+          if (c.role === "CREDITOR") setLentCount(c.count);
+          else setBorrowedCount(c.count);
         }
-
-        setPendingCount(Number(fetchedData?.pendingCount) || 0);
-        setComingReturns(normalize(fetchedData?.comingReturns).slice(0, 5));
-        setOverDues(
-          normalize(fetchedData?.overDues || fetchedData?.overdues).slice(0, 5)
-        );
-      } catch {
-        setError("대시보드 데이터를 불러오지 못했습니다.");
-      } finally {
-        setIsLoading(false);
+      } else if (countsData && typeof countsData === "object") {
+        if (countsData.role === "CREDITOR")
+          setLentCount(countsData.count || 0);
+        else if (countsData.role === "DEBTOR")
+          setBorrowedCount(countsData.count || 0);
       }
-    };
-    fetchDashboard();
+
+      setPhone(fetchedData?.phone || null);
+      setPendingCount(Number(fetchedData?.pendingCount) || 0);
+      setComingReturns(normalize(fetchedData?.comingReturns).slice(0, 5));
+      setOverDues(
+        normalize(fetchedData?.overDues || fetchedData?.overdues).slice(0, 5)
+      );
+      setError(null);
+    } catch {
+      setError("대시보드 데이터를 불러오지 못했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchDashboard();
+  }, [fetchDashboard]);
+
+  const refetch = useCallback(() => {
+    fetchDashboard();
+  }, [fetchDashboard]);
 
   const loadPendings = useCallback(
     async (initial = false) => {
@@ -145,6 +154,7 @@ export default function useHomeScreen() {
 
   return {
     name,
+    phone,
     borrowedCount,
     lentCount,
     comingReturns,
@@ -165,5 +175,6 @@ export default function useHomeScreen() {
     pendingLoading,
     loadPendings,
     openPending,
+    refetch,
   };
 }
