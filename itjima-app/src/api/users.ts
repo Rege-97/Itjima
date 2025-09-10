@@ -11,3 +11,19 @@ export const recentPartnersApi = (lastId?: number) => {
   }
   return privateApi.get(url);
 };
+
+export const getProfileApi = () => {
+  return privateApi.get("/users/me");
+};
+
+export const updateProfile = (params: {
+  phone?: string;
+  currentPassword?: string;
+  newPassword?: string;
+}) => {
+  return privateApi.patch("/users/me", params);
+};
+
+export const deleteUserApi = () => {
+  return privateApi.delete("/users/me");
+};
