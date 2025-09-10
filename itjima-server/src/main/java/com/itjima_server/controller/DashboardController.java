@@ -4,6 +4,7 @@ import com.itjima_server.common.ApiResponseDTO;
 import com.itjima_server.common.PagedResultDTO;
 import com.itjima_server.dto.agreement.swagger.AgreementPagedResponse;
 import com.itjima_server.dto.dashboard.response.DashboardResponseDTO;
+import com.itjima_server.dto.dashboard.swagger.DashboardPendingPagedResponse;
 import com.itjima_server.security.CustomUserDetails;
 import com.itjima_server.service.DashboardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -71,7 +72,7 @@ public class DashboardController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "요청 목록 조회 성공",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = AgreementPagedResponse.class))),
+                                    schema = @Schema(implementation = DashboardPendingPagedResponse.class))),
                     @ApiResponse(responseCode = "401", description = "인증 필요",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
             }

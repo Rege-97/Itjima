@@ -34,6 +34,8 @@ public class DashboardService {
      */
     @Transactional(readOnly = true)
     public DashboardResponseDTO getDashboardInfo(Long userId) {
+        int pendingCount = agreementMapper.countPendingAgreementsByUserId(userId);
+
         String name = userMapper.findNameById(userId);
 
         List<DashboardAgreementCountResponseDTO> counts = agreementMapper.countAgreementsByUserId(
@@ -44,7 +46,7 @@ public class DashboardService {
 
         List<DashboardOverdueDTO> overDues = agreementMapper.findOverdueAgreementsByUserId(userId);
 
-        return new DashboardResponseDTO(name, counts, comingReturns, overDues);
+        return new DashboardResponseDTO(pendingCount, name, counts, comingReturns, overDues);
     }
 
     @Transactional(readOnly = true)

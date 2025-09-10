@@ -65,5 +65,7 @@ public interface AgreementMapper {
 
     List<DashboardPendingResponseDTO> findPendingAgreementsByUserId(@Param("userId") Long userId,
             @Param("cursorKey") Long cursorKey, @Param("sizePlusOne") int sizePlusOne);
+
+    int countPendingAgreementsByUserId(@Param("userId") Long userId);
 }
 

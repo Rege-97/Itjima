@@ -356,7 +356,8 @@
     WHEN i.type = 'OBJECT' THEN i.title
     ELSE CONCAT(a.amount, '원')
     END AS description,
-    UNIX_TIMESTAMP(a.created_at) * 1000 AS cursorKey
+    UNIX_TIMESTAMP(a.created_at) * 1000 AS cursorKey,
+    a.created_at
     FROM AGREEMENTS a
     JOIN AGREEMENT_PARTIES debtorParty
     ON a.id = debtorParty.agreement_id AND debtorParty.role = 'DEBTOR'
@@ -371,14 +372,15 @@
     UNION ALL
 
     SELECT 'TRANSACTION' AS source,
-    t.id,
+    a.id,
     CASE
     WHEN t.status = 'PENDING' THEN '상환 완료 요청'
     ELSE t.status
     END AS status,
     debtorUser.name AS pendingUser,
     CONCAT(t.amount, '원') AS description,
-    UNIX_TIMESTAMP(t.created_at) * 1000 AS cursorKey
+    UNIX_TIMESTAMP(t.created_at) * 1000 AS cursorKey,
+    t.created_at
     FROM TRANSACTIONS t
     JOIN AGREEMENTS a ON a.id = t.agreement_id
     JOIN AGREEMENT_PARTIES debtorParty
@@ -390,10 +392,61 @@
     WHERE t.status = 'PENDING'
     AND creditorParty.user_id = #{userId}
     ) x
-    <if test="lastCursor != null">
+    <if test="cursorKey != null">
       WHERE x.cursorKey &lt; #{cursorKey}
     </if>
     ORDER BY x.cursorKey DESC
     LIMIT #{sizePlusOne}
+  </select>
+  <select id="countPendingAgreementsByUserId" resultType="int">
+    SELECT count(*)
+    FROM (
+           SELECT 'AGREEMENT' AS source,
+                  a.id,
+                  CASE
+                    WHEN a.status = 'PENDING' THEN '대여 승인 요청'
+                    ELSE a.status
+                    END AS status,
+                  creditorUser.name AS pendingUser,
+                  CASE
+                    WHEN i.type = 'OBJECT' THEN i.title
+                    ELSE CONCAT(a.amount, '원')
+                    END AS description,
+                  UNIX_TIMESTAMP(a.created_at) * 1000 AS cursorKey,
+                  a.created_at
+           FROM AGREEMENTS a
+                  JOIN AGREEMENT_PARTIES debtorParty
+                       ON a.id = debtorParty.agreement_id AND debtorParty.role = 'DEBTOR'
+                  JOIN AGREEMENT_PARTIES creditorParty
+                       ON a.id = creditorParty.agreement_id AND creditorParty.role = 'CREDITOR'
+                  JOIN USERS debtorUser ON debtorParty.user_id = debtorUser.id
+                  JOIN USERS creditorUser ON creditorParty.user_id = creditorUser.id
+                  JOIN ITEMS i ON a.item_id = i.id
+           WHERE a.status = 'PENDING'
+             AND debtorParty.user_id = #{userId}
+
+           UNION ALL
+
+           SELECT 'TRANSACTION' AS source,
+                  a.id,
+                  CASE
+                    WHEN t.status = 'PENDING' THEN '상환 완료 요청'
+                    ELSE t.status
+                    END AS status,
+                  debtorUser.name AS pendingUser,
+                  CONCAT(t.amount, '원') AS description,
+                  UNIX_TIMESTAMP(t.created_at) * 1000 AS cursorKey,
+                  t.created_at
+           FROM TRANSACTIONS t
+                  JOIN AGREEMENTS a ON a.id = t.agreement_id
+                  JOIN AGREEMENT_PARTIES debtorParty
+                       ON a.id = debtorParty.agreement_id AND debtorParty.role = 'DEBTOR'
+                  JOIN AGREEMENT_PARTIES creditorParty
+                       ON a.id = creditorParty.agreement_id AND creditorParty.role = 'CREDITOR'
+                  JOIN USERS debtorUser ON debtorParty.user_id = debtorUser.id
+                  JOIN USERS creditorUser ON creditorParty.user_id = creditorUser.id
+           WHERE t.status = 'PENDING'
+             AND creditorParty.user_id = #{userId}
+         ) x
   </select>
 </mapper>
