@@ -21,4 +21,6 @@ public interface TransactionMapper {
     Transaction findById(@Param("id") Long id);
 
     int updateStatusById(@Param("id") long id, @Param("status") TransactionStatus status);
+
+    boolean existsPendingByAgreementId(@Param("agreementId") Long agreementId);
 }

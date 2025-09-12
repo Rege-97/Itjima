@@ -155,6 +155,10 @@ export function useMyAgreementCreate(params: {
       Alert.alert("알림", "반납일을 선택해주세요.");
       return;
     }
+    if (!rentType) {
+      Alert.alert("알림", "대여 유형을 선택해주세요.");
+      return;
+    }
 
     try {
       let finalItemId = itemId;
@@ -164,6 +168,22 @@ export function useMyAgreementCreate(params: {
           Alert.alert("알림", "물건 제목을 입력해주세요.");
           return;
         }
+
+        if (!itemDesc.trim()) {
+          Alert.alert("알림", "물건 설명을 입력해주세요.");
+          return;
+        }
+
+        if (!itemImage) {
+          Alert.alert("알림", "이미지를 업로드해주세요.");
+          return;
+        }
+
+        if (!itemImage?.uri) {
+          Alert.alert("알림", "이미지를 업로드해주세요.");
+          return;
+        }
+
         const res = await createItemApi({
           type: "OBJECT",
           title: itemTitle,
@@ -196,6 +216,11 @@ export function useMyAgreementCreate(params: {
 
       if (!finalItemId) {
         Alert.alert("알림", "대여할 아이템을 선택해주세요.");
+        return;
+      }
+
+      if (!terms) {
+        Alert.alert("알림", "대여 상세 내용을 입력해주세요.");
         return;
       }
 

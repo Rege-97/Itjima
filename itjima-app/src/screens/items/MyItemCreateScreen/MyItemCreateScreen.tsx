@@ -21,7 +21,7 @@ const MyItemCreateScreen = ({ navigation }: any) => {
     isLoading,
     pickImage,
     handleCreate,
-  } = useItemCreate(navigator);
+  } = useItemCreate(navigation);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

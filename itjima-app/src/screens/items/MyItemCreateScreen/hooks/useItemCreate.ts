@@ -68,6 +68,26 @@ export const useItemCreate = (navigation: any) => {
   const handleCreate = async () => {
     setIsLoading(true);
 
+    if (!title) {
+      Alert.alert("알림", "제목을 입력해주세요.");
+      return;
+    }
+
+    if (!description) {
+      Alert.alert("알림", "설명을 입력해주세요.");
+      return;
+    }
+
+    if (!image) {
+      Alert.alert("알림", "이미지를 업로드해주세요.");
+      return;
+    }
+
+    if (!image?.uri) {
+      Alert.alert("알림", "이미지를 업로드해주세요.");
+      return;
+    }
+
     try {
       const response = await createItemApi({
         type: "OBJECT",

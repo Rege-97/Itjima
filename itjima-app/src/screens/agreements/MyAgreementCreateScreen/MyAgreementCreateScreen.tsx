@@ -275,7 +275,7 @@ export default function MyAgreementCreateScreen({ route, navigation }: any) {
                 anchor={
                   <TouchableOpacity
                     activeOpacity={0.9}
-                    onPress={() => setRentTypeMenuOpen(true)}
+                    onPress={() => setRentTypeMenuOpen(!rentTypeMenuOpen)}
                     style={styles.selectBox}
                   >
                     <Text
@@ -335,7 +335,7 @@ export default function MyAgreementCreateScreen({ route, navigation }: any) {
                     anchor={
                       <TouchableOpacity
                         activeOpacity={0.9}
-                        onPress={() => setRentSourceMenuOpen(true)}
+                        onPress={() => setRentSourceMenuOpen(!rentSourceMenuOpen)}
                         style={styles.selectBox}
                       >
                         <Text

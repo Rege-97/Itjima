@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `USERS`
     `name`                        varchar(64)  NOT NULL COMMENT '이름',
     `email`                       varchar(256) NOT NULL COMMENT '이메일',
     `password`                    varchar(256) NOT NULL COMMENT '비밀번호',
-    `phone`                       varchar(32)  NOT NULL COMMENT '전화번호',
+    `phone`                       varchar(32)   COMMENT '전화번호',
     `created_at`                  datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '가입일',
     `updated_at`                  datetime              DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일',
     `provider`                    varchar(20)  NOT NULL DEFAULT 'LOCAL' COMMENT '가입경로',
