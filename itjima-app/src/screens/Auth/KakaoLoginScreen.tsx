@@ -36,7 +36,6 @@ const KakaoLoginScreen = ({ navigation }: any) => {
     <WebView
       source={{ uri: authorizationUrl }}
       onNavigationStateChange={handleNavigationStateChange}
-       incognito 
     />
   );
 };

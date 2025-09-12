@@ -118,11 +118,11 @@ const LoginScreen = ({ navigation }: any) => {
             <Text style={styles.text}>이메일 가입</Text>
           </TouchableOpacity>
           <View style={styles.divider} />
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("FindEmail")}>
             <Text style={styles.text}>이메일 찾기</Text>
           </TouchableOpacity>
           <View style={styles.divider} />
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("FindPassword")}>
             <Text style={styles.text}>비밀번호 찾기</Text>
           </TouchableOpacity>
         </View>
