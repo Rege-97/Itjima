@@ -12,6 +12,9 @@ import lombok.Setter;
 @Schema(description = "대시보드 전체 응답 DTO")
 public class DashboardResponseDTO {
 
+    @Schema(description = "사용자 전화번호", example = "01012341234")
+    private String phone;
+
     @Schema(description = "요청 알림 수", example = "4")
     private int pendingCount;
 

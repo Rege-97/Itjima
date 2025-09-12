@@ -10,6 +10,8 @@ import RegisterWelcomeScreen from "../screens/Auth/RegisterWelcomeScreen";
 import VerifyEmailScreen from "../screens/Auth/VerifyEmailScreen";
 import KakaoLoginScreen from "../screens/Auth/KakaoLoginScreen";
 import MainTabNavigator from "./MainTabNavigator";
+import FindEmailScreen from "../screens/Auth/FindEmailScreen";
+import FindPasswordScreen from "../screens/Auth/FindPasswordScreen";
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -37,27 +39,37 @@ const AppNavigator = () => {
             <Stack.Screen
               name="Login"
               component={LoginScreen}
-              options={{ title: "로그인" }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="RegisterWelcome"
               component={RegisterWelcomeScreen}
-              options={{ title: "회원가입" }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="RegisterForm"
               component={RegisterFormScreen}
-              options={{ title: "정보 입력" }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="VerifyEmail"
               component={VerifyEmailScreen}
-              options={{ title: "이메일 인증" }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="KakaoLogin"
               component={KakaoLoginScreen}
-              options={{ title: "카카오 로그인" }} // 모달로 띄우는 것이 좋습니다.
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="FindEmail"
+              component={FindEmailScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="FindPassword"
+              component={FindPasswordScreen}
+              options={{ headerShown: false }}
             />
           </>
         )}

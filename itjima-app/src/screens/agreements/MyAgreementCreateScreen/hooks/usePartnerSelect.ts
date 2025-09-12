@@ -38,6 +38,7 @@ export function usePartnerSelect() {
       const res = await searchUserByPhoneApi(normalizePhone(target));
       const user = res?.data?.data as User | undefined;
       setSearchResult(user ?? null);
+      return user;
     } catch {
       setSearchResult(null);
       Alert.alert("가입되지 않은 사용자입니다.");

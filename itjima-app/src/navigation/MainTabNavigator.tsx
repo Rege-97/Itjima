@@ -15,29 +15,11 @@ import MyAgreementCreateScreen from "../screens/agreements/MyAgreementCreateScre
 import PartnerSelectScreen from "../screens/agreements/MyAgreementCreateScreen/PartnerSelectScreen";
 import HomeScreen from "../screens/home/HomeScreen";
 import { useIsFocused } from "@react-navigation/native";
+import ProfileScreen from "../screens/profile/ProfileScreen";
 
 const FocusUnmount: React.FC<React.PropsWithChildren> = ({ children }) => {
   const isFocused = useIsFocused();
-  return isFocused ? <>{children}</> : null; // 포커스 아닐 땐 언마운트
-};
-
-const ProfileScreen = () => (
-  <View>
-    <Text>프로필</Text>
-  </View>
-);
-
-// ✅ 임시 로그아웃 스크린
-const LogoutScreen = () => {
-  const { logout } = useAuth();
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text variant="titleMedium">로그아웃 테스트</Text>
-      <Button mode="contained" style={{ marginTop: 16 }} onPress={logout}>
-        로그아웃
-      </Button>
-    </View>
-  );
+  return isFocused ? <>{children}</> : null;
 };
 
 const MyItemsStack = createNativeStackNavigator();
@@ -123,6 +105,21 @@ const HomeStackNavigator = () => {
   );
 };
 
+const ProfileStack = createNativeStackNavigator();
+
+const ProfileStackNavigator = () => {
+  return (
+    <FocusUnmount>
+      <ProfileStack.Navigator
+        initialRouteName="ProfileScreen"
+        screenOptions={{ headerShown: false }}
+      >
+        <ProfileStack.Screen name="ProfileScreen" component={ProfileScreen} />
+      </ProfileStack.Navigator>
+    </FocusUnmount>
+  );
+};
+
 const Tab = createBottomTabNavigator();
 
 const MainTabNavigator = () => {
@@ -189,7 +186,7 @@ const MainTabNavigator = () => {
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={ProfileStackNavigator}
         options={{
           title: "프로필",
           tabBarIcon: ({ color, size }) => (
@@ -198,16 +195,6 @@ const MainTabNavigator = () => {
               color={color}
               size={size}
             />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Logout"
-        component={LogoutScreen}
-        options={{
-          title: "로그아웃",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="logout" color={color} size={size} />
           ),
         }}
       />

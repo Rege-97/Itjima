@@ -2,9 +2,13 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import {
   FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import {
@@ -142,42 +146,54 @@ export default function PartnerSelectScreen({ navigation }: any) {
           onDismiss={() => setIsSearchModalVisible(false)}
           style={styles.dialog}
         >
-          <Dialog.Title style={styles.dialogTitle}>사용자 찾기</Dialog.Title>
-          <Dialog.Content style={styles.dialogContent}>
-            <TextInput
-              mode="outlined"
-              label="휴대폰 번호"
-              value={searchPhone}
-              onChangeText={setSearchPhone}
-              keyboardType="phone-pad"
-              style={styles.input}
-            />
-            <Button
-              mode="contained"
-              onPress={() => handleSearch()}
-              loading={isSearching}
-              style={styles.dialogBtn}
+          {" "}
+          <TouchableWithoutFeedback
+            onPress={Keyboard.dismiss}
+            accessible={false}
+          >
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : undefined}
             >
-              번호로 검색
-            </Button>
-
-            {searchResult && (
-              <View style={{ marginTop: 16 }}>
-                <Text>이름: {searchResult.name}</Text>
-                <Text>전화번호: {searchResult.phone}</Text>
-                <Button
+              <Dialog.Title style={styles.dialogTitle}>
+                사용자 찾기
+              </Dialog.Title>
+              <Dialog.Content style={styles.dialogContent}>
+                <TextInput
                   mode="outlined"
-                  onPress={() => {
-                    setIsSearchModalVisible(false);
-                    goNext(searchResult);
-                  }}
+                  label="휴대폰 번호"
+                  value={searchPhone}
+                  onChangeText={setSearchPhone}
+                  keyboardType="phone-pad"
+                  style={styles.input}
+                />
+                <Button
+                  mode="contained"
+                  onPress={() => handleSearch()}
+                  loading={isSearching}
                   style={styles.dialogBtn}
                 >
-                  선택하기
+                  번호로 검색
                 </Button>
-              </View>
-            )}
-          </Dialog.Content>
+
+                {searchResult && (
+                  <View style={{ marginTop: 16 }}>
+                    <Text>이름: {searchResult.name}</Text>
+                    <Text>전화번호: {searchResult.phone}</Text>
+                    <Button
+                      mode="outlined"
+                      onPress={() => {
+                        setIsSearchModalVisible(false);
+                        goNext(searchResult);
+                      }}
+                      style={styles.dialogBtn}
+                    >
+                      선택하기
+                    </Button>
+                  </View>
+                )}
+              </Dialog.Content>
+            </KeyboardAvoidingView>
+          </TouchableWithoutFeedback>
         </Dialog>
 
         {/* 연락처 모달 */}
@@ -186,41 +202,58 @@ export default function PartnerSelectScreen({ navigation }: any) {
           onDismiss={() => setIsContactsVisible(false)}
           style={styles.dialog}
         >
-          <Dialog.Title style={styles.dialogTitle}>연락처 선택</Dialog.Title>
-          <Dialog.Content style={[styles.dialogContent, { height: 360 }]}>
-            <TextInput
-              mode="outlined"
-              label="이름 검색"
-              value={contactSearch}
-              onChangeText={setContactSearch}
-              style={styles.input}
-            />
-            <FlatList
-              data={filteredContacts}
-              keyExtractor={(item) => item.id}
-              keyboardShouldPersistTaps="handled"
-              ItemSeparatorComponent={Divider}
-              renderItem={({ item }) => {
-                const phone = normalizePhone(
-                  item.phoneNumbers?.[0]?.number || ""
-                );
-                return (
-                  <List.Item
-                    title={item.name}
-                    description={phone}
-                    left={(p) => <List.Icon {...p} icon="account" />}
-                    right={(p) => <List.Icon {...p} icon="chevron-right" />}
-                    onPress={() => {
-                      setIsContactsVisible(false);
-                      setIsSearchModalVisible(true);
-                      handleSearch(phone);
-                    }}
-                    style={styles.listRow}
-                  />
-                );
-              }}
-            />
-          </Dialog.Content>
+          <TouchableWithoutFeedback
+            onPress={Keyboard.dismiss}
+            accessible={false}
+          >
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : undefined}
+            >
+              <Dialog.Title style={styles.dialogTitle}>
+                연락처 선택
+              </Dialog.Title>
+              <Dialog.Content style={[styles.dialogContent, { height: 360 }]}>
+                <TextInput
+                  mode="outlined"
+                  label="이름 검색"
+                  // value={contactSearch}
+                  onChangeText={setContactSearch}
+                  keyboardType="default"
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  style={styles.input}
+                />
+                <FlatList
+                  data={filteredContacts}
+                  keyExtractor={(item) => item.id}
+                  keyboardShouldPersistTaps="handled"
+                  ItemSeparatorComponent={Divider}
+                  renderItem={({ item }) => {
+                    const phone = normalizePhone(
+                      item.phoneNumbers?.[0]?.number || ""
+                    );
+                    return (
+                      <List.Item
+                        title={item.name}
+                        description={phone}
+                        left={(p) => <List.Icon {...p} icon="account" />}
+                        right={(p) => <List.Icon {...p} icon="chevron-right" />}
+                        onPress={async () => {
+                          const user = await handleSearch(phone);
+
+                          if (user) {
+                            setIsContactsVisible(false);
+                            goNext(user!);
+                          }
+                        }}
+                        style={styles.listRow}
+                      />
+                    );
+                  }}
+                />
+              </Dialog.Content>
+            </KeyboardAvoidingView>
+          </TouchableWithoutFeedback>
         </Dialog>
 
         {/* 최근 거래자 모달 */}

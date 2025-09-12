@@ -36,4 +36,10 @@
     SET status = #{status}
     WHERE id = #{id}
   </update>
+  <select id="existsPendingByAgreementId" resultType="boolean">
+    SELECT count(*)
+    FROM TRANSACTIONS
+    WHERE agreement_id = #{agreementId}
+    AND status = 'PENDING'
+  </select>
 </mapper>

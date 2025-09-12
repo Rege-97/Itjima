@@ -405,6 +405,10 @@ public class AgreementService {
             throw new InvalidStateException("요청 금액이 남은 잔액(" + remainingAmount + "원)을 초과할 수 없습니다.");
         }
 
+        if(transactionMapper.existsPendingByAgreementId(agreementId)) {
+            throw new InvalidStateException("이미 상환 요청을 보냈습니다.");
+        }
+
         Transaction transaction = Transaction.builder()
                 .agreementId(agreementId)
                 .type(TransactionType.REPAYMENT)

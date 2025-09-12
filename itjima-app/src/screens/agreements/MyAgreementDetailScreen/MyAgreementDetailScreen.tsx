@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View, TouchableOpacity } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 import {
   ActivityIndicator,
   Appbar,
@@ -254,14 +260,20 @@ const MyAgreementDetailScreen = ({ route, navigation }: any) => {
             <Button
               onPress={async () => {
                 try {
-                  await agreementTransaction(agreementId, {
+                  const res = await agreementTransaction(agreementId, {
                     amount: repayAmount,
                   });
                   setRepayVisible(false);
                   await fetchInitialData();
                   if (activeTab === "REPAY") fetchRepayments();
-                } catch (error) {
-                  console.error("상환 요청에 실패했습니다.");
+                } catch (error: any) {
+                  console.error("상환 요청 실패:", error);
+                  const msg =
+                    error.response?.data?.message ||
+                    error.message ||
+                    "상환 요청에 실패했습니다.";
+
+                  Alert.alert("오류", msg);
                 }
               }}
             >

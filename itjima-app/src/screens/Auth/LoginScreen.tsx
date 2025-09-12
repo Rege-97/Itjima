@@ -59,9 +59,14 @@ const LoginScreen = ({ navigation }: any) => {
         enableOnAndroid
         keyboardShouldPersistTaps="handled"
       >
-        <Text variant="headlineMedium" style={styles.title}>
-          잊지마
-        </Text>
+        <View style={styles.logoWrap}>
+          <Image
+            source={require("../../assets/images/LOGO.png")}
+            style={styles.logo}
+            resizeMode="contain"
+            accessibilityLabel="잊지마 로고"
+          />
+        </View>
         <Text style={styles.label}>이메일 주소</Text>
         <TextInput
           value={email}
@@ -113,11 +118,11 @@ const LoginScreen = ({ navigation }: any) => {
             <Text style={styles.text}>이메일 가입</Text>
           </TouchableOpacity>
           <View style={styles.divider} />
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("FindEmail")}>
             <Text style={styles.text}>이메일 찾기</Text>
           </TouchableOpacity>
           <View style={styles.divider} />
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("FindPassword")}>
             <Text style={styles.text}>비밀번호 찾기</Text>
           </TouchableOpacity>
         </View>
@@ -129,9 +134,9 @@ const LoginScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#fff",
-    flex: 1,
+    flexGrow: 1,
     padding: 20,
-    justifyContent: "center",
+    justifyContent: "flex-start",
   },
   title: {
     textAlign: "center",
@@ -161,12 +166,13 @@ const styles = StyleSheet.create({
     marginRight: 15,
     marginTop: 10,
     borderRadius: 30,
-     overflow: "hidden"
+    overflow: "hidden",
+    backgroundColor: "#FEE500",
   },
   kakaoImage: {
     width: "100%",
     height: 50,
-    resizeMode: "cover",
+    resizeMode: "contain",
   },
   textContainer: {
     flexDirection: "row",
@@ -185,6 +191,17 @@ const styles = StyleSheet.create({
     height: 12,
     backgroundColor: "#ccc",
     marginHorizontal: 8,
+  },
+  logoWrap: {
+    alignItems: "center",
+    marginBottom: 30,
+    marginTop: 120,
+  },
+  logo: {
+    width: "65%",
+    maxWidth: 320,
+    aspectRatio: 0.8,
+    height: 200,
   },
 });
 
