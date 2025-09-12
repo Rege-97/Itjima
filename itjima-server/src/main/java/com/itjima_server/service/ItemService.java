@@ -19,6 +19,7 @@ import com.itjima_server.mapper.AgreementMapper;
 import com.itjima_server.mapper.ItemMapper;
 import com.itjima_server.util.FileResult;
 import com.itjima_server.util.FileUtil;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,11 +39,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ItemService {
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
-
     private final ItemMapper itemMapper;
     private final AgreementMapper agreementMapper;
+    private final S3UploadService s3UploadService;
 
     /**
      * 대여물품 등록 처리
@@ -110,32 +109,32 @@ public class ItemService {
      */
     @Transactional(rollbackFor = Exception.class)
     public FileResult saveImage(Long id, MultipartFile img) {
-
-        FileResult fileResult = FileUtil.save(img, "items", id, uploadDir);
-
-        if (fileResult == null) {
-            throw new IllegalArgumentException("이미지 파일이 유효하지 않습니다.");
+        Item item = itemMapper.findById(id);
+        if (item == null) {
+            throw new NotFoundItemException("해당 물품을 찾을 수 없습니다.");
         }
 
+        String oldFileUrl = item.getFileUrl();
+        if (oldFileUrl != null && !oldFileUrl.isEmpty()) {
+            s3UploadService.delete(oldFileUrl);
+        }
+
+        String newImageUrl = null;
         try {
-            Item item = Item.builder()
-                    .id(id)
-                    .fileUrl(fileResult.getFileUrl())
-                    .fileType(fileResult.getFileType())
-                    .build();
-
-            int result = itemMapper.updateFileById(item);
-
-            if (result < 1) {
-                throw new UpdateFailedException("물품 이미지 정보 업데이트에 실패했습니다.");
-            }
-
-            return fileResult;
-
-        } catch (Exception e) {
-            FileUtil.delete(fileResult.getFileUrl(), uploadDir);
-            throw e;
+            newImageUrl = s3UploadService.upload(img);
+        } catch (IOException e) {
+            throw new RuntimeException("S3에 이미지를 업로드하는 중 오류가 발생했습니다.", e);
         }
+
+        item.setFileUrl(newImageUrl);
+        int result = itemMapper.updateFileById(item);
+
+        if (result < 1) {
+            // DB 업데이트 실패 시, 방금 업로드한 새 이미지를 다시 삭제
+            s3UploadService.delete(newImageUrl);
+            throw new UpdateFailedException("물품 이미지 정보 업데이트에 실패했습니다.");
+        }
+        return FileResult.builder().fileUrl(newImageUrl).build();
     }
 
     /**

@@ -30,6 +30,7 @@ import com.itjima_server.service.AgreementService;
 import com.itjima_server.service.ItemService;
 import com.itjima_server.service.AuthService;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -115,7 +116,7 @@ public class AgreementControllerTest {
             AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
             req.setItemId(itemId);
             req.setAmount(new BigDecimal("10000.00"));
-            req.setDueAt(LocalDateTime.now().plusDays(3));
+            req.setDueAt(LocalDate.now().plusDays(3));
             req.setTerms("3일 대여");
             req.setDebtorUserId(debtorId);
 
@@ -145,7 +146,7 @@ public class AgreementControllerTest {
             AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
             req.setItemId(itemId);
             req.setAmount(new BigDecimal("1000"));
-            req.setDueAt(LocalDateTime.now().plusDays(1));
+            req.setDueAt(LocalDate.now().plusDays(1));
             req.setTerms("terms");
             req.setDebtorUserId(creditorId); // 자기 자신
 
@@ -167,7 +168,7 @@ public class AgreementControllerTest {
             AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
             req.setItemId(itemId);
             req.setAmount(new BigDecimal("1000"));
-            req.setDueAt(LocalDateTime.now().plusDays(1));
+            req.setDueAt(LocalDate.now().plusDays(1));
             req.setTerms("terms");
             req.setDebtorUserId(999999L);
 
@@ -189,7 +190,7 @@ public class AgreementControllerTest {
             AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
             req.setItemId(999999L);
             req.setAmount(new BigDecimal("1000"));
-            req.setDueAt(LocalDateTime.now().plusDays(1));
+            req.setDueAt(LocalDate.now().plusDays(1));
             req.setTerms("terms");
             req.setDebtorUserId(debtorId);
 
@@ -211,7 +212,7 @@ public class AgreementControllerTest {
             AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
             req.setItemId(itemId);
             req.setAmount(new BigDecimal("1000.12"));
-            req.setDueAt(LocalDateTime.now().minusDays(1)); // 과거
+            req.setDueAt(LocalDate.now().minusDays(3)); // 과거
             req.setTerms("terms");
             req.setDebtorUserId(debtorId);
 
@@ -238,7 +239,7 @@ public class AgreementControllerTest {
             AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
             req.setItemId(itemId);
             req.setAmount(new BigDecimal("5000"));
-            req.setDueAt(LocalDateTime.now().plusDays(2));
+            req.setDueAt(LocalDate.now().plusDays(2));
             req.setTerms("ok");
             req.setDebtorUserId(debtorId);
             AgreementResponseDTO created = agreementService.create(creditorId, req);
@@ -292,7 +293,7 @@ public class AgreementControllerTest {
             AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
             req.setItemId(itemId);
             req.setAmount(new BigDecimal("7000"));
-            req.setDueAt(LocalDateTime.now().plusDays(5));
+            req.setDueAt(LocalDate.now().plusDays(5));
             req.setTerms("rejectable");
             req.setDebtorUserId(debtorId);
             AgreementResponseDTO created = agreementService.create(creditorId, req);
@@ -335,7 +336,7 @@ public class AgreementControllerTest {
             AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
             req.setItemId(itemId);
             req.setAmount(new BigDecimal("7000"));
-            req.setDueAt(LocalDateTime.now().plusDays(5));
+            req.setDueAt(LocalDate.now().plusDays(5));
             req.setTerms("cancelable");
             req.setDebtorUserId(debtorId);
             AgreementResponseDTO created = agreementService.create(creditorId, req);
@@ -375,7 +376,7 @@ public class AgreementControllerTest {
             AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
             req.setItemId(itemId);
             req.setAmount(new BigDecimal("12000"));
-            req.setDueAt(LocalDateTime.now().plusDays(2));
+            req.setDueAt(LocalDate.now().plusDays(2));
             req.setTerms("complete later");
             req.setDebtorUserId(debtorId);
             AgreementResponseDTO created = agreementService.create(creditorId, req);
@@ -409,7 +410,7 @@ public class AgreementControllerTest {
             req = new AgreementCreateRequestDTO();
             req.setItemId(itemId);
             req.setAmount(new BigDecimal("5000"));
-            req.setDueAt(LocalDateTime.now().plusDays(5));
+            req.setDueAt(LocalDate.now().plusDays(5));
             req.setTerms("pending");
             req.setDebtorUserId(debtorId);
             AgreementResponseDTO created = agreementService.complete(creditorId, agreementId);
@@ -434,7 +435,7 @@ public class AgreementControllerTest {
             AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
             req.setItemId(itemId);
             req.setAmount(new BigDecimal("9000"));
-            req.setDueAt(LocalDateTime.now().plusDays(3));
+            req.setDueAt(LocalDate.now().plusDays(3));
             req.setTerms("detail");
             req.setDebtorUserId(debtorId);
             AgreementResponseDTO created = agreementService.create(creditorId, req);
@@ -502,7 +503,7 @@ public class AgreementControllerTest {
                 req.setItemId(newItemId);
 
                 req.setAmount(new BigDecimal("1000"));
-                req.setDueAt(LocalDateTime.now().plusDays(7));
+                req.setDueAt(LocalDate.now().plusDays(7));
                 req.setTerms("t");
                 req.setDebtorUserId(debtorId);
                 agreementService.create(creditorId, req);
@@ -546,7 +547,7 @@ public class AgreementControllerTest {
             AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
             req.setItemId(moneyItemId);
             req.setAmount(new BigDecimal("10000.00"));
-            req.setDueAt(LocalDateTime.now().plusDays(7));
+            req.setDueAt(LocalDate.now().plusDays(7));
             req.setTerms("money-only");
             req.setDebtorUserId(debtorId);
             AgreementResponseDTO created = agreementService.create(creditorId, req);
@@ -593,7 +594,7 @@ public class AgreementControllerTest {
             AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
             req.setItemId(obj.getId());
             req.setAmount(new BigDecimal("10000.00"));
-            req.setDueAt(LocalDateTime.now().plusDays(7));
+            req.setDueAt(LocalDate.now().plusDays(7));
             req.setTerms("object");
             req.setDebtorUserId(debtorId);
             AgreementResponseDTO created = agreementService.create(creditorId, req);
@@ -674,7 +675,7 @@ public class AgreementControllerTest {
             AgreementCreateRequestDTO req = new AgreementCreateRequestDTO();
             req.setItemId(moneyItemId);
             req.setAmount(new BigDecimal("10000.00"));
-            req.setDueAt(LocalDateTime.now().plusDays(7));
+            req.setDueAt(LocalDate.now().plusDays(7));
             req.setTerms("money-only");
             req.setDebtorUserId(debtorId);
             AgreementResponseDTO created = agreementService.create(creditorId, req);

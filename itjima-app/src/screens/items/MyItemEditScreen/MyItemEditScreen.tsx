@@ -1,15 +1,14 @@
 import React from "react";
 import {
-    Image,
-    Keyboard,
-    StyleSheet,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  Image,
+  Keyboard,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from "react-native";
 import { Appbar, Button, TextInput } from "react-native-paper";
 
-import { IMG_BASE_URL } from "@env";
 import { useItemEdit } from "./hooks/useItemEdit";
 
 const MyItemEditScreen = ({ route, navigation }: any) => {
@@ -40,7 +39,7 @@ const MyItemEditScreen = ({ route, navigation }: any) => {
                 uri: image?.uri
                   ? image.uri
                   : item?.fileUrl
-                  ? IMG_BASE_URL + item.fileUrl
+                  ? item.fileUrl
                   : "https://via.placeholder.com/400x300",
               }}
               style={styles.image}

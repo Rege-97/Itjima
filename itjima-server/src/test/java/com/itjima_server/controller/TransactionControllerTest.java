@@ -23,6 +23,7 @@ import com.itjima_server.service.AgreementService;
 import com.itjima_server.service.ItemService;
 import com.itjima_server.service.AuthService;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -101,7 +102,7 @@ public class TransactionControllerTest {
         AgreementCreateRequestDTO agreeReq = new AgreementCreateRequestDTO();
         agreeReq.setItemId(itemId);
         agreeReq.setAmount(new BigDecimal("10000.00"));
-        agreeReq.setDueAt(LocalDateTime.now().plusDays(3));
+        agreeReq.setDueAt(LocalDate.now().plusDays(3));
         agreeReq.setTerms("테스트 대여");
         agreeReq.setDebtorUserId(debtorId);
         AgreementResponseDTO created = agreementService.create(creditorId, agreeReq);

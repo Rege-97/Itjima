@@ -1,4 +1,3 @@
-import { IMG_BASE_URL } from "@env";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -62,9 +61,7 @@ const AgreementCard = ({
   navigation: any;
 }) => {
   const isMoneyLoan = agreement.itemType === "MONEY";
-  const fileUrl = agreement?.itemFileUrl
-    ? IMG_BASE_URL + agreement.itemFileUrl
-    : null;
+  const fileUrl = agreement?.itemFileUrl ? agreement.itemFileUrl : null;
 
   const Thumb = () => {
     if (isMoneyLoan) {

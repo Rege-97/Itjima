@@ -1,4 +1,3 @@
-import { IMG_BASE_URL } from "@env";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useHeaderHeight } from "@react-navigation/elements";
 import React from "react";
@@ -24,7 +23,10 @@ import {
   TextInput,
 } from "react-native-paper";
 import { DatePickerModal } from "react-native-paper-dates";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import {
   AVAILABLE_STATUS,
   useMyAgreementCreate,
@@ -145,7 +147,7 @@ export default function MyAgreementCreateScreen({ route, navigation }: any) {
                     <Image
                       source={{
                         uri: item.fileUrl
-                          ? IMG_BASE_URL + item.fileUrl
+                          ? item.fileUrl
                           : "https://via.placeholder.com/150",
                       }}
                       style={{
@@ -335,7 +337,9 @@ export default function MyAgreementCreateScreen({ route, navigation }: any) {
                     anchor={
                       <TouchableOpacity
                         activeOpacity={0.9}
-                        onPress={() => setRentSourceMenuOpen(!rentSourceMenuOpen)}
+                        onPress={() =>
+                          setRentSourceMenuOpen(!rentSourceMenuOpen)
+                        }
                         style={styles.selectBox}
                       >
                         <Text
@@ -408,7 +412,7 @@ export default function MyAgreementCreateScreen({ route, navigation }: any) {
                             <Image
                               source={{
                                 uri: selectedItem.fileUrl
-                                  ? IMG_BASE_URL + selectedItem.fileUrl
+                                  ? selectedItem.fileUrl
                                   : "https://via.placeholder.com/300",
                               }}
                               style={styles.selectedItemImage}

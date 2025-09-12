@@ -15,7 +15,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.rege.itjimaapp"
+      "bundleIdentifier": "com.rege.itjimaapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -31,6 +34,18 @@
     "plugins": [
       "expo-web-browser",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "221cb07d-b5c1-451b-9f1c-294f724978f7"
+      }
+    },
+    "owner": "rege",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/221cb07d-b5c1-451b-9f1c-294f724978f7"
+    }
   }
 }

@@ -1,0 +1,26 @@
+{
+  "cli": {
+    "version": ">= 16.19.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://itjima-env.eba-qc62hnga.ap-northeast-2.elasticbeanstalk.com/api",
+        "EXPO_PUBLIC_REST_API_KEY": "5f28982a2024f1d2fc549f6f01896693",
+        "EXPO_PUBLIC_REDIRECT_URI": "https://auth.expo.io/@rege/itjima-app/kakao-auth"
+      }
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

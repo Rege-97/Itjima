@@ -22,6 +22,7 @@ import com.itjima_server.dto.user.response.UserResponseDTO;
 import com.itjima_server.service.AuthService;
 import com.itjima_server.service.ItemService;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -97,7 +98,7 @@ class UserControllerTest {
                 AgreementCreateRequestDTO agrReq = new AgreementCreateRequestDTO();
                 agrReq.setItemId(itemRes.getId());
                 agrReq.setAmount(new BigDecimal("1000").multiply(BigDecimal.valueOf(i)));
-                agrReq.setDueAt(LocalDateTime.now().plusDays(2L * i));
+                agrReq.setDueAt(LocalDate.now().plusDays(2L * i));
                 agrReq.setTerms("조건 " + i);
                 agrReq.setDebtorUserId(partner.getId());
 

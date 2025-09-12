@@ -1,4 +1,3 @@
-import { IMG_BASE_URL } from "@env";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -40,7 +39,7 @@ const ItemCard = ({ item, navigation }: { item: any; navigation: any }) => {
           <Image
             source={{
               uri: item?.fileUrl
-                ? IMG_BASE_URL + item.fileUrl
+                ? item.fileUrl
                 : "https://via.placeholder.com/150",
             }}
             style={styles.squareAvatar}

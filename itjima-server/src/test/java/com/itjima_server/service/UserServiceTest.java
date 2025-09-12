@@ -197,7 +197,7 @@ class UserServiceTest {
             when(userMapper.updatePasswordById(userId, "ENC_NewPass123!")).thenReturn(1);
 
             UserChangeProfileRequestDTO req = new UserChangeProfileRequestDTO();
-            req.setPassword("NewPass123!");
+            req.setNewPassword("NewPass123!");
 
             UserResponseDTO res = userService.changeProfile(userId, req);
 
@@ -217,7 +217,7 @@ class UserServiceTest {
 
             UserChangeProfileRequestDTO req = new UserChangeProfileRequestDTO();
             req.setPhone("01066665555");
-            req.setPassword("Mix1234!");
+            req.setNewPassword("Mix1234!");
 
             UserResponseDTO res = userService.changeProfile(userId, req);
 

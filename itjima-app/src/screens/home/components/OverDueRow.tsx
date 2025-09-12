@@ -1,4 +1,3 @@
-import { IMG_BASE_URL } from "@env";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, View } from "react-native";
@@ -20,7 +19,7 @@ function OverDueRow({ item }: { item: OverDue }) {
     >
       {item.itemFileUrl ? (
         <Image
-          source={{ uri: IMG_BASE_URL + item.itemFileUrl }}
+          source={{ uri: item.itemFileUrl }}
           style={styles.thumb}
         />
       ) : (

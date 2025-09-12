@@ -2,12 +2,11 @@ import React from "react";
 import { Image, Linking, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { IMG_BASE_URL } from "@env";
 import { formatDate } from "../hooks/useAgreementDetail";
 
 const resolveImageUrl = (path?: string | null) => {
   if (!path) return "https://via.placeholder.com/800x600";
-  return (IMG_BASE_URL || "") + path;
+  return path;
 };
 
 const AgreementStatusBadge = ({

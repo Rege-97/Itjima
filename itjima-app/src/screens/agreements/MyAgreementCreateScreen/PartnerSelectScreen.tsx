@@ -146,7 +146,6 @@ export default function PartnerSelectScreen({ navigation }: any) {
           onDismiss={() => setIsSearchModalVisible(false)}
           style={styles.dialog}
         >
-          {" "}
           <TouchableWithoutFeedback
             onPress={Keyboard.dismiss}
             accessible={false}

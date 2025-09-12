@@ -43,6 +43,7 @@ import com.itjima_server.mapper.ItemMapper;
 import com.itjima_server.mapper.TransactionMapper;
 import com.itjima_server.mapper.UserMapper;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,7 +97,7 @@ public class AgreementServiceTest {
             agreementCreateRequestDTO = new AgreementCreateRequestDTO();
             agreementCreateRequestDTO.setItemId(item.getId());
             agreementCreateRequestDTO.setDebtorUserId(debtor.getId());
-            agreementCreateRequestDTO.setDueAt(LocalDateTime.now().plusDays(7));
+            agreementCreateRequestDTO.setDueAt(LocalDate.now().plusDays(7));
         }
 
         @Test
@@ -249,7 +250,7 @@ public class AgreementServiceTest {
                     .id(1L)
                     .itemId(item.getId())
                     .status(AgreementStatus.PENDING)
-                    .dueAt(LocalDateTime.now().plusDays(7))
+                    .dueAt(LocalDate.now().plusDays(7))
                     .terms("test")
                     .createdAt(LocalDateTime.now())
                     .build();

@@ -28,6 +28,7 @@ import com.itjima_server.mapper.AgreementPartyMapper;
 import com.itjima_server.mapper.ItemMapper;
 import com.itjima_server.mapper.TransactionMapper;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,7 +81,7 @@ public class TransactionServiceTest {
                 .itemId(itemId)
                 .status(AgreementStatus.ACCEPTED)
                 .amount(new BigDecimal("10000.00"))
-                .dueAt(LocalDateTime.now().plusDays(3))
+                .dueAt(LocalDate.now().plusDays(3))
                 .createdAt(LocalDateTime.now())
                 .build();
 

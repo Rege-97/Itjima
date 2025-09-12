@@ -3,7 +3,6 @@ import React from "react";
 import { Dimensions, Image, StyleSheet, View } from "react-native";
 import { Divider, Text } from "react-native-paper";
 import StatisticsCard from "../../MyItemScreen/components/StatisticsCard";
-import { IMG_BASE_URL } from "@env";
 
 const { width } = Dimensions.get("window");
 
@@ -53,7 +52,7 @@ export const ItemDetailsHeader = ({ item }: { item: any }) => {
       <Image
         source={{
           uri: item?.fileUrl
-            ? IMG_BASE_URL + item.fileUrl
+            ? item.fileUrl
             : "https://via.placeholder.com/150",
         }}
         style={styles.headerImage}
