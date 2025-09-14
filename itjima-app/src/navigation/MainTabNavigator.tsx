@@ -1,20 +1,17 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { useIsFocused } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import { View } from "react-native";
-import { Button, Text } from "react-native-paper";
-import { useAuth } from "../contexts/AuthContext";
+import MyAgreementCreateScreen from "../screens/agreements/MyAgreementCreateScreen/MyAgreementCreateScreen";
+import PartnerSelectScreen from "../screens/agreements/MyAgreementCreateScreen/PartnerSelectScreen";
+import MyAgreementDetailScreen from "../screens/agreements/MyAgreementDetailScreen/MyAgreementDetailScreen";
+import MyAgreementsScreen from "../screens/agreements/MyAgreementsScreen/MyAgreementsScreen";
+import HomeScreen from "../screens/home/HomeScreen";
 import MyItemCreateScreen from "../screens/items/MyItemCreateScreen/MyItemCreateScreen";
 import MyItemDetailScreen from "../screens/items/MyItemDetailScreen/MyItemDetailScreen";
 import MyItemEditScreen from "../screens/items/MyItemEditScreen/MyItemEditScreen";
 import MyItemsScreen from "../screens/items/MyItemScreen/MyItemsScreen";
-import MyAgreementsScreen from "../screens/agreements/MyAgreementsScreen/MyAgreementsScreen";
-import MyAgreementDetailScreen from "../screens/agreements/MyAgreementDetailScreen/MyAgreementDetailScreen";
-import MyAgreementCreateScreen from "../screens/agreements/MyAgreementCreateScreen/MyAgreementCreateScreen";
-import PartnerSelectScreen from "../screens/agreements/MyAgreementCreateScreen/PartnerSelectScreen";
-import HomeScreen from "../screens/home/HomeScreen";
-import { useIsFocused } from "@react-navigation/native";
 import ProfileScreen from "../screens/profile/ProfileScreen";
 
 const FocusUnmount: React.FC<React.PropsWithChildren> = ({ children }) => {
@@ -174,7 +171,7 @@ const MainTabNavigator = () => {
         name="MyItems"
         component={MyItemsStackNavigator}
         options={{
-          title: "물품",
+          title: "내 물품",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="briefcase-variant"

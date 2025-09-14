@@ -44,7 +44,7 @@ export default function ActionButtons({
 
       {myRole === "DEBTOR" && status === "ACCEPTED" && isMoney && (
         <Button mode="contained" style={styles.button} onPress={onRepayPress}>
-          상환 요청
+          상환 확인 요청
         </Button>
       )}
 

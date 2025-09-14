@@ -18,10 +18,7 @@ function OverDueRow({ item }: { item: OverDue }) {
       ]}
     >
       {item.itemFileUrl ? (
-        <Image
-          source={{ uri: item.itemFileUrl }}
-          style={styles.thumb}
-        />
+        <Image source={{ uri: item.itemFileUrl }} style={styles.thumb} />
       ) : (
         <View style={[styles.thumb, styles.thumbPlaceholder]}>
           <MaterialCommunityIcons
@@ -126,9 +123,11 @@ const styles = StyleSheet.create({
   },
   moneyTag: {
     backgroundColor: "#FF9800",
+    borderColor: "transparent",
   },
   itemTag: {
     backgroundColor: "#5c36f4",
+    borderColor: "transparent",
   },
   typeTagText: {
     fontSize: 11,

@@ -273,6 +273,7 @@ const MyAgreementDetailScreen = ({ route, navigation }: any) => {
                   setRepayAmount("");
                   await fetchInitialData();
                   if (activeTab === "REPAY") fetchRepayments();
+                  Alert.alert("완료", "상환 요청을 보냈습니다!");
                 } catch (error: any) {
                   console.error("상환 요청 실패:", error);
                   const msg =
