@@ -245,8 +245,14 @@ const MyAgreementDetailScreen = ({ route, navigation }: any) => {
       )}
 
       <Portal>
-        <Dialog visible={repayVisible} onDismiss={() => setRepayVisible(false)}>
-          <Dialog.Title>상환 요청</Dialog.Title>
+        <Dialog
+          visible={repayVisible}
+          onDismiss={() => {
+            setRepayVisible(false);
+            setRepayAmount("");
+          }}
+        >
+          <Dialog.Title>상환 확인 요청</Dialog.Title>
           <Dialog.Content>
             <TextInput
               label="상환 금액"
@@ -264,6 +270,7 @@ const MyAgreementDetailScreen = ({ route, navigation }: any) => {
                     amount: repayAmount,
                   });
                   setRepayVisible(false);
+                  setRepayAmount("");
                   await fetchInitialData();
                   if (activeTab === "REPAY") fetchRepayments();
                 } catch (error: any) {

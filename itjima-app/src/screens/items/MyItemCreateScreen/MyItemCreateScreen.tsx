@@ -10,6 +10,7 @@ import {
 
 import { Appbar, Button, TextInput } from "react-native-paper";
 import { useItemCreate } from "./hooks/useItemCreate";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const MyItemCreateScreen = ({ navigation }: any) => {
   const {
@@ -33,14 +34,17 @@ const MyItemCreateScreen = ({ navigation }: any) => {
 
         <View style={styles.content}>
           <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
-            <Image
-              source={{
-                uri: image?.uri
-                  ? image.uri
-                  : "https://via.placeholder.com/400x300",
-              }}
-              style={styles.image}
-            />
+            {image?.uri ? (
+              <Image source={{ uri: image.uri }} style={styles.image} />
+            ) : (
+              <View style={styles.placeholder}>
+                <MaterialCommunityIcons
+                  name="plus"
+                  size={48}
+                  color="#9CA3AF" // 회색 느낌
+                />
+              </View>
+            )}
           </TouchableOpacity>
 
           <TextInput
@@ -101,6 +105,14 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 8,
+  },
+  placeholder: {
+    width: "100%",
+    height: 250,
+    borderRadius: 8,
+    backgroundColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

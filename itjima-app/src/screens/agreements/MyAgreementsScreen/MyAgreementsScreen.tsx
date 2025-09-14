@@ -8,11 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import {
-  ActivityIndicator,
-  Searchbar,
-  Text,
-} from "react-native-paper";
+import { ActivityIndicator, Searchbar, Text } from "react-native-paper";
 import AgreementCard from "./components/AgreementCard";
 import { useAgreement } from "./hooks/useAgreement";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -98,6 +94,11 @@ const MyAgreementsScreen = ({ navigation }: any) => {
               <ActivityIndicator animating={true} />
             </View>
           ) : null
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>대여 내역이 없습니다.</Text>
+          </View>
         }
       />
     </SafeAreaView>
@@ -187,13 +188,13 @@ const styles = StyleSheet.create({
   pillsRow: {
     flexDirection: "row",
     alignItems: "stretch",
-    gap: 8, 
+    gap: 8,
     marginHorizontal: 14,
     marginTop: 8,
     marginBottom: 8,
   },
   pill: {
-    flex: 1, 
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -215,6 +216,16 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
     elevation: 2,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 50,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#999",
   },
 });
 export default MyAgreementsScreen;

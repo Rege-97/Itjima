@@ -178,7 +178,7 @@ export default function MyAgreementCreateScreen({ route, navigation }: any) {
               ref={scrollRef}
               contentContainerStyle={[
                 styles.container,
-                { paddingBottom: insets.bottom + 24 },
+                { paddingBottom: insets.bottom + 24, flexGrow: 1 },
               ]}
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode="on-drag"

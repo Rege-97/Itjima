@@ -35,17 +35,17 @@
       "expo-web-browser",
       "expo-font"
     ],
-    "extra": {
-      "eas": {
-        "projectId": "221cb07d-b5c1-451b-9f1c-294f724978f7"
-      }
-    },
     "owner": "rege",
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/221cb07d-b5c1-451b-9f1c-294f724978f7"
+      "url": "https://u.expo.dev/6ee7c3b0-c9ee-4eb7-abca-8c0c03e5e5a2"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6ee7c3b0-c9ee-4eb7-abca-8c0c03e5e5a2"
+      }
     }
   }
 }

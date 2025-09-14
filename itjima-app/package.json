@@ -42,7 +42,7 @@
     "undefined": "\\",
     "react-dom": "19.1.0",
     "react-native-web": "^0.21.0",
-    "@expo/metro-runtime": "~6.1.1",
+    "@expo/metro-runtime": "~6.1.2",
     "expo-dev-client": "~6.0.12",
     "expo-updates": "~29.0.10"
   },

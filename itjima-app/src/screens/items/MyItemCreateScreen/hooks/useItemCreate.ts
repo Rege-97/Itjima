@@ -66,8 +66,6 @@ export const useItemCreate = (navigation: any) => {
   };
 
   const handleCreate = async () => {
-    setIsLoading(true);
-
     if (!title) {
       Alert.alert("알림", "제목을 입력해주세요.");
       return;
@@ -87,6 +85,8 @@ export const useItemCreate = (navigation: any) => {
       Alert.alert("알림", "이미지를 업로드해주세요.");
       return;
     }
+
+    setIsLoading(true);
 
     try {
       const response = await createItemApi({

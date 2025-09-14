@@ -102,6 +102,11 @@ const MyItemsScreen = ({ navigation }: any) => {
             </View>
           ) : null
         }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>등록된 물품이 없습니다.</Text>
+          </View>
+        }
       />
 
       <FAB
@@ -130,6 +135,16 @@ const styles = StyleSheet.create({
   searchbar: {
     backgroundColor: "#ffffffff",
     borderRadius: 0,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 50,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#999",
   },
 });
 

@@ -142,8 +142,8 @@ export default function HomeScreen() {
 
         {/* 통계 박스 */}
         <View style={styles.statsRow}>
-          <StatBox title="빌려준 물건" count={lentCount} tone="orange" />
-          <StatBox title="빌린 물건" count={borrowedCount} tone="blue" />
+          <StatBox title="빌려준 대여건" count={lentCount} tone="orange" />
+          <StatBox title="빌린 대여건" count={borrowedCount} tone="blue" />
         </View>
 
         {/* 반납 임박 */}

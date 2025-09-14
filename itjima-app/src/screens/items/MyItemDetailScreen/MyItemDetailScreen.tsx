@@ -58,6 +58,7 @@ const MyItemDetailScreen = ({ route, navigation }: any) => {
 
   return (
     <>
+      {/* Appbar는 그대로 둠 */}
       <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
         <Appbar.Content title="" />
@@ -66,7 +67,9 @@ const MyItemDetailScreen = ({ route, navigation }: any) => {
           onPress={() => navigation.navigate("MyItemEdit", { item: item })}
         />
       </Appbar.Header>
-      <SafeAreaView style={styles.container}>
+
+      {/* SafeAreaView에서 top inset 제거 */}
+      <SafeAreaView style={styles.container} edges={["left", "right", "bottom"]}>
         <FlatList
           data={agreementHistory}
           renderItem={({ item }) => <AgreementHistoryCard item={item} />}
@@ -75,6 +78,9 @@ const MyItemDetailScreen = ({ route, navigation }: any) => {
           onEndReachedThreshold={0.5}
           ListHeaderComponent={<ItemDetailsHeader item={item} />}
           ListFooterComponent={renderListFooter()}
+          // ✅ 위 여백 제거
+          contentContainerStyle={{ paddingTop: 0 }}
+          contentInsetAdjustmentBehavior="never"
         />
       </SafeAreaView>
     </>
