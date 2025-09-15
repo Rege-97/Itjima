@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Alert } from "react-native";
 import { createItemApi, updateItemImageApi } from "../../../../api/items";
 
-const MAX_DIM = 1280;
+const MAX_DIM = 800;
 
 export const useItemCreate = (navigation: any) => {
   const [title, setTitle] = useState<string>("");
@@ -98,6 +98,7 @@ export const useItemCreate = (navigation: any) => {
 
       if (image) {
         const formData = new FormData();
+        
         formData.append("img", {
           uri: image.uri,
           name: image.name,

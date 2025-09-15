@@ -50,5 +50,9 @@ export const updateItemApi = (
 };
 
 export const updateItemImageApi = (itemId: number, formData: FormData) => {
-  return privateApi.post(`/items/${itemId}/file`, formData);
+  return privateApi.post(`/items/${itemId}/file`, formData, {
+    headers: {
+       "Content-Type": "multipart/form-data",
+    },
+  });
 };
