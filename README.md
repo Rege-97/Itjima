@@ -2,23 +2,6 @@
 
 > 📱 잊지마(Itjima) — 개인간 물품 대여 관리 앱
 
-## 🚀 실행 방법 (Expo Go)
-
-**[Notice] 현재 AWS 배포 서버는 비용 문제로 인해 운영이 중단되었습니다.**
-
-이 프로젝트는 **React Native + Expo** 기반으로 제작되었으며,  
-아래 QR 코드를 스캔하면 바로 체험할 수 있습니다.
-
-  <img width="300" height="300" alt="image" src="https://github.com/user-attachments/assets/c0888099-67c1-4a86-af20-2d5290d109ce" />
-
-### 📲 실행 가이드
-1. 스마트폰에 **Expo Go 앱** 설치 (iOS: App Store, Android: Play Store)  
-2. 위 QR 코드 스캔 → 앱이 Expo Go에서 자동 실행  
-3. 로그인/회원가입 후 기능 체험 가능  
-   - 이메일 회원가입 시 실제 메일 인증 가능   
-
-> ⚠️ **주의**: Expo Go는 네트워크 환경에 따라 로딩이 지연될 수 있습니다.  
-> 서버는 AWS Elastic Beanstalk + RDS + S3에서 운영 중입니다.
 
 ## 📌 프로젝트 개요
 
